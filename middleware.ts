@@ -1,27 +1,57 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { verify } from 'jsonwebtoken';
+
+// Add paths that don't require authentication
+const publicPaths = [
+  '/',
+  '/login',
+  '/signup',
+  '/forgot-password',
+  '/api/auth/login',
+  '/api/auth/signup',
+  '/api/auth/forgot-password',
+];
 
 export async function middleware(request: NextRequest) {
-  // Get path from the URL
-  const { pathname } = request.nextUrl
+  const { pathname } = request.nextUrl;
 
-  // Skip middleware for the root path and dashboard for testing
-  if (pathname === "/" || pathname.startsWith("/dashboard")) {
-    return NextResponse.next()
+  // Allow public paths
+  if (publicPaths.includes(pathname)) {
+    return NextResponse.next();
   }
 
-  // For API routes, we'll use a simplified approach
-  if (pathname.startsWith("/api") && !pathname.startsWith("/api/auth")) {
-    // Check for a simple auth header instead of JWT
-    const authHeader = request.headers.get("authorization")
+  // Check for session token
+  const sessionToken = request.cookies.get('session')?.value;
 
-    if (!authHeader) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 })
-    }
+  if (!sessionToken) {
+    // Redirect to login if no session token
+    const url = new URL('/login', request.url);
+    url.searchParams.set('from', pathname);
+    return NextResponse.redirect(url);
   }
 
-  return NextResponse.next()
+  try {
+    // Verify token
+    verify(sessionToken, process.env.JWT_SECRET || 'your-secret-key');
+    return NextResponse.next();
+  } catch (error) {
+    // Invalid token, redirect to login
+    const url = new URL('/login', request.url);
+    url.searchParams.set('from', pathname);
+    return NextResponse.redirect(url);
+  }
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
-}
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    '/((?!_next/static|_next/image|favicon.ico|public/).*)',
+  ],
+};

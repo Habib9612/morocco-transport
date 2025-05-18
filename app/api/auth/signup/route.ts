@@ -1,59 +1,75 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { executeQuery } from "@/lib/db"
-import bcrypt from "bcryptjs"
+import { NextResponse } from 'next/server';
+import { hash } from 'bcryptjs';
+import { db } from '@/lib/db';
+import { z } from 'zod';
 
-export async function POST(request: NextRequest) {
+// Validation schema
+const signupSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  role: z.enum(['individual', 'carrier', 'company']),
+  company: z.string().optional(),
+  phone: z.string().optional(),
+});
+
+export async function POST(request: Request) {
   try {
-    const { name, email, password } = await request.json()
+    const body = await request.json();
 
     // Validate input
-    if (!name || !email || !password) {
-      return NextResponse.json({ error: "Name, email and password are required" }, { status: 400 })
+    const result = signupSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error.errors[0].message },
+        { status: 400 }
+      );
     }
 
-    // Check if user already exists
-    const existingUser = await executeQuery("SELECT * FROM users WHERE email = $1", [email])
+    const { email, password, name, role, company, phone } = result.data;
 
-    if (existingUser.length > 0) {
-      return NextResponse.json({ error: "User with this email already exists" }, { status: 409 })
+    // Check if user already exists
+    const existingUser = await db.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'Email already registered' },
+        { status: 400 }
+      );
     }
 
     // Hash password
-    const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(password, salt)
+    const hashedPassword = await hash(password, 12);
 
     // Create user
-    const result = await executeQuery(
-      "INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role",
-      [name, email, hashedPassword, "user"],
-    )
+    const user = await db.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name,
+        role,
+        company,
+        phone,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        company: true,
+        phone: true,
+        avatar: true,
+      },
+    });
 
-    const newUser = result[0]
-
-    // Create user object for cookie
-    const userData = {
-      id: newUser.id,
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role,
-    }
-
-    // Set cookie with user data
-    const response = NextResponse.json(userData, { status: 201 })
-
-    response.cookies.set({
-      name: "user",
-      value: JSON.stringify(userData),
-      httpOnly: false, // Allow JavaScript access
-      path: "/",
-      maxAge: 60 * 60 * 24, // 1 day
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
-    })
-
-    return response
+    return NextResponse.json({ user }, { status: 201 });
   } catch (error) {
-    console.error("Signup error:", error)
-    return NextResponse.json({ error: "Failed to create user" }, { status: 500 })
+    console.error('Signup error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

@@ -1,55 +1,75 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { executeQuery } from "@/lib/db"
-import bcrypt from "bcryptjs"
+import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { sign } from 'jsonwebtoken';
+import { compare } from 'bcryptjs';
+import { db } from '@/lib/db';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json()
+    const { email, password } = await request.json();
 
-    // Validate input
     if (!email || !password) {
-      return NextResponse.json({ error: "Email and password are required" }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Email and password are required' },
+        { status: 400 }
+      );
     }
 
-    // Find user
-    const users = await executeQuery("SELECT * FROM users WHERE email = $1", [email])
+    // Find user in database
+    const user = await db.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        password: true,
+        role: true,
+        company: true,
+        phone: true,
+        avatar: true,
+      },
+    });
 
-    if (users.length === 0) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
     }
-
-    const user = users[0]
 
     // Verify password
-    const isMatch = await bcrypt.compare(password, user.password_hash)
-    if (!isMatch) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
+    const isValidPassword = await compare(password, user.password);
+    if (!isValidPassword) {
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
     }
 
-    // Create user object for cookie
-    const userData = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    }
+    // Create session token
+    const token = sign(
+      { userId: user.id },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '7d' }
+    );
 
-    // Set cookie with user data
-    const response = NextResponse.json(userData)
+    // Set cookie
+    cookies().set('session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
 
-    response.cookies.set({
-      name: "user",
-      value: JSON.stringify(userData),
-      httpOnly: false, // Allow JavaScript access
-      path: "/",
-      maxAge: 60 * 60 * 24, // 1 day
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
-    })
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
 
-    return response
+    return NextResponse.json({ user: userWithoutPassword });
   } catch (error) {
-    console.error("Login error:", error)
-    return NextResponse.json({ error: "Failed to authenticate" }, { status: 500 })
+    console.error('Login error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

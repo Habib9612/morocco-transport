@@ -1,0 +1,184 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String
+  role          UserRole
+  company       String?
+  phone         String?
+  avatar        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  shipments     Shipment[] @relation("ShipperShipments")
+  carrierShipments Shipment[] @relation("CarrierShipments")
+  vehicles      Vehicle[]
+  reviews       Review[]
+  notifications Notification[]
+}
+
+model Shipment {
+  id            String    @id @default(cuid())
+  status        ShipmentStatus
+  origin        Location  @relation("OriginShipments", fields: [originId], references: [id])
+  originId      String
+  destination   Location  @relation("DestinationShipments", fields: [destinationId], references: [id])
+  destinationId String
+  cargoType     String
+  weight        Float
+  volume        Float?
+  price         Float
+  description   String?
+  specialRequirements String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  shipperId     String
+  shipper       User      @relation("ShipperShipments", fields: [shipperId], references: [id])
+  carrierId     String?
+  carrier       User?     @relation("CarrierShipments", fields: [carrierId], references: [id])
+  vehicleId     String?
+  vehicle       Vehicle?  @relation(fields: [vehicleId], references: [id])
+  reviews       Review[]
+  tracking      Tracking[]
+}
+
+model Vehicle {
+  id            String    @id @default(cuid())
+  type          VehicleType
+  plateNumber   String
+  capacity      Float
+  status        VehicleStatus
+  currentLocation Location? @relation(fields: [currentLocationId], references: [id])
+  currentLocationId String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  carrierId     String
+  carrier       User      @relation(fields: [carrierId], references: [id])
+  shipments     Shipment[]
+  maintenance   Maintenance[]
+}
+
+model Location {
+  id            String    @id @default(cuid())
+  address       String
+  city          String
+  state         String
+  country       String
+  postalCode    String
+  latitude      Float
+  longitude     Float
+  originShipments     Shipment[] @relation("OriginShipments")
+  destinationShipments Shipment[] @relation("DestinationShipments")
+  vehicles      Vehicle[]
+  trackings     Tracking[]
+}
+
+model Review {
+  id            String    @id @default(cuid())
+  rating        Int
+  comment       String?
+  createdAt     DateTime  @default(now())
+  shipmentId    String
+  shipment      Shipment  @relation(fields: [shipmentId], references: [id])
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+}
+
+model Maintenance {
+  id            String    @id @default(cuid())
+  type          MaintenanceType
+  description   String
+  cost          Float
+  date          DateTime
+  status        MaintenanceStatus
+  vehicleId     String
+  vehicle       Vehicle   @relation(fields: [vehicleId], references: [id])
+}
+
+model Notification {
+  id            String    @id @default(cuid())
+  type          NotificationType
+  message       String
+  read          Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+}
+
+model Tracking {
+  id            String    @id @default(cuid())
+  status        TrackingStatus
+  location      Location  @relation(fields: [locationId], references: [id])
+  locationId    String
+  timestamp     DateTime  @default(now())
+  shipmentId    String
+  shipment      Shipment  @relation(fields: [shipmentId], references: [id])
+}
+
+enum UserRole {
+  INDIVIDUAL
+  CARRIER
+  COMPANY
+}
+
+enum ShipmentStatus {
+  PENDING
+  ACCEPTED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+enum VehicleType {
+  FLATBED
+  REFRIGERATED
+  BOX
+  TANKER
+  CONTAINER
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  IN_USE
+  MAINTENANCE
+  OFFLINE
+}
+
+enum MaintenanceType {
+  ROUTINE
+  REPAIR
+  INSPECTION
+  EMERGENCY
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  SHIPMENT_UPDATE
+  MAINTENANCE_REMINDER
+  PAYMENT
+  SYSTEM
+}
+
+enum TrackingStatus {
+  PICKED_UP
+  IN_TRANSIT
+  DELAYED
+  DELIVERED
+} 

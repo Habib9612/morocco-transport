@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  maroctransit-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=productionnpm install
+      mkdir -p components pages styles public
+      mv UserProfile.jsx components/
+mv AdminDashboard.jsx components/
+mv index.js pages/
+mv profile.js pages/
+mv admin.js pages/
+mv _app.js pages/
+mv globals.css styles/
+npm install
+ls -la
+mv index.file.js pages/
+mv admin.js pages/
+mv _app.js pages/
+mv globals.css styles/
+npm install
+ls -la

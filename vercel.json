@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "JWT_SECRET": "@jwt_secret",
+    "JWT_EXPIRES_IN": "7d",
+    "NEXT_PUBLIC_WS_URL": "@ws_url",
+    "ENABLE_MAINTENANCE_SCHEDULING": "true",
+    "ENABLE_REAL_TIME_TRACKING": "true",
+    "ENABLE_PAYMENT_PROCESSING": "true",
+    "CORS_ORIGIN": "@cors_origin",
+    "ENABLE_CSRF_PROTECTION": "false",
+    "ENABLE_RATE_LIMITING": "false",
+    "ENABLE_COMPRESSION": "true",
+    "ENABLE_CACHING": "true",
+    "CACHE_TTL": "1h"
+  }
+} 

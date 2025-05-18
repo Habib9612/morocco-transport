@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./node_modules:/app/node_modules
+      - ./.next:/app/.next
+    depends_on:
+      - db
+    networks:
+      - maroct-transit-network
+
+  db:
+    image: postgres:14
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=maroct-transit
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - maroct-transit-network
+
+volumes:
+  postgres-data:
+
+networks:
+  maroct-transit-network:
+    driver: bridge
