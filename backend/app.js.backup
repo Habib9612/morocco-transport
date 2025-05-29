@@ -1,0 +1,44 @@
+const express = require('express');
+require('dotenv').config({ path: '.env.local' });
+
+const app = express();
+
+// Basic middleware
+app.use(express.json());
+
+// Health check route
+app.get('/', (req, res) => {
+    res.json({
+        message: 'LoadHive Backend API',
+        status: 'running',
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Auth routes placeholder
+app.get('/api/auth/health', (req, res) => {
+    res.json({ message: 'Auth service is healthy' });
+});
+
+// Load routes placeholder
+app.get('/api/loads/health', (req, res) => {
+    res.json({ message: 'Load service is healthy' });
+});
+
+// Carrier routes placeholder
+app.get('/api/carriers/health', (req, res) => {
+    res.json({ message: 'Carrier service is healthy' });
+});
+
+// Shipper routes placeholder
+app.get('/api/shippers/health', (req, res) => {
+    res.json({ message: 'Shipper service is healthy' });
+});
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+    console.log(`LoadHive Backend server running on port ${PORT}`);
+});
+
+module.exports = app;
