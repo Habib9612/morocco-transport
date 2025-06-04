@@ -1,232 +1,210 @@
-# Carrier-Shipper Matching ML Model
+# 🚛 MarocTransit - Morocco Transport Platform
 
-This directory contains the machine learning model implementation for matching carriers with shippers based on various criteria. The model uses gradient boosting to predict successful matches.
+<div align="center">
 
-## Key Features
+![MarocTransit Logo](https://img.shields.io/badge/MarocTransit-Transport%20Platform-blue?style=for-the-badge&logo=truck)
 
-- **Intelligent Matching Algorithm**: Matches carriers and shippers based on multiple factors:
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-89.4%25-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react)](https://reactjs.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3-38bdf8?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-ORM-2d3748?style=flat-square&logo=prisma)](https://prisma.io/)
+
+**Connect Shippers with Carriers Instantly**
+
+</div>
+
+## 🌟 Overview
+
+MarocTransit is a cutting-edge transport platform designed specifically for Morocco's logistics landscape. Our platform leverages advanced machine learning algorithms to intelligently match carriers with shippers, optimizing transportation efficiency and reducing costs across the supply chain.
+
+The platform implements sophisticated matching algorithms that consider multiple factors including load size compatibility, route preferences, historical reliability metrics, and cost efficiency to predict successful transport partnerships.
+
+## 🎯 Key Features
+
+### 🤖 Intelligent Matching Algorithms
+- **Multi-factor Analysis**: Matches carriers and shippers based on:
   - Load size compatibility
-  - Destination/route preferences
+  - Route/location preferences
   - Historical reliability metrics
-  - Cost efficiency
+  - Cost efficiency optimization
 
-- **REST API Interface**: Provides easy integration with frontend and backend services
+### 🔧 Technical Capabilities
+- **RESTful API Interfaces**: Seamless integration with frontend and backend services
 - **Batch Processing**: Support for bulk matching operations
-- **Real-time Updates**: Model can be retrained as new data becomes available
+- **Real-time Updates**: Model retraining capability as new data becomes available
+- **Advanced Analytics**: Comprehensive reporting and insights dashboard
 
-## Components
+### 🌐 Modern Web Application
+- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
+- **Real-time Communication**: WebSocket integration for live updates
+- **User Authentication**: Secure login and user management system
+- **Interactive Dashboard**: Comprehensive control panel for carriers and shippers
 
-### 1. Model Implementation (`carrier_shipper_matching.py`)
+## 🏗 Architecture
 
-The core machine learning implementation that:
-- Preprocesses carrier and shipment data
-- Trains a gradient boosting model on historical successful matches
-- Provides prediction capabilities for new carrier-shipment pairs
-- Handles model persistence (saving/loading)
+### Frontend
+- **Framework**: Next.js 14 with React 18
+- **Styling**: Tailwind CSS for responsive design
+- **State Management**: React Context API with custom hooks
+- **Real-time Features**: WebSocket integration for live notifications
 
-### 2. REST API (`api.py`)
+### Backend
+- **API**: RESTful services with Next.js API routes
+- **Database**: Prisma ORM for database management
+- **Authentication**: JWT-based secure authentication
+- **File Processing**: Support for various document formats
 
-A Flask-based REST API that exposes the model functionality:
-- `/api/matches/carrier/<carrier_id>`: Get best shipments for a specific carrier
-- `/api/matches/shipment/<shipment_id>`: Get best carriers for a specific shipment
-- `/api/batch/match`: Batch processing for multiple carriers and shipments
-- `/api/model/train`: Trigger model retraining
-- `/api/model/status`: Check model status
-- `/api/health`: Health check endpoint
+### Machine Learning
+- **Algorithm**: Gradient boosting implementation
+- **Data Processing**: Multi-criteria decision analysis
+- **Performance Tracking**: Success rate optimization
+- **Continuous Learning**: Model updates based on new transport data
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
+- Node.js 18+ 
+- npm or yarn package manager
+- PostgreSQL database
+- Git
 
-```
-pip install flask pandas scikit-learn joblib numpy
-```
+### Installation
 
-### Running the API
-
+1. **Clone the repository**
 ```bash
-cd models
-python api.py
+git clone https://github.com/Habib9612/morocco-transport.git
+cd morocco-transport
 ```
 
-The API will be available at `http://localhost:5000`.
-
-### Example API Calls
-
-#### Get top matches for a carrier
-
+2. **Install dependencies**
 ```bash
-curl http://localhost:5000/api/matches/carrier/C1
+npm install
+# or
+yarn install
 ```
 
-#### Get top matches for a shipment
-
+3. **Environment Setup**
 ```bash
-curl http://localhost:5000/api/matches/shipment/S2
+cp .env.example .env.local
+# Configure your environment variables
 ```
 
-#### Trigger model training
-
+4. **Database Setup**
 ```bash
-curl -X POST http://localhost:5000/api/model/train
+npx prisma generate
+npx prisma db push
+npx prisma db seed
 ```
 
-## Integration with Backend
-
-The Spring Boot backend can integrate with this model through:
-
-1. **HTTP Requests**: Direct API calls from Java using RestTemplate or WebClient
-2. **Shared Database**: Both systems can read/write to shared tables
-3. **Message Queue**: For asynchronous processing (future enhancement)
-
-## Model Performance
-
-The current model achieves the following metrics on test data:
-- Accuracy: ~0.85
-- Precision: ~0.83
-- Recall: ~0.87
-- F1 Score: ~0.85
-
-## Future Enhancements
-
-- **Enhanced Features**: Incorporate weather data and traffic patterns
-- **Model Improvements**: Experiment with neural networks for better prediction
-- **Real-time Learning**: Implement online learning for continuous model updates
-- **Explainability**: Add feature importance analysis for better decision transparency# MarocTransit - AI-Powered Logistics Platform
-
-MarocTransit is a modern logistics platform that connects shippers with carriers using AI-powered matching algorithms. The platform streamlines the process of finding and managing transportation services in Morocco.
-
-## Features
-
-- 🤖 AI-powered carrier matching
-- 📱 Real-time shipment tracking
-- 🚛 Fleet management
-- 📊 Performance analytics
-- 💳 Secure payment processing
-- 🔔 Real-time notifications
-- 🌐 Multi-language support
-- 📱 Mobile-responsive design
-
-## Tech Stack
-
-- **Frontend**: Next.js 14, React 19, TypeScript
-- **Styling**: Tailwind CSS, Radix UI
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: JWT with secure session management
-- **Maps**: Google Maps API
-- **Payments**: Stripe
-- **Storage**: AWS S3
-- **Analytics**: Google Analytics, Sentry
-- **Email**: SMTP with custom templates
-- **Caching**: Redis
-- **Testing**: Jest, React Testing Library
-- **Deployment**: Vercel
-
-## Prerequisites
-
-- Node.js 18+ and pnpm
-- PostgreSQL 14+
-- Redis (for caching)
-- AWS account (for S3)
-- Google Cloud account (for Maps API)
-- Stripe account (for payments)
-
-## Getting Started
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/maroctransit-frontend.git
-   cd maroctransit-frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   pnpm install
-   ```
-
-3. Set up environment variables:
-   ```bash
-   cp .env.example .env.local
-   ```
-   Edit `.env.local` with your configuration values.
-
-4. Set up the database:
-   ```bash
-   pnpm prisma generate
-   pnpm prisma db push
-   ```
-
-5. Run the development server:
-   ```bash
-   pnpm dev
-   ```
-
-6. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## Project Structure
-
-```
-maroctransit-frontend/
-├── app/                 # Next.js app directory
-│   ├── api/            # API routes
-│   ├── dashboard/      # Dashboard pages
-│   ├── login/         # Authentication pages
-│   └── ...
-├── components/         # React components
-│   ├── ui/            # UI components
-│   └── ...
-├── lib/               # Utility functions
-├── prisma/            # Database schema
-├── public/            # Static assets
-└── styles/            # Global styles
+5. **Run the development server**
+```bash
+npm run dev
+# or
+yarn dev
 ```
 
-## Development
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-### Code Style
+## 📁 Project Structure
 
-- We use ESLint and Prettier for code formatting
-- Run `pnpm lint` to check for issues
-- Run `pnpm format` to format code
+```
+morocco-transport/
+├── 📱 app/                 # Next.js 14 App Router
+├── 🧩 components/          # Reusable React components
+├── 🎣 hooks/              # Custom React hooks
+├── 📚 lib/                # Utility functions and configurations
+├── 🗄️ models/             # Database models and schemas
+├── 📄 pages/              # Additional pages and API routes
+├── 🗃️ prisma/             # Database schema and migrations
+├── 🎨 styles/             # Global styles and Tailwind config
+├── 🧪 __tests__/          # Test files and test utilities
+├── 📋 jest.config.js      # Jest testing configuration
+├── 📝 tsconfig.json       # TypeScript configuration
+└── 📦 package.json        # Dependencies and scripts
+```
 
-### Testing
+## 🧪 Testing
 
-- Run `pnpm test` for unit tests
-- Run `pnpm test:e2e` for end-to-end tests
-- Run `pnpm test:coverage` for coverage report
+### Running Tests
+```bash
+# Run all tests
+npm run test
 
-### Database
+# Run tests with coverage
+npm run test:coverage
 
-- Run `pnpm prisma studio` to view/edit database
-- Run `pnpm prisma generate` after schema changes
-- Run `pnpm prisma db push` to update database schema
+# Run tests in CI mode
+npm run test:ci
 
-## Deployment
+# Run tests in watch mode
+npm run test:watch
+```
 
-1. Push to main branch
-2. Vercel automatically deploys
-3. Check deployment status at [Vercel Dashboard](https://vercel.com)
+### Test Coverage
+The project maintains comprehensive test coverage including:
+- Unit tests for utilities and components
+- Integration tests for API endpoints
+- End-to-end tests for critical user journeys
 
-## Contributing
+## 🔧 Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run test` - Run Jest tests
+- `npm run test:coverage` - Run tests with coverage report
+
+## 📊 Tech Stack
+
+| Category | Technology | Purpose |
+|----------|------------|---------|
+| **Frontend** | Next.js 14, React 18, TypeScript | Modern web application framework |
+| **Styling** | Tailwind CSS, PostCSS | Responsive and utility-first CSS |
+| **Database** | Prisma, PostgreSQL | Type-safe database access |
+| **Testing** | Jest, React Testing Library | Comprehensive testing suite |
+| **DevOps** | Docker, ESLint, Prettier | Development and deployment tools |
+| **Authentication** | JWT, NextAuth.js | Secure user authentication |
+| **Real-time** | WebSocket, Socket.io | Live updates and notifications |
+
+## 🤝 Contributing
+
+We welcome contributions to MarocTransit! Please follow these steps:
 
 1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Create a Pull Request
 
-## License
+### Development Guidelines
+- Follow TypeScript best practices
+- Write comprehensive tests for new features
+- Ensure code passes all linting checks
+- Update documentation for significant changes
+
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## 🆘 Support
 
 For support, email support@maroctransit.com or join our Slack channel.
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
-- [Next.js](https://nextjs.org)
-- [Prisma](https://prisma.io)
-- [Tailwind CSS](https://tailwindcss.com)
-- [Radix UI](https://radix-ui.com)
-- [Vercel](https://vercel.com)
+- [Next.js](https://nextjs.org/) - The React framework for production
+- [Prisma](https://prisma.io/) - Next-generation Node.js and TypeScript ORM
+- [Tailwind CSS](https://tailwindcss.com/) - A utility-first CSS framework
+- [Vercel](https://vercel.com/) - Platform for frontend frameworks and static sites
+
+---
+
+<div align="center">
+
+**Built with ❤️ for Morocco's Transport Industry**
+
+[Website](https://maroctransit.com) • [Documentation](https://docs.maroctransit.com) • [API Reference](https://api.maroctransit.com)
+
+</div>
