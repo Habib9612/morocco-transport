@@ -1,24 +1,45 @@
-import type React from "react"
-import type { Metadata } from "next"
+"use client"
+
+import { useAuth } from "@/lib/auth-context"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 import DashboardSidebar from "@/components/dashboard-sidebar"
 import DashboardHeader from "@/components/dashboard-header"
 
-export const metadata: Metadata = {
-  title: "Dashboard | MarocTransit",
-  description: "AI-Powered Logistics Platform Dashboard",
-}
-
 export default function DashboardLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
+  const { user, isLoading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/login")
+    }
+  }, [user, isLoading, router])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
+
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className="min-h-screen bg-gray-900 flex">
       <DashboardSidebar />
-      <div className="lg:pl-[240px] transition-all duration-300">
+      <div className="flex-1 ml-64">
         <DashboardHeader />
-        <main className="min-h-[calc(100vh-4rem)]">{children}</main>
+        <main className="p-6">
+          {children}
+        </main>
       </div>
     </div>
   )

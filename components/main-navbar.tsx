@@ -2,118 +2,112 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { LanguageSwitcher } from "@/components/language-switcher"
-import { useTranslation } from "@/lib/translation-context"
+import { Truck, Menu, X } from 'lucide-react'
+import { motion } from "framer-motion"
 
 export default function MainNavbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { t } = useTranslation()
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex items-center justify-between h-16 px-4 md:px-6">
-        <Link href="/" className="flex items-center">
-          <div className="mr-2 h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
-            <span className="text-white font-bold text-lg">M</span>
-          </div>
-          <span className="font-bold text-xl">MarocTransit</span>
-          <span className="text-xs text-blue-600 ml-2">AI-Powered Logistics</span>
-        </Link>
+    <nav className="fixed top-0 w-full z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-2">
+            <div className="relative w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Truck className="h-6 w-6 text-white" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full" />
+            </div>
+            <span className="font-bold text-xl text-white">MarocTransit</span>
+          </Link>
 
-        {/* Mobile menu button */}
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="inline-flex items-center p-2 ml-3 rounded-lg md:hidden"
-        >
-          {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            <Link href="#features" className="text-gray-300 hover:text-white transition-colors">
+              Features
+            </Link>
+            <Link href="#how-it-works" className="text-gray-300 hover:text-white transition-colors">
+              How It Works
+            </Link>
+            <Link href="#pricing" className="text-gray-300 hover:text-white transition-colors">
+              Pricing
+            </Link>
+            <Link href="#contact" className="text-gray-300 hover:text-white transition-colors">
+              Contact
+            </Link>
+          </div>
 
-        {/* Desktop navigation */}
-        <nav className={`hidden md:flex gap-6 items-center`}>
-          <Link href="/" className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
-            {t("nav.home")}
-          </Link>
-          <Link href="/solutions" className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
-            {t("nav.solutions")}
-          </Link>
-          <Link href="/features" className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
-            {t("nav.features")}
-          </Link>
-          <Link href="/pricing" className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
-            {t("nav.pricing")}
-          </Link>
-          <Link href="/about" className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
-            {t("nav.about")}
-          </Link>
-          <LanguageSwitcher />
-          <div className="flex items-center gap-2">
-            <Button variant="outline" className="px-4" asChild>
-              <Link href="/login">{t("nav.login")}</Link>
+          {/* Auth Buttons */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Button variant="ghost" asChild>
+              <Link href="/login" className="text-white hover:text-white">Login</Link>
             </Button>
-            <Button className="px-4 bg-blue-600 hover:bg-blue-700" asChild>
-              <Link href="/signup">{t("nav.signup")}</Link>
+            <Button className="bg-blue-600 hover:bg-blue-700" asChild>
+              <Link href="/signup">Get Started</Link>
             </Button>
           </div>
-        </nav>
-      </div>
 
-      {/* Mobile menu */}
-      <div className={`md:hidden ${isMenuOpen ? "block" : "hidden"}`}>
-        <div className="space-y-1 px-4 py-3 border-t">
-          <Link
-            href="/"
-            className="block py-2 px-3 text-gray-700 hover:bg-gray-100 rounded-md"
-            onClick={() => setIsMenuOpen(false)}
+          {/* Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden text-white"
+            onClick={() => setIsOpen(!isOpen)}
           >
-            {t("nav.home")}
-          </Link>
-          <Link
-            href="/solutions"
-            className="block py-2 px-3 text-gray-700 hover:bg-gray-100 rounded-md"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            {t("nav.solutions")}
-          </Link>
-          <Link
-            href="/features"
-            className="block py-2 px-3 text-gray-700 hover:bg-gray-100 rounded-md"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            {t("nav.features")}
-          </Link>
-          <Link
-            href="/pricing"
-            className="block py-2 px-3 text-gray-700 hover:bg-gray-100 rounded-md"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            {t("nav.pricing")}
-          </Link>
-          <Link
-            href="/about"
-            className="block py-2 px-3 text-gray-700 hover:bg-gray-100 rounded-md"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            {t("nav.about")}
-          </Link>
-          <div className="pt-4 flex items-center">
-            <LanguageSwitcher />
-          </div>
-          <div className="flex flex-col space-y-2 pt-2">
-            <Button variant="outline" className="w-full" asChild>
-              <Link href="/login" onClick={() => setIsMenuOpen(false)}>
-                {t("nav.login")}
-              </Link>
-            </Button>
-            <Button className="w-full bg-blue-600 hover:bg-blue-700" asChild>
-              <Link href="/signup" onClick={() => setIsMenuOpen(false)}>
-                {t("nav.signup")}
-              </Link>
-            </Button>
-          </div>
+            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </Button>
         </div>
+
+        {/* Mobile Menu */}
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden border-t border-gray-800"
+          >
+            <div className="py-4 space-y-4">
+              <Link 
+                href="#features" 
+                className="block text-gray-300 hover:text-white transition-colors py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                Features
+              </Link>
+              <Link 
+                href="#how-it-works" 
+                className="block text-gray-300 hover:text-white transition-colors py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                How It Works
+              </Link>
+              <Link 
+                href="#pricing" 
+                className="block text-gray-300 hover:text-white transition-colors py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                Pricing
+              </Link>
+              <Link 
+                href="#contact" 
+                className="block text-gray-300 hover:text-white transition-colors py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                Contact
+              </Link>
+              <div className="pt-4 space-y-2">
+                <Button variant="ghost" asChild className="w-full text-white">
+                  <Link href="/login">Login</Link>
+                </Button>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700" asChild>
+                  <Link href="/signup">Get Started</Link>
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </div>
-    </header>
+    </nav>
   )
 }

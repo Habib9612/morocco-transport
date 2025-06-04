@@ -4,35 +4,48 @@
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 221 83% 53%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
-
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 221 83% 53%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 84% 60%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.75rem;
+  }
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 221 83% 53%;
-
-    --radius: 0.5rem;
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 9@t2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
   }
 }
 
@@ -45,53 +58,50 @@
   }
 }
 
-/* Custom Animations */
-@keyframes dash {
-  to {
-    stroke-dashoffset: 1000;
+@layer components {
+  .logistics-gradient {
+    @apply bg-gradient-to-br from-blue-900 via-slate-900 to-purple-900;
+  }
+  
+  .truck-animation {
+    animation: truck-move 20s linear infinite;
+  }
+  
+  .glass-morphism {
+    @apply bg-white/10 backdrop-blur-sm border border-white/20;
+  }
+  
+  .logistics-card {
+    @apply bg-gray-900/95 border-gray-800 backdrop-blur-sm;
   }
 }
 
-.animate-dash {
-  animation: dash 20s linear infinite;
+@keyframes truck-move {
+  0% { transform: translateX(0) translateY(0); }
+  25% { transform: translateX(100px) translateY(-20px); }
+  50% { transform: translateX(200px) translateY(0); }
+  75% { transform: translateX(300px) translateY(-10px); }
+  100% { transform: translateX(400px) translateY(0); }
 }
 
-/* For aspect ratio support */
-.aspect-w-16 {
-  position: relative;
-  padding-bottom: calc(var(--tw-aspect-h) / var(--tw-aspect-w) * 100%);
-  --tw-aspect-w: 16;
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
-.aspect-h-9 {
-  --tw-aspect-h: 9;
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-.aspect-w-16 > * {
-  position: absolute;
-  height: 100%;
-  width: 100%;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+::-webkit-scrollbar-track {
+  @apply bg-gray-800;
 }
 
-@layer utilities {
-  [dir="rtl"] .rtl\:space-x-reverse > :not([hidden]) ~ :not([hidden]) {
-    --tw-space-x-reverse: 1;
-  }
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-600 rounded-md;
+}
 
-  [dir="rtl"] .rtl\:rotate-180 {
-    --tw-rotate: 180deg;
-    transform: var(--tw-transform);
-  }
-
-  [dir="rtl"] .rtl\:mr-auto {
-    margin-right: auto;
-  }
-
-  [dir="rtl"] .rtl\:ml-auto {
-    margin-left: auto;
-  }
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500;
 }

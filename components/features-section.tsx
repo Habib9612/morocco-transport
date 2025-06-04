@@ -1,112 +1,89 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Brain, Route, Activity, Zap, Clock, LineChart } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { Brain, Truck, MapPin, BarChart, Shield, Clock } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+const features = [
+  {
+    icon: Brain,
+    title: "AI-Powered Matching",
+    description: "Intelligent algorithms match shippers with the best carriers based on route, capacity, and performance.",
+    color: "text-purple-500"
+  },
+  {
+    icon: MapPin,
+    title: "Real-Time Tracking",
+    description: "Track your shipments in real-time with GPS precision and automated status updates.",
+    color: "text-blue-500"
+  },
+  {
+    icon: Truck,
+    title: "Fleet Management",
+    description: "Comprehensive fleet management tools with maintenance scheduling and performance analytics.",
+    color: "text-green-500"
+  },
+  {
+    icon: BarChart,
+    title: "Advanced Analytics",
+    description: "Detailed insights into your logistics operations with predictive analytics and reporting.",
+    color: "text-orange-500"
+  },
+  {
+    icon: Shield,
+    title: "Secure Platform",
+    description: "Enterprise-grade security with encrypted communications and secure payment processing.",
+    color: "text-red-500"
+  },
+  {
+    icon: Clock,
+    title: "24/7 Support",
+    description: "Round-the-clock customer support with AI-powered assistance and human backup.",
+    color: "text-cyan-500"
+  }
+]
 
 export default function FeaturesSection() {
-  const features = [
-    {
-      icon: <Brain className="h-8 w-8 text-blue-500" />,
-      title: "AI-Powered Matching",
-      description:
-        "Our advanced algorithm connects shippers with the perfect carriers based on location, vehicle type, and delivery requirements.",
-    },
-    {
-      icon: <Route className="h-8 w-8 text-blue-500" />,
-      title: "Route Optimization",
-      description:
-        "AI-optimized routes reduce fuel consumption and delivery times by analyzing traffic, weather, and historical data.",
-    },
-    {
-      icon: <Activity className="h-8 w-8 text-blue-500" />,
-      title: "Real-time Monitoring",
-      description:
-        "Track your fleet in real-time with our advanced GPS tracking system. Monitor vehicle performance, driver behavior, and delivery status.",
-    },
-    {
-      icon: <LineChart className="h-8 w-8 text-blue-500" />,
-      title: "Predictive Analytics",
-      description:
-        "Make data-driven decisions with our predictive maintenance alerts, demand forecasting, and performance trends analysis.",
-    },
-    {
-      icon: <Clock className="h-8 w-8 text-blue-500" />,
-      title: "Predictive Maintenance",
-      description:
-        "AI predicts when your vehicles need maintenance before breakdowns occur, reducing downtime and extending fleet lifespan.",
-    },
-    {
-      icon: <Zap className="h-8 w-8 text-blue-500" />,
-      title: "Fuel Optimization",
-      description:
-        "Reduce fuel costs by up to 30% with our AI-powered solutions that optimize routes, monitor driving behavior, and track fuel consumption.",
-    },
-  ]
-
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  }
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-  }
-
   return (
-    <section className="py-16 sm:py-24 bg-[#0f172a]" id="services">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white">AI-Powered Logistics Solutions</h2>
-          <p className="mt-4 text-xl text-gray-400">Transform your fleet management with advanced technology</p>
-        </div>
-
+    <section id="features" className="py-20 bg-gray-900">
+      <div className="container mx-auto px-4">
         <motion.div
-          className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
-          variants={container}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-100px" }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
         >
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Powerful Features for Modern Logistics
+          </h2>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            Everything you need to streamline your logistics operations and grow your business
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
             <motion.div
               key={index}
-              variants={item}
-              className="bg-[#1e293b] rounded-lg p-6 border border-gray-800 transition-all duration-300 hover:border-blue-500"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              <div className="mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
-              <p className="text-gray-400">{feature.description}</p>
-              <Link
-                href="#"
-                className="inline-flex items-center mt-4 text-blue-500 hover:text-blue-400 text-sm font-medium"
-              >
-                Learn more
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 ml-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
+              <Card className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors h-full">
+                <CardHeader>
+                  <div className={`w-12 h-12 rounded-lg bg-gray-700 flex items-center justify-center mb-4`}>
+                    <feature.icon className={`h-6 w-6 ${feature.color}`} />
+                  </div>
+                  <CardTitle className="text-white">{feature.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-gray-400">
+                    {feature.description}
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </motion.div>
           ))}
-        </motion.div>
-
-        <div className="text-center mt-12">
-          <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
-            Explore All AI Solutions
-          </Button>
         </div>
       </div>
     </section>

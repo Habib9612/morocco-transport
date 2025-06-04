@@ -1,17 +1,13 @@
-import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import MainNavbar from "@/components/main-navbar"
 import { AuthProvider } from "@/lib/auth-context"
-import { TranslationProvider } from "@/lib/translation-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "MarocTransit - Smart Logistics Solutions",
-  description: "Morocco's leading logistics platform providing efficient and reliable shipping solutions",
-    generator: 'v0.dev'
+  title: "MarocTransit - AI-Powered Logistics Platform",
+  description: "Connect shippers and carriers with intelligent matching, real-time tracking, and optimized routes across Morocco and beyond.",
 }
 
 export default function RootLayout({
@@ -20,14 +16,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} bg-[#0f172a] text-white`}>
-        <TranslationProvider>
-          <AuthProvider>
-            <MainNavbar />
-            {children}
-          </AuthProvider>
-        </TranslationProvider>
+    <html lang="en" className="dark">
+      <body className={inter.className}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   )
