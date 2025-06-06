@@ -6,7 +6,7 @@
 [![Prisma](https://img.shields.io/badge/Prisma-ORM-2d3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
 
 <div align="center">
-  <h3>🇲🇦 Built with ❤️ for Morocco's Transport Industry 🇲🇦</h3>
+  <h3> Built with ❤️ for Morocco's Transport Industry </h3>
   <p>Connect Shippers with Carriers Instantly</p>
 </div>
 
