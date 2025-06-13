@@ -1,0 +1,37 @@
+**Filesystem Cleanup Log**
+
+This log details the attempts to rename or delete problematic files containing colons in their filenames.
+
+**Target Files:**
+1.  `components/components:error-boundary.tsx.ts`
+2.  `lib/lib:auth-context.integration.test.tsx.ts`
+
+**Actions & Outcomes:**
+
+*   **Attempt to rename `components/components:error-boundary.tsx.ts` to `components/components_error-boundary.tsx.ts`:**
+    *   **Status:** Failed
+    *   **Tool Used:** `rename_file`
+    *   **Error Message/Reason:** The tool reported an error indicating that paths with colons are not supported as it interprets them as line range separators. It also erroneously tried to find a file named `components/components`.
+
+*   **Attempt to rename `lib/lib:auth-context.integration.test.tsx.ts` to `lib/lib_auth-context.integration.test.tsx.ts`:**
+    *   **Status:** Failed
+    *   **Tool Used:** `rename_file`
+    *   **Error Message/Reason:** Similar to the above, the tool reported an error due to the colon in the filename. It also erroneously tried to find a file named `lib/lib`.
+
+*   **Attempt to delete `components/components:error-boundary.tsx.ts`:**
+    *   **Status:** Failed
+    *   **Tool Used:** `delete_file`
+    *   **Error Message/Reason:** The tool reported the same error as with renaming, related to the colon in the filename.
+
+*   **Attempt to delete `lib/lib:auth-context.integration.test.tsx.ts`:**
+    *   **Status:** Failed
+    *   **Tool Used:** `delete_file`
+    *   **Error Message/Reason:** The tool reported the same error as with renaming, related to the colon in the filename.
+
+**Summary of Unresolved Files:**
+The following files could **not** be renamed or deleted using the available `rename_file` and `delete_file` tools due to limitations in handling filenames containing colons:
+*   `components/components:error-boundary.tsx.ts`
+*   `lib/lib:auth-context.integration.test.tsx.ts`
+
+**Conclusion:**
+These files remain in the codebase and are likely sources of parsing errors for linters and type checkers. Addressing them will require alternative methods or enhanced tooling capable of handling special characters like colons in filenames. This limitation is a significant blocker for codebase cleanup efforts.
