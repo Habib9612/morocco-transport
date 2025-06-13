@@ -8,7 +8,7 @@ const signupSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  COMPANY', 'company']),
+  role: z.enum(['INDIVIDUAL', 'CARRIER', 'COMPANY']),
   company: z.string().optional(),
   phone: z.string().optional(),
 });
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: 'Email already registered' },
+        { error: 'User already exists' },
         { status: 400 }
       );
     }
@@ -53,18 +53,15 @@ export async function POST(request: Request) {
         company,
         phone,
       },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        company: true,
-        phone: true,
-        avatar: true,
-      },
     });
 
-    return NextResponse.json({ user }, { status: 201 });
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
+
+    return NextResponse.json(
+      { user: userWithoutPassword },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Signup error:', error);
     return NextResponse.json(
