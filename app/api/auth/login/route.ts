@@ -3,41 +3,30 @@ import { cookies } from 'next/headers';
 import { sign } from 'jsonwebtoken';
 import { compare } from 'bcryptjs';
 import { db } from '@/lib/db';
-import { z } from 'zod';
-
-// Validation schema
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-});
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const { email, password } = await request.json();
 
-    // Validate input
-    const result = loginSchema.safeParse(body);
-    if (!result.success) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: result.error.errors[0].message },
+        { error: 'Email and password are required' },
         { status: 400 }
       );
     }
 
-    const { email, password } = result.data;
-
-    // Find user in database - FIXED: Remove password from select
+    // Find user in database
     const user = await db.user.findUnique({
       where: { email },
       select: {
         id: true,
         email: true,
         name: true,
+        password: true,
         role: true,
         company: true,
         phone: true,
         avatar: true,
-        password: true, // Only needed for verification, will be excluded from response
       },
     });
 
@@ -57,17 +46,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // FIXED: Validate JWT secret
+    // Create session token
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
-      console.error('JWT_SECRET environment variable is not set');
-      return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+      console.error('CRITICAL: JWT_SECRET is not defined. Authentication cannot proceed securely.');
+      return NextResponse.json({ error: 'Internal server configuration error.' }, { status: 500 });
     }
 
-    // Create session token
     const token = sign(
       { userId: user.id },
       jwtSecret,

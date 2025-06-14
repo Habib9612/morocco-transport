@@ -1,8 +1,62 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { executeQuery } from "@/lib/db"
+import { cookies } from 'next/headers';
+import { verify } from 'jsonwebtoken';
+import { db as prismaDb } from '@/lib/db';
 
 // Get a specific shipment
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const sessionCookie = cookies().get('session');
+    if (!sessionCookie?.value) {
+      return NextResponse.json({ error: 'Unauthorized: No session cookie' }, { status: 401 });
+    }
+
+    let decoded;
+    try {
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        console.error('CRITICAL: JWT_SECRET is not defined. Authentication cannot proceed securely.');
+        throw new Error('Server configuration error: JWT_SECRET missing.');
+      }
+      decoded = verify(
+        sessionCookie.value,
+        jwtSecret
+      ) as { userId: string };
+    } catch (err: any) {
+      if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+        console.error('Token verification error:', err.message);
+        return NextResponse.json({ error: 'Unauthorized: Invalid or expired token' }, { status: 401 });
+      }
+      console.error('Token verification unexpected error:', err);
+      throw err;
+    }
+
+    if (!decoded || !decoded.userId) {
+      return NextResponse.json({ error: 'Unauthorized: Invalid token payload structure' }, { status: 401 });
+    }
+
+    const user = await prismaDb.user.findUnique({ where: { id: decoded.userId } });
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized: User not found' }, { status: 401 });
+    }
+    // Authorization: Check user role for GET specific shipment
+    if (user.role !== 'INDIVIDUAL' && user.role !== 'COMPANY' && user.role !== 'CARRIER') {
+      // console.log(`User role ${user.role} not authorized to GET shipment by ID.`);
+      return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
+    }
+    // (request as any).user = user; // Make user available to handler
+
+  } catch (authError: any) {
+    if (authError.name === 'JsonWebTokenError' || authError.name === 'TokenExpiredError') {
+       console.error('Outer catch: Token verification error:', authError.message);
+       return NextResponse.json({ error: 'Unauthorized: Invalid or expired token (outer catch)' }, { status: 401 });
+    }
+    console.error('Authentication process error:', authError);
+    return NextResponse.json({ error: 'Internal server error during authentication' }, { status: 500 });
+  }
+
+  // Original logic starts here
   try {
     const id = params.id
 
@@ -52,6 +106,58 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
 // Update a shipment
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const sessionCookie = cookies().get('session');
+    if (!sessionCookie?.value) {
+      return NextResponse.json({ error: 'Unauthorized: No session cookie' }, { status: 401 });
+    }
+
+    let decoded;
+    try {
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        console.error('CRITICAL: JWT_SECRET is not defined. Authentication cannot proceed securely.');
+        throw new Error('Server configuration error: JWT_SECRET missing.');
+      }
+      decoded = verify(
+        sessionCookie.value,
+        jwtSecret
+      ) as { userId: string };
+    } catch (err: any) {
+      if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+        console.error('Token verification error:', err.message);
+        return NextResponse.json({ error: 'Unauthorized: Invalid or expired token' }, { status: 401 });
+      }
+      console.error('Token verification unexpected error:', err);
+      throw err;
+    }
+
+    if (!decoded || !decoded.userId) {
+      return NextResponse.json({ error: 'Unauthorized: Invalid token payload structure' }, { status: 401 });
+    }
+
+    const user = await prismaDb.user.findUnique({ where: { id: decoded.userId } });
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized: User not found' }, { status: 401 });
+    }
+    // Authorization: Check user role for PUT shipment
+    if (user.role !== 'INDIVIDUAL' && user.role !== 'COMPANY' && user.role !== 'CARRIER') {
+      // console.log(`User role ${user.role} not authorized to PUT shipment.`);
+      return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
+    }
+    // (request as any).user = user;
+    // TODO: Add finer-grained checks, e.g., user.id matches shipment's customer_id or assigned carrierId, or ADMIN role.
+
+  } catch (authError: any) {
+    if (authError.name === 'JsonWebTokenError' || authError.name === 'TokenExpiredError') {
+       console.error('Outer catch: Token verification error:', authError.message);
+       return NextResponse.json({ error: 'Unauthorized: Invalid or expired token (outer catch)' }, { status: 401 });
+    }
+    console.error('Authentication process error:', authError);
+    return NextResponse.json({ error: 'Internal server error during authentication' }, { status: 500 });
+  }
+
+  // Original logic starts here
   try {
     const id = params.id
     const { status, priority, weight, volume, scheduled_pickup, scheduled_delivery, actual_pickup, actual_delivery } =
@@ -104,6 +210,59 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
 // Delete a shipment
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const sessionCookie = cookies().get('session');
+    if (!sessionCookie?.value) {
+      return NextResponse.json({ error: 'Unauthorized: No session cookie' }, { status: 401 });
+    }
+
+    let decoded;
+    try {
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        console.error('CRITICAL: JWT_SECRET is not defined. Authentication cannot proceed securely.');
+        throw new Error('Server configuration error: JWT_SECRET missing.');
+      }
+      decoded = verify(
+        sessionCookie.value,
+        jwtSecret
+      ) as { userId: string };
+    } catch (err: any) {
+      if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+        console.error('Token verification error:', err.message);
+        return NextResponse.json({ error: 'Unauthorized: Invalid or expired token' }, { status: 401 });
+      }
+      console.error('Token verification unexpected error:', err);
+      throw err;
+    }
+
+    if (!decoded || !decoded.userId) {
+      return NextResponse.json({ error: 'Unauthorized: Invalid token payload structure' }, { status: 401 });
+    }
+
+    const user = await prismaDb.user.findUnique({ where: { id: decoded.userId } });
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized: User not found' }, { status: 401 });
+    }
+    // Authorization: Check user role for DELETE shipment
+    if (user.role !== 'INDIVIDUAL' && user.role !== 'COMPANY' /* && user.role !== 'ADMIN' */) {
+      // console.log(`User role ${user.role} not authorized to DELETE shipment.`);
+      // ADMIN role check is commented out as it's not in schema.
+      return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
+    }
+    // (request as any).user = user;
+    // TODO: Add finer-grained checks, e.g., user.id matches shipment's customer_id or ADMIN role.
+
+  } catch (authError: any) {
+    if (authError.name === 'JsonWebTokenError' || authError.name === 'TokenExpiredError') {
+       console.error('Outer catch: Token verification error:', authError.message);
+       return NextResponse.json({ error: 'Unauthorized: Invalid or expired token (outer catch)' }, { status: 401 });
+    }
+    console.error('Authentication process error:', authError);
+    return NextResponse.json({ error: 'Internal server error during authentication' }, { status: 500 });
+  }
+
+  // Original logic starts here
   try {
     const id = params.id
 

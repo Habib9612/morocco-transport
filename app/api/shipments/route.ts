@@ -1,8 +1,61 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { executeQuery } from "@/lib/db"
+import { cookies } from 'next/headers';
+import { verify } from 'jsonwebtoken'; // Keep verify, remove specific error types from import
+// import { db } // This comment can be removed or kept, prismaDb is used.
+import { db as prismaDb } from '@/lib/db';
+
 
 // Get all shipments
 export async function GET(request: NextRequest) {
+  try {
+    const sessionCookie = cookies().get('session');
+    if (!sessionCookie?.value) {
+      return NextResponse.json({ error: 'Unauthorized: No session cookie' }, { status: 401 });
+    }
+
+    let decoded;
+    try {
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        console.error('CRITICAL: JWT_SECRET is not defined. Authentication cannot proceed securely.');
+        // For API routes, we should throw to be caught by the outer authError block or return a 500
+        throw new Error('Server configuration error: JWT_SECRET missing.');
+      }
+      decoded = verify(
+        sessionCookie.value,
+        jwtSecret
+      ) as { userId: string };
+    } catch (err: any) { // Catch as any to inspect name property
+      if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+        console.error('Token verification error:', err.message);
+        return NextResponse.json({ error: 'Unauthorized: Invalid or expired token' }, { status: 401 });
+      }
+      console.error('Token verification unexpected error:', err);
+      throw err; // Re-throw to be caught by outer try-catch
+    }
+
+    if (!decoded || !decoded.userId) { // Check decoded itself first
+      return NextResponse.json({ error: 'Unauthorized: Invalid token payload structure' }, { status: 401 });
+    }
+
+    const user = await prismaDb.user.findUnique({ where: { id: decoded.userId } });
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized: User not found' }, { status: 401 });
+    }
+    // User is authenticated. For GET all, no specific role check for now as per plan.
+    // (request as any).user = user; // Make user available to handler if needed
+
+  } catch (authError: any) {
+    if (authError.name === 'JsonWebTokenError' || authError.name === 'TokenExpiredError') {
+       console.error('Outer catch: Token verification error:', authError.message);
+       return NextResponse.json({ error: 'Unauthorized: Invalid or expired token (outer catch)' }, { status: 401 });
+    }
+    console.error('Authentication process error:', authError);
+    return NextResponse.json({ error: 'Internal server error during authentication' }, { status: 500 });
+  }
+
+  // Original logic starts here
   try {
     const searchParams = request.nextUrl.searchParams
     const status = searchParams.get("status")
@@ -50,8 +103,63 @@ export async function GET(request: NextRequest) {
 // Create a new shipment
 export async function POST(request: NextRequest) {
   try {
+    const sessionCookie = cookies().get('session');
+    if (!sessionCookie?.value) {
+      return NextResponse.json({ error: 'Unauthorized: No session cookie' }, { status: 401 });
+    }
+
+    let decoded;
+    try {
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        console.error('CRITICAL: JWT_SECRET is not defined. Authentication cannot proceed securely.');
+        throw new Error('Server configuration error: JWT_SECRET missing.');
+      }
+      decoded = verify(
+        sessionCookie.value,
+        jwtSecret
+      ) as { userId: string };
+    } catch (err: any) { // Catch as any to inspect name property
+      if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+        console.error('Token verification error:', err.message);
+        return NextResponse.json({ error: 'Unauthorized: Invalid or expired token' }, { status: 401 });
+      }
+      console.error('Token verification unexpected error:', err);
+      throw err; // Re-throw to be caught by outer try-catch
+    }
+
+    if (!decoded || !decoded.userId) { // Check decoded itself first
+      return NextResponse.json({ error: 'Unauthorized: Invalid token payload structure' }, { status: 401 });
+    }
+
+    const user = await prismaDb.user.findUnique({ where: { id: decoded.userId } });
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized: User not found' }, { status: 401 });
+    }
+
+    // Authorization: Check user role for creating a shipment
+    if (user.role !== 'INDIVIDUAL' && user.role !== 'COMPANY') {
+      // console.log(`User role ${user.role} not authorized to create shipment.`); // For debugging
+      return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
+    }
+    // User is authenticated and authorized.
+    // (request as any).user = user; // Make user available to handler
+    // NOTE: The `customer_id` in the request body should be validated against `user.id`
+    // or ideally, `user.id` (the authenticated user) should be used as the `customer_id`.
+
+  } catch (authError: any) {
+    if (authError.name === 'JsonWebTokenError' || authError.name === 'TokenExpiredError') {
+       console.error('Outer catch: Token verification error:', authError.message);
+       return NextResponse.json({ error: 'Unauthorized: Invalid or expired token (outer catch)' }, { status: 401 });
+    }
+    console.error('Authentication process error:', authError);
+    return NextResponse.json({ error: 'Internal server error during authentication' }, { status: 500 });
+  }
+
+  // Original logic starts here
+  try {
     const {
-      customer_id,
+      customer_id, // This should ideally be replaced/validated by authenticated user.id
       origin_id,
       destination_id,
       status,
