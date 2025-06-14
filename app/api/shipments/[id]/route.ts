@@ -41,7 +41,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Unauthorized: User not found' }, { status: 401 });
     }
     // Authorization: Check user role for GET specific shipment
-    if (user.role !== 'INDIVIDUAL' && user.role !== 'COMPANY' && user.role !== 'CARRIER') {
+    if (user.role !== 'ADMIN' && user.role !== 'INDIVIDUAL' && user.role !== 'COMPANY' && user.role !== 'CARRIER') {
       // console.log(`User role ${user.role} not authorized to GET shipment by ID.`);
       return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
     }
@@ -141,7 +141,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Unauthorized: User not found' }, { status: 401 });
     }
     // Authorization: Check user role for PUT shipment
-    if (user.role !== 'INDIVIDUAL' && user.role !== 'COMPANY' && user.role !== 'CARRIER') {
+    if (user.role !== 'ADMIN' && user.role !== 'INDIVIDUAL' && user.role !== 'COMPANY' && user.role !== 'CARRIER') {
       // console.log(`User role ${user.role} not authorized to PUT shipment.`);
       return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
     }
@@ -245,9 +245,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: 'Unauthorized: User not found' }, { status: 401 });
     }
     // Authorization: Check user role for DELETE shipment
-    if (user.role !== 'INDIVIDUAL' && user.role !== 'COMPANY' /* && user.role !== 'ADMIN' */) {
+    if (user.role !== 'ADMIN' && user.role !== 'INDIVIDUAL' && user.role !== 'COMPANY') {
       // console.log(`User role ${user.role} not authorized to DELETE shipment.`);
-      // ADMIN role check is commented out as it's not in schema.
       return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
     }
     // (request as any).user = user;

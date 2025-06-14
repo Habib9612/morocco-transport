@@ -8,7 +8,10 @@ const signupSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  role: z.enum(['individual', 'carrier', 'company']),
+  // Role validation: allow standard roles, ADMIN will be set internally for the first user.
+  role: z.enum(['individual', 'carrier', 'company'], {
+    errorMap: () => ({ message: "Invalid role. Must be one of: individual, carrier, company." })
+  }),
   company: z.string().optional(),
   phone: z.string().optional(),
 });
@@ -26,7 +29,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { email, password, name, role, company, phone } = result.data;
+    let { email, password, name, role, company, phone } = result.data; // Use let for role
 
     // Check if user already exists
     const existingUser = await db.user.findUnique({
@@ -43,13 +46,37 @@ export async function POST(request: Request) {
     // Hash password
     const hashedPassword = await hash(password, 12);
 
+    // Determine role: First user is ADMIN, others take validated input role
+    const userCount = await db.user.count();
+    let finalRole;
+
+    if (userCount === 0) {
+      finalRole = 'ADMIN';
+    } else {
+      // Convert validated lowercase role to uppercase Prisma enum equivalent
+      switch (role.toLowerCase()) {
+        case 'individual':
+          finalRole = 'INDIVIDUAL';
+          break;
+        case 'carrier':
+          finalRole = 'CARRIER';
+          break;
+        case 'company':
+          finalRole = 'COMPANY';
+          break;
+        default:
+          // This case should ideally not be reached if Zod validation is correct
+          return NextResponse.json({ error: 'Invalid role specified after validation' }, { status: 400 });
+      }
+    }
+
     // Create user
     const user = await db.user.create({
       data: {
         email,
         password: hashedPassword,
         name,
-        role,
+        role: finalRole, // Use the determined finalRole
         company,
         phone,
       },

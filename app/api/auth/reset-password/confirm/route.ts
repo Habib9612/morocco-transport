@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db'; // Assuming Prisma client
+import { db } from '@/lib/db'; // Prisma client
 import { z } from 'zod';
-import { hash } from 'bcryptjs'; // For hashing the new password
+import { hash, compare } from 'bcryptjs'; // For hashing the new password and comparing tokens
 
 const confirmResetSchema = z.object({
-  token: z.string().min(1, 'Reset token is required'), // Basic validation, real token would be longer
+  token: z.string().min(64, 'Reset token is invalid (too short)'), // Raw token should be 64 hex chars (32 bytes)
   newPassword: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
@@ -17,54 +17,61 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: result.error.errors[0].message }, { status: 400 });
     }
 
-    const { token, newPassword } = result.data;
+    const { token: rawTokenFromUser, newPassword } = result.data;
 
-    // ---- BEGIN CONCEPTUAL LOGIC ----
-    // In a full implementation:
-    // 1. Find the PasswordResetToken record in the database by hashing the provided `token`
-    //    and searching for the hashed version.
-    //    const hashedTokenFromUser = await hash(token, salt); // Need to re-evaluate how to compare if salt isn't stored with token
-    //    More typically, you'd find the *unhashed* token if it's short-lived and single-use, or find a pre-hashed token.
-    //    For this example, let's assume we stored a findable token (e.g. a lookup key, and a separate verifier hash).
-    //    Or, if the token sent to user *is* the database lookup key (and it's not the hashed version):
-    //
-    //    const storedTokenRecord = await db.passwordResetToken.findUnique({
-    //      where: { token: token }, // This assumes `token` is the actual unique token string.
-    //                               // If `token` was part of a URL, ensure it's extracted correctly.
-    //    });
-    //
-    //    if (!storedTokenRecord) {
-    //      return NextResponse.json({ error: 'Invalid or expired reset token.' }, { status: 400 });
-    //    }
-    //
-    //    if (new Date() > storedTokenRecord.expiresAt) {
-    //      // Optionally delete the expired token
-    //      await db.passwordResetToken.delete({ where: { id: storedTokenRecord.id } });
-    //      return NextResponse.json({ error: 'Invalid or expired reset token.' }, { status: 400 });
-    //    }
-    //
-    // 2. If the token is valid and not expired, retrieve the associated user ID.
-    //    const userId = storedTokenRecord.userId;
-    //
-    // 3. Hash the new password.
-    //    const newHashedPassword = await hash(newPassword, 12);
-    //
-    // 4. Update the user's password in the User table.
-    //    await db.user.update({
-    //      where: { id: userId },
-    //      data: { password: newHashedPassword },
-    //    });
-    //
-    // 5. Delete the used PasswordResetToken from the database.
-    //    await db.passwordResetToken.delete({ where: { id: storedTokenRecord.id } });
-    // ---- END CONCEPTUAL LOGIC ----
+    // It's not feasible to directly query by the raw token if we stored its hash.
+    // We need to find *potential* tokens and then verify.
+    // A common approach is to iterate through non-expired tokens for a user
+    // if the user can be identified first (e.g. via a separate email step not done here).
+    // Or, if tokens are globally unique enough, this approach is okay but less efficient.
+    // For this implementation, we will iterate through all non-expired tokens.
+    // This is NOT ideal for performance with many tokens. A better way would be to also store
+    // a non-sensitive lookup part of the token, or require email alongside token.
 
-    console.log(`Attempt to confirm password reset with token: ${token} and new password.`);
-    // For scaffolding purposes, we'll just return success.
-    // In a real app, the success/failure depends on the conceptual logic above.
+    const now = new Date();
+    const potentialTokens = await db.passwordResetToken.findMany({
+      where: {
+        expiresAt: {
+          gt: now, // Greater than now (not expired)
+        },
+      },
+    });
+
+    let validTokenRecord = null;
+    for (const record of potentialTokens) {
+      const isMatch = await compare(rawTokenFromUser, record.token); // Compare raw user token with stored hashed token
+      if (isMatch) {
+        validTokenRecord = record;
+        break;
+      }
+    }
+
+    if (!validTokenRecord) {
+      return NextResponse.json({ error: 'Invalid or expired reset token.' }, { status: 400 });
+    }
+
+    // Token is valid and not expired.
+    const userId = validTokenRecord.userId;
+
+    // Hash the new password.
+    const newHashedPassword = await hash(newPassword, 12);
+
+    // Update the user's password.
+    await db.user.update({
+      where: { id: userId },
+      data: { password: newHashedPassword },
+    });
+
+    // Delete the used PasswordResetToken.
+    await db.passwordResetToken.delete({
+      where: { id: validTokenRecord.id },
+    });
+
+    // Optionally, delete all other reset tokens for this user
+    // await db.passwordResetToken.deleteMany({ where: { userId: userId }});
+
 
     return NextResponse.json({ message: 'Password has been reset successfully.' });
-
   } catch (error) {
     console.error('Confirm password reset error:', error);
     // Avoid leaking specific error details like "token not found" if possible,

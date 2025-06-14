@@ -26,6 +26,66 @@ model User {
   vehicles      Vehicle[]
   reviews       Review[]
   notifications Notification[]
+  passwordResetTokens PasswordResetToken[] // Relation to PasswordResetToken
+  invoices      Invoice[] @relation("UserInvoices") // Relation to Invoice
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique // Stores the hashed token
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Invoice {
+  id            String    @id @default(cuid())
+  invoiceNumber String    @unique // e.g., INV-2023-0001
+  userId        String    // The user being invoiced
+  user          User      @relation("UserInvoices", fields: [userId], references: [id])
+  shipmentId    String?   // Optional: if the invoice is directly for one shipment
+  shipment      Shipment? @relation(fields: [shipmentId], references: [id])
+  status        InvoiceStatus @default(DRAFT)
+  amount        Float
+  currency      String    // e.g., "MAD", "USD"
+  issueDate     DateTime  @default(now())
+  dueDate       DateTime
+  paidDate      DateTime?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  transactions  Transaction[]
+}
+
+model Transaction {
+  id               String    @id @default(cuid())
+  invoiceId        String
+  invoice          Invoice   @relation(fields: [invoiceId], references: [id])
+  amount           Float
+  currency         String
+  transactionDate  DateTime  @default(now())
+  paymentMethod    String?   // e.g., "credit_card", "bank_transfer", "cash"
+  referenceId      String?   // e.g., Stripe charge ID
+  status           TransactionStatus @default(PENDING)
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  VOID
+  OVERDUE
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESSFUL
+  FAILED
+  REFUNDED
 }
 
 model Shipment {
@@ -51,6 +111,7 @@ model Shipment {
   vehicle       Vehicle?  @relation(fields: [vehicleId], references: [id])
   reviews       Review[]
   tracking      Tracking[]
+  invoice       Invoice? // Optional relation to Invoice
 }
 
 model Vehicle {
@@ -130,6 +191,7 @@ enum UserRole {
   INDIVIDUAL
   CARRIER
   COMPANY
+  ADMIN // New role
 }
 
 enum ShipmentStatus {

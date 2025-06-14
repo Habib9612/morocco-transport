@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db'; // Assuming Prisma client
+import { db } from '@/lib/db'; // Prisma client
 import { z } from 'zod';
-// import crypto from 'crypto'; // For token generation in a full implementation
+import crypto from 'crypto'; // For token generation
+import { hash } from 'bcryptjs'; // For hashing the token
 // import { sendPasswordResetEmail } from '@/lib/email'; // Conceptual email sending service
 
 const requestResetSchema = z.object({
@@ -25,31 +26,32 @@ export async function POST(request: Request) {
     });
 
     if (user) {
-      // ---- BEGIN CONCEPTUAL LOGIC ----
-      // In a full implementation:
       // 1. Generate a unique, secure, and time-limited reset token.
-      //    const token = crypto.randomBytes(32).toString('hex');
-      // 2. Hash the token before storing it in the database.
-      //    const hashedToken = await hash(token, 12); // Using bcrypt or similar
-      // 3. Store the hashed token, user ID, and an expiry date in a new
-      //    `PasswordResetToken` table/model in the database.
-      //    await db.passwordResetToken.create({
-      //      data: {
-      //        userId: user.id,
-      //        token: hashedToken,
-      //        expiresAt: new Date(Date.now() + 3600000), // e.g., 1 hour expiry
-      //      },
-      //    });
-      // 4. Send an email to the user with a link containing the plain (unhashed) token.
-      //    This link would point to a frontend page where they can enter their new password.
-      //    const resetLink = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/reset-password?token=${token}`;
-      //    await sendPasswordResetEmail(user.email, user.name, resetLink);
-      // ---- END CONCEPTUAL LOGIC ----
+      const rawToken = crypto.randomBytes(32).toString('hex');
 
-      console.log(`Password reset requested for user: ${user.email}. In a real app, an email would be sent.`);
+      // 2. Hash the token before storing it in the database.
+      //    Using bcrypt's default salt rounds (usually 10 or 12)
+      const hashedToken = await hash(rawToken, 10);
+
+      // 3. Store the hashed token, user ID, and an expiry date.
+      //    (Assumes PasswordResetToken model is now available via Prisma Client)
+      await db.passwordResetToken.create({
+        data: {
+          userId: user.id,
+          token: hashedToken, // Store the hashed token
+          expiresAt: new Date(Date.now() + 3600000), // 1 hour expiry
+        },
+      });
+
+      // 4. Send an email to the user with a link containing the *unhashed* token.
+      //    This link would point to a frontend page where they can enter their new password.
+      //    const resetLink = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/reset-password?token=${rawToken}`;
+      //    await sendPasswordResetEmail(user.email, user.name, resetLink); // Conceptual
+
+      console.log(`Password reset token generated and stored (hashed) for user: ${user.email}. Raw token (for email): ${rawToken}. In a real app, an email would be sent.`);
     } else {
       // User not found. Still return a generic success message to prevent user enumeration.
-      console.log(`Password reset requested for non-existent email: ${email}.`);
+      console.log(`Password reset requested for non-existent email: ${email}. No token generated or stored.`);
     }
 
     // Always return a generic success message to prevent user enumeration.

@@ -43,7 +43,11 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized: User not found' }, { status: 401 });
     }
-    // User is authenticated. For GET all, no specific role check for now as per plan.
+    // User is authenticated.
+    // For GET all shipments, allow ADMINs or any other authenticated user (as per previous broader access).
+    // If stricter access for non-admins is needed later, this can be refined.
+    // For now, ensuring ADMIN has access, and others maintain previous access level.
+    // No specific role check here means any authenticated user can proceed.
     // (request as any).user = user; // Make user available to handler if needed
 
   } catch (authError: any) {
@@ -138,7 +142,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Authorization: Check user role for creating a shipment
-    if (user.role !== 'INDIVIDUAL' && user.role !== 'COMPANY') {
+    if (user.role !== 'ADMIN' && user.role !== 'INDIVIDUAL' && user.role !== 'COMPANY') {
       // console.log(`User role ${user.role} not authorized to create shipment.`); // For debugging
       return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
     }

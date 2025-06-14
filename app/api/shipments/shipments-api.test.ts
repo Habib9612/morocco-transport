@@ -37,6 +37,7 @@ describe('Shipment API Security (Authentication & Authorization)', () => {
   const mockUserIndividual = { id: 'user-individual-123', role: 'INDIVIDUAL', email: 'ind@test.com', name: 'Individual User' };
   const mockUserCarrier = { id: 'user-carrier-456', role: 'CARRIER', email: 'carr@test.com', name: 'Carrier User' };
   const mockUserCompany = { id: 'user-company-789', role: 'COMPANY', email: 'comp@test.com', name: 'Company User' };
+  const mockUserAdmin = { id: 'user-admin-001', role: 'ADMIN', email: 'admin@test.com', name: 'Admin User' };
   let mockRequest: Partial<NextRequest>;
 
   beforeEach(() => {
@@ -184,5 +185,63 @@ describe('Shipment API Security (Authentication & Authorization)', () => {
       const response = await getShipmentById(mockRequest as NextRequest, { params: { id: 'shipment123' } });
       expect(response.status).toBe(200);
     });
+
+    // ADMIN role tests
+    it('ADMIN should be allowed to GET /api/shipments', async () => {
+      setupMockCookies('valid-token-admin');
+      mockedVerify.mockReturnValue({ userId: mockUserAdmin.id } as any);
+      mockedPrismaUserFindUnique.mockResolvedValue(mockUserAdmin as any);
+      (prismaDb as any).executeQuery = jest.fn().mockResolvedValueOnce([]);
+
+      const response = await getAllShipments(mockRequest as NextRequest);
+      expect(response.status).toBe(200); // Any authenticated user can list, Admin is authenticated
+    });
+
+    it('ADMIN should be allowed to POST /api/shipments (create shipment)', async () => {
+      setupMockCookies('valid-token-admin');
+      mockedVerify.mockReturnValue({ userId: mockUserAdmin.id } as any);
+      mockedPrismaUserFindUnique.mockResolvedValue(mockUserAdmin as any);
+      mockRequest.method = 'POST';
+      mockRequest.json = jest.fn().mockResolvedValue({ customer_id: mockUserAdmin.id, origin_id: 'o1', destination_id: 'd1' });
+      (prismaDb as any).executeQuery = jest.fn().mockResolvedValueOnce([{ id: 'new_shipment_admin' }])
+                                       .mockResolvedValueOnce([{ name: 'origin' }])
+                                       .mockResolvedValueOnce([{ name: 'dest' }])
+                                       .mockResolvedValueOnce([{ name: 'admin_customer' }]);
+
+      const response = await createShipment(mockRequest as NextRequest);
+      expect(response.status).toBe(201);
+    });
+
+    it('ADMIN should be allowed to DELETE /api/shipments/[id]', async () => {
+      setupMockCookies('valid-token-admin');
+      mockedVerify.mockReturnValue({ userId: mockUserAdmin.id } as any);
+      mockedPrismaUserFindUnique.mockResolvedValue(mockUserAdmin as any);
+      mockRequest.method = 'DELETE';
+      (prismaDb as any).executeQuery = jest.fn().mockResolvedValueOnce([{id: 'shipment123'}])
+                                       .mockResolvedValueOnce([])
+                                       .mockResolvedValueOnce(undefined)
+                                       .mockResolvedValueOnce(undefined);
+
+      const response = await deleteShipment(mockRequest as NextRequest, { params: { id: 'shipment123' } });
+      expect(response.status).toBe(200);
+      expect(await response.json()).toHaveProperty('success', true);
+    });
+
+    it('ADMIN should be allowed to PUT /api/shipments/[id]', async () => {
+      setupMockCookies('valid-token-admin');
+      mockedVerify.mockReturnValue({ userId: mockUserAdmin.id } as any);
+      mockedPrismaUserFindUnique.mockResolvedValue(mockUserAdmin as any);
+      mockRequest.method = 'PUT';
+      mockRequest.json = jest.fn().mockResolvedValue({ status: 'DELIVERED' });
+       (prismaDb as any).executeQuery = jest.fn().mockResolvedValueOnce([{id: 'shipment123'}]) // find existing
+                                       .mockResolvedValueOnce([{ id: 'shipment123', status: 'DELIVERED' }]) // update
+                                       .mockResolvedValueOnce([{ name: 'origin' }])
+                                       .mockResolvedValueOnce([{ name: 'dest' }])
+                                       .mockResolvedValueOnce([{ name: 'customer' }]);
+
+      const response = await updateShipment(mockRequest as NextRequest, { params: { id: 'shipment123' } });
+      expect(response.status).toBe(200);
+    });
+
   });
 });
