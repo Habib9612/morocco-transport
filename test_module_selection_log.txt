@@ -1,0 +1,28 @@
+**Selected Modules and Functions/Components for Test Drafting**
+
+This log documents the selection of specific modules and functions/components for the purpose of drafting unit tests. The goal is to choose items that are relatively isolatable and representative of common patterns in the codebase (utilities, auth logic helpers, UI components).
+
+**1. Module: `lib/utils.ts`**
+*   **Selected Function:** `cn(...inputs: ClassValue[])`
+*   **Reason for Selection:**
+    *   This is the only exportable function in this core utility file.
+    *   It's a pure function in terms of its direct logic (delegating to `clsx` and `tailwind-merge`). While it uses external libraries, its behavior is deterministic based on inputs.
+    *   Testing it would focus on ensuring it correctly combines and merges class names as expected, which is a common and critical utility in Tailwind CSS projects.
+
+**2. Module: `lib/auth.ts`**
+*   **Selected Function:** `getAuthUser(request?: NextRequest): AuthUser | null`
+*   **Reason for Selection:**
+    *   This function encapsulates the core logic for retrieving and parsing user data from a cookie, which is a key part of the custom authentication system.
+    *   While it depends on `cookies()` from `next/headers` or `request.cookies` from `next/server`, these cookie mechanisms can be mocked for testing purposes to provide controlled input.
+    *   It involves JSON parsing and object shaping, which are testable aspects.
+    *   The other functions in this module (`isAuthenticated`, `hasRole`) are simple wrappers around `getAuthUser`, so testing `getAuthUser` thoroughly would cover the main logic.
+
+**3. Module: `components/ui/button.tsx`**
+*   **Selected Component:** `Button`
+*   **Reason for Selection:**
+    *   It's a standard, presentational UI component.
+    *   It uses `cva` for variants (e.g., `variant`, `size`), making it suitable for testing how different props affect the rendered class names and component type (e.g., `Slot` vs `button` based on `asChild` prop).
+    *   It's relatively simple and stateless itself, focusing on props and rendering, which is ideal for demonstrating basic React component testing.
+    *   It does not involve complex state management or side effects beyond rendering.
+
+These selections provide a mix of utility functions and UI component patterns that can be used to draft representative unit tests for the codebase.

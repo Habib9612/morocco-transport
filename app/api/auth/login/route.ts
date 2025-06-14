@@ -47,9 +47,15 @@ export async function POST(request: Request) {
     }
 
     // Create session token
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('CRITICAL: JWT_SECRET is not defined. Authentication cannot proceed securely.');
+      return NextResponse.json({ error: 'Internal server configuration error.' }, { status: 500 });
+    }
+
     const token = sign(
       { userId: user.id },
-      process.env.JWT_SECRET || 'your-secret-key',
+      jwtSecret,
       { expiresIn: '7d' }
     );
 

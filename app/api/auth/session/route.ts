@@ -12,9 +12,16 @@ export async function GET() {
     }
 
     // Verify token
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('CRITICAL: JWT_SECRET is not defined. Session verification cannot proceed securely.');
+      // Important: Do not proceed with a default key for verification
+      return NextResponse.json({ user: null, error: 'Server configuration error' });
+    }
+
     const decoded = verify(
       sessionCookie.value,
-      process.env.JWT_SECRET || 'your-secret-key'
+      jwtSecret
     ) as { userId: string };
 
     // Get user from database

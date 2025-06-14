@@ -63,10 +63,24 @@ export async function signup(name: string, email: string, password: string) {
     const salt = await bcrypt.genSalt(10)
     const hashedPassword = await bcrypt.hash(password, salt)
 
+    // Determine role: First user is ADMIN
+    // This raw query system doesn't easily give a count without another specific query.
+    // For simplicity in this system, we'll check if any user exists.
+    // A more robust way would be `SELECT COUNT(*) FROM users`.
+    const allUsers = await executeQuery("SELECT id FROM users LIMIT 1", []);
+    let roleToAssign;
+    if (allUsers.length === 0) {
+      roleToAssign = 'ADMIN'; // Use uppercase to match Prisma enum
+    } else {
+      roleToAssign = 'user'; // Existing behavior for subsequent users in this custom system
+      // This 'user' role string is inconsistent with Prisma UserRole enum (INDIVIDUAL, CARRIER, COMPANY)
+      // and should be addressed if this auth system is to be aligned or properly deprecated.
+    }
+
     // Create user
     const result = await executeQuery(
       "INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role",
-      [name, email, hashedPassword, "user"],
+      [name, email, hashedPassword, roleToAssign],
     )
 
     const newUser = result[0]
