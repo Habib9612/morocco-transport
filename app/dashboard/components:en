@@ -1,0 +1,283 @@
+
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Package, 
+  Truck, 
+  Clock, 
+  TrendingUp, 
+  TrendingDown,
+  ArrowUpRight, 
+  ArrowDownRight, 
+  Plus, 
+  Brain, 
+  MapPin, 
+  User, 
+  Building2,
+  DollarSign,
+  Calendar,
+  Bell,
+  BarChart3,
+  PieChart,
+  Activity,
+  AlertTriangle,
+  CheckCircle,
+  Loader,
+  Download,
+  Filter,
+  Search,
+  MoreVertical
+} from 'lucide-react';
+
+interface DashboardStats {
+  totalShipments: number;
+  activeShipments: number;
+  completedShipments: number;
+  pendingShipments: number;
+  totalRevenue: number;
+  monthlyRevenue: number;
+  totalCarriers: number;
+  averageDeliveryTime: number;
+  customerSatisfaction: number;
+  revenueGrowth: number;
+  shipmentsGrowth: number;
+}
+
+interface RecentShipment {
+  id: string;
+  trackingNumber: string;
+  origin: string;
+  destination: string;
+  status: 'pending' | 'in_transit' | 'delivered' | 'cancelled';
+  carrier: string;
+  value: number;
+  createdAt: string;
+  estimatedDelivery: string;
+}
+
+interface Notification {
+  id: string;
+  type: 'info' | 'warning' | 'success' | 'error';
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+}
+
+export function EnhancedDashboard() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [recentShipments, setRecentShipments] = useState<RecentShipment[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dateRange, setDateRange] = useState('7d');
+  const [userRole, setUserRole] = useState<'individual' | 'carrier' | 'company'>('individual');
+
+  useEffect(() => {
+    loadDashboardData();
+    
+    // Set up real-time updates (WebSocket simulation)
+    const interval = setInterval(loadDashboardData, 30000); // Update every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, [dateRange]);
+
+  const loadDashboardData = async () => {
+    try {
+      // TODO: Replace with actual API calls
+      const [statsResponse, shipmentsResponse, notificationsResponse] = await Promise.all([
+        fetch(`/api/dashboard/stats?range=${dateRange}`),
+        fetch('/api/dashboard/recent-shipments'),
+        fetch('/api/dashboard/notifications')
+      ]);
+
+      // Mock data for demonstration
+      setStats({
+        totalShipments: 1247,
+        activeShipments: 23,
+        completedShipments: 1198,
+        pendingShipments: 26,
+        totalRevenue: 245670,
+        monthlyRevenue: 32450,
+        totalCarriers: 89,
+        averageDeliveryTime: 2.3,
+        customerSatisfaction: 4.8,
+        revenueGrowth: 12.5,
+        shipmentsGrowth: 8.3
+      });
+
+      setRecentShipments([
+        {
+          id: '1',
+          trackingNumber: 'MT-2024-001',
+          origin: 'Casablanca',
+          destination: 'Rabat',
+          status: 'in_transit',
+          carrier: 'Express Logistics',
+          value: 1250,
+          createdAt: '2024-06-15T10:30:00Z',
+          estimatedDelivery: '2024-06-16T14:00:00Z'
+        },
+        {
+          id: '2',
+          trackingNumber: 'MT-2024-002',
+          origin: 'Marrakech',
+          destination: 'Agadir',
+          status: 'delivered',
+          carrier: 'Fast Transport',
+          value: 890,
+          createdAt: '2024-06-14T09:15:00Z',
+          estimatedDelivery: '2024-06-15T16:30:00Z'
+        }
+      ]);
+
+      setNotifications([
+        {
+          id: '1',
+          type: 'success',
+          title: 'Shipment Delivered',
+          message: 'Your shipment MT-2024-002 has been delivered successfully.',
+          time: '5 minutes ago',
+          read: false
+        },
+        {
+          id: '2',
+          type: 'warning',
+          title: 'Delivery Delay',
+          message: 'Shipment MT-2024-001 may experience a slight delay due to weather.',
+          time: '1 hour ago',
+          read: false
+        }
+      ]);
+
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'delivered': return <CheckCircle className="w-4 h-4 text-green-600" />;
+      case 'in_transit': return <Truck className="w-4 h-4 text-blue-600" />;
+      case 'pending': return <Clock className="w-4 h-4 text-yellow-600" />;
+      case 'cancelled': return <AlertTriangle className="w-4 h-4 text-red-600" />;
+      default: return <Package className="w-4 h-4 text-gray-600" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'delivered': return 'bg-green-100 text-green-800';
+      case 'in_transit': return 'bg-blue-100 text-blue-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 p-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600">Welcome back! Here's your logistics overview.</p>
+        </div>
+        <div className="flex items-center space-x-4">
+          <Select value={dateRange} onValueChange={setDateRange}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="24h">Last 24h</SelectItem>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="90d">Last 90 days</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button className="flex items-center space-x-2">
+            <Plus className="w-4 h-4" />
+            <span>New Shipment</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Total Shipments"
+          value={stats?.totalShipments?.toLocaleString() || '0'}
+          change={stats?.shipmentsGrowth || 0}
+          icon={<Package className="w-6 h-6" />}
+          color="blue"
+        />
+        <StatCard
+          title="Monthly Revenue"
+          value={`$${stats?.monthlyRevenue?.toLocaleString() || '0'}`}
+          change={stats?.revenueGrowth || 0}
+          icon={<DollarSign className="w-6 h-6" />}
+          color="green"
+        />
+        <StatCard
+          title="Active Shipments"
+          value={stats?.activeShipments?.toString() || '0'}
+          change={5.2}
+          icon={<Truck className="w-6 h-6" />}
+          color="orange"
+        />
+        <StatCard
+          title="Avg Delivery Time"
+          value={`${stats?.averageDeliveryTime || 0} days`}
+          change={-8.1}
+          icon={<Clock className="w-6 h-6" />}
+          color="purple"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Shipments */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center space-x-2">
+              <Package className="w-5 h-5" />
+              <span>Recent Shipments</span>
+            </CardTitle>
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" size="sm">
+                <Download className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="sm">
+                <Filter className="w-4 h-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentShipments.map((shipment) => (
+                <div
+                  key={shipment.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                >
+                  <div className="flex items-center space-x-4">
+                    {getStatusIcon(shipment.status)}
+                    <div>
+                      <p className="font-medium">{shipment.trackingNumber}</p>
+                      <p className="text-sm text-gray-600">
+                        {shipment.origin} oard.tsx

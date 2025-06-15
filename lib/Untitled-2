@@ -1,0 +1,496 @@
+components/enhanced-dashboard.tsx
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Package, 
+  DollarSign, 
+  Users, 
+  Clock, 
+  Bell, 
+  Calendar,
+  MapPin,
+  Truck,
+  CheckCircle,
+  AlertCircle,
+  XCircle,
+  Eye,
+  Download,
+  BarChart3,
+  PieChart,
+  Activity,
+  RefreshCw
+} from 'lucide-react';
+
+// Real-time statistics interface
+interface DashboardStats {
+  totalShipments: number;
+  activeShipments: number;
+  completedShipments: number;
+  pendingShipments: number;
+  totalRevenue: number;
+  monthlyRevenue: number;
+  totalUsers: number;
+  activeUsers: number;
+  avgDeliveryTime: number;
+  onTimeDeliveryRate: number;
+}
+
+// Notification interface
+interface Notification {
+  id: string;
+  type: 'info' | 'warning' | 'success' | 'error';
+  title: string;
+  message: string;
+  timestamp: Date;
+  read: boolean;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+}
+
+// Recent shipment interface
+interface RecentShipment {
+  id: string;
+  trackingNumber: string;
+  origin: string;
+  destination: string;
+  status: 'pending' | 'in-transit' | 'delivered' | 'delayed';
+  estimatedDelivery: Date;
+  value: number;
+  carrier: string;
+}
+
+export function EnhancedDashboard() {
+  const [dateRange, setDateRange] = useState('7d');
+  const [refreshing, setRefreshing] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  // Mock real-time statistics
+  const [stats, setStats] = useState<DashboardStats>({
+    totalShipments: 1247,
+    activeShipments: 89,
+    completedShipments: 1158,
+    pendingShipments: 23,
+    totalRevenue: 2847500,
+    monthlyRevenue: 425600,
+    totalUsers: 342,
+    activeUsers: 156,
+    avgDeliveryTime: 3.2,
+    onTimeDeliveryRate: 94.5
+  });
+
+  // Mock recent shipments
+  const [recentShipments] = useState<RecentShipment[]>([
+    {
+      id: '1',
+      trackingNumber: 'MT2025001',
+      origin: 'Casablanca',
+      destination: 'Rabat',
+      status: 'in-transit',
+      estimatedDelivery: new Date('2025-06-17'),
+      value: 15400,
+      carrier: 'Express Maroc'
+    },
+    {
+      id: '2',
+      trackingNumber: 'MT2025002',
+      origin: 'Marrakech',
+      destination: 'Fes',
+      status: 'delivered',
+      estimatedDelivery: new Date('2025-06-16'),
+      value: 8200,
+      carrier: 'FastTrack Morocco'
+    },
+    {
+      id: '3',
+      trackingNumber: 'MT2025003',
+      origin: 'Tangier',
+      destination: 'Agadir',
+      status: 'pending',
+      estimatedDelivery: new Date('2025-06-18'),
+      value: 22100,
+      carrier: 'Morocco Express'
+    },
+    {
+      id: '4',
+      trackingNumber: 'MT2025004',
+      origin: 'Oujda',
+      destination: 'Casablanca',
+      status: 'delayed',
+      estimatedDelivery: new Date('2025-06-19'),
+      value: 11800,
+      carrier: 'Swift Logistics'
+    }
+  ]);
+
+  // Initialize notifications
+  useEffect(() => {
+    const mockNotifications: Notification[] = [
+      {
+        id: '1',
+        type: 'warning',
+        title: 'Shipment Delayed',
+        message: 'Shipment MT2025004 is delayed due to weather conditions',
+        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
+        read: false
+      },
+      {
+        id: '2',
+        type: 'success',
+        title: 'Delivery Completed',
+        message: 'Shipment MT2025002 has been successfully delivered',
+        timestamp: new Date(Date.now() - 1000 * 60 * 120), // 2 hours ago
+        read: false
+      },
+      {
+        id: '3',
+        type: 'info',
+        title: 'New Customer Registration',
+        message: '5 new customers registered today',
+        timestamp: new Date(Date.now() - 1000 * 60 * 180), // 3 hours ago
+        read: true
+      },
+      {
+        id: '4',
+        type: 'error',
+        title: 'System Alert',
+        message: 'Payment gateway experiencing intermittent issues',
+        timestamp: new Date(Date.now() - 1000 * 60 * 300), // 5 hours ago
+        read: false
+      }
+    ];
+    
+    setNotifications(mockNotifications);
+    setUnreadCount(mockNotifications.filter(n => !n.read).length);
+  }, []);
+
+  // Refresh data simulation
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Update stats with slight variations
+    setStats(prev => ({
+      ...prev,
+      activeShipments: prev.activeShipments + Math.floor(Math.random() * 10) - 5,
+      monthlyRevenue: prev.monthlyRevenue + Math.floor(Math.random() * 10000) - 5000,
+      activeUsers: prev.activeUsers + Math.floor(Math.random() * 20) - 10
+    }));
+    
+    setRefreshing(false);
+  };
+
+  // Mark notification as read
+  const markAsRead = (id: string) => {
+    setNotifications(prev => 
+      prev.map(n => n.id === id ? { ...n, read: true } : n)
+    );
+    setUnreadCount(prev => Math.max(0, prev - 1));
+  };
+
+  // Get status color and icon
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case 'delivered':
+        return { color: 'bg-green-500', icon: CheckCircle, text: 'text-green-600' };
+      case 'in-transit':
+        return { color: 'bg-blue-500', icon: Truck, text: 'text-blue-600' };
+      case 'pending':
+        return { color: 'bg-yellow-500', icon: Clock, text: 'text-yellow-600' };
+      case 'delayed':
+        return { color: 'bg-red-500', icon: AlertCircle, text: 'text-red-600' };
+      default:
+        return { color: 'bg-gray-500', icon: XCircle, text: 'text-gray-600' };
+    }
+  };
+
+  // Calculate growth percentages
+  const calculateGrowth = (current: number, previous: number) => {
+    if (previous === 0) return 0;
+    return ((current - previous) / previous) * 100;
+  };
+
+  // Mock previous period data for growth calculation
+  const previousStats = {
+    totalShipments: 1180,
+    monthlyRevenue: 398500,
+    activeUsers: 142,
+    onTimeDeliveryRate: 92.1
+  };
+
+  return (
+    <div className="space-y-6 p-6 bg-gray-50 min-h-screen">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">MarocTransit Dashboard</h1>
+          <p className="text-gray-600 mt-1">Welcome back! Here's what's happening with your logistics.</p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          {/* Date Range Selector */}
+          <Select value={dateRange} onValueChange={setDateRange}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="90d">Last 90 days</SelectItem>
+              <SelectItem value="1y">Last year</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Notifications */}
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative"
+            >
+              <Bell className="h-4 w-4" />
+              {unreadCount > 0 && (
+                <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs">
+                  {unreadCount}
+                </Badge>
+              )}
+            </Button>
+            
+            {showNotifications && (
+              <div className="absolute right-0 top-12 w-80 bg-white rounded-lg shadow-lg border z-50 max-h-96 overflow-y-auto">
+                <div className="p-4">
+                  <h3 className="font-semibold text-gray-900 mb-3">Notifications</h3>
+                  {notifications.length === 0 ? (
+                    <p className="text-gray-500 text-sm">No notifications</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {notifications.map((notification) => (
+                        <div
+                          key={notification.id}
+                          className={`p-3 rounded-lg border ${
+                            notification.read ? 'bg-gray-50' : 'bg-blue-50'
+                          } cursor-pointer`}
+                          onClick={() => markAsRead(notification.id)}
+                        >
+                          <div className="flex items-start gap-2">
+                            <div className={`w-2 h-2 rounded-full mt-2 ${
+                              notification.type === 'error' ? 'bg-red-500' :
+                              notification.type === 'warning' ? 'bg-yellow-500' :
+                              notification.type === 'success' ? 'bg-green-500' :
+                              'bg-blue-500'
+                            }`} />
+                            <div className="flex-1">
+                              <h4 className="font-medium text-sm">{notification.title}</h4>
+                              <p className="text-xs text-gray-600 mt-1">{notification.message}</p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                {notification.timestamp.toLocaleTimeString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Refresh Button */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          </Button>
+        </div>
+      </div>
+
+      {/* Real-time Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Total Shipments */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Shipments</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalShipments.toLocaleString()}</div>
+            <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+              {calculateGrowth(stats.totalShipments, previousStats.totalShipments) > 0 ? (
+                <TrendingUp className="h-3 w-3 text-green-500" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-red-500" />
+              )}
+              <span className={calculateGrowth(stats.totalShipments, previousStats.totalShipments) > 0 ? 'text-green-500' : 'text-red-500'}>
+                {Math.abs(calculateGrowth(stats.totalShipments, previousStats.totalShipments)).toFixed(1)}%
+              </span>
+              <span>from last period</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Monthly Revenue */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {(stats.monthlyRevenue / 1000).toFixed(0)}K MAD
+            </div>
+            <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+              {calculateGrowth(stats.monthlyRevenue, previousStats.monthlyRevenue) > 0 ? (
+                <TrendingUp className="h-3 w-3 text-green-500" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-red-500" />
+              )}
+              <span className={calculateGrowth(stats.monthlyRevenue, previousStats.monthlyRevenue) > 0 ? 'text-green-500' : 'text-red-500'}>
+                {Math.abs(calculateGrowth(stats.monthlyRevenue, previousStats.monthlyRevenue)).toFixed(1)}%
+              </span>
+              <span>from last month</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Active Users */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.activeUsers}</div>
+            <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+              {calculateGrowth(stats.activeUsers, previousStats.activeUsers) > 0 ? (
+                <TrendingUp className="h-3 w-3 text-green-500" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-red-500" />
+              )}
+              <span className={calculateGrowth(stats.activeUsers, previousStats.activeUsers) > 0 ? 'text-green-500' : 'text-red-500'}>
+                {Math.abs(calculateGrowth(stats.activeUsers, previousStats.activeUsers)).toFixed(1)}%
+              </span>
+              <span>from last period</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* On-time Delivery Rate */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">On-time Delivery</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.onTimeDeliveryRate}%</div>
+            <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+              {calculateGrowth(stats.onTimeDeliveryRate, previousStats.onTimeDeliveryRate) > 0 ? (
+                <TrendingUp className="h-3 w-3 text-green-500" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-red-500" />
+              )}
+              <span className={calculateGrowth(stats.onTimeDeliveryRate, previousStats.onTimeDeliveryRate) > 0 ? 'text-green-500' : 'text-red-500'}>
+                {Math.abs(calculateGrowth(stats.onTimeDeliveryRate, previousStats.onTimeDeliveryRate)).toFixed(1)}%
+              </span>
+              <span>from last period</span>
+            </div>
+            <Progress value={stats.onTimeDeliveryRate} className="mt-2" />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Analytics and Recent Shipments */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Analytics Section */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Performance Analytics
+            </CardTitle>
+            <CardDescription>
+              Track your logistics performance metrics over time
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Active Shipments</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-bold text-blue-600">{stats.activeShipments}</span>
+                  <Activity className="h-4 w-4 text-blue-600" />
+                </div>
+                <Progress value={(stats.activeShipments / 100) * 100} className="h-2" />
+              </div>
+              
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Avg Delivery Time</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-bold text-green-600">{stats.avgDeliveryTime} days</span>
+                  <Clock className="h-4 w-4 text-green-600" />
+                </div>
+                <Progress value={75} className="h-2" />
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm">
+                <PieChart className="h-4 w-4 mr-2" />
+                View Reports
+              </Button>
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Export Data
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Shipments */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Truck className="h-5 w-5" />
+              Recent Shipments
+            </CardTitle>
+            <CardDescription>
+              Latest shipment updates and status
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentShipments.map((shipment) => {
+                const statusConfig = getStatusConfig(shipment.status);
+                const StatusIcon = statusConfig.icon;
+                
+                return (
+                  <div key={shipment.id} className="border rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-sm">{shipment.trackingNumber}</span>
+                      <Badge variant="outline" className={statusConfig.text}>
+                        <StatusIcon className="h-3 w-3 mr-1" />
+                        {shipment.status.replace('-', ' ')}
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-1 text-xs text-gray-600">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {shipment.origin} 
