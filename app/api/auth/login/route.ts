@@ -1,47 +1,35 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { sign } from 'jsonwebtoken';
-import { compare } from 'bcryptjs';
-import { db } from '@/lib/db';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { prisma } from '@/lib/prisma';
 
-// Validation schema
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-});
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const { email, password } = await request.json();
 
-    // Validate input
-    const result = loginSchema.safeParse(body);
-    if (!result.success) {
+    // Validation
+    if (!email || !password) {
       return NextResponse.json(
-        { error: result.error.errors[0].message },
+        { error: 'Email and password are required' },
         { status: 400 }
       );
     }
 
-    const { email, password } = result.data;
-
-    // Find user in database - FIXED: Remove password from select
-    const user = await db.user.findUnique({
+    // Find user
+    const user = await prisma.user.findUnique({
       where: { email },
       select: {
         id: true,
         email: true,
-        name: true,
+        password: true,
+        firstName: true,
+        lastName: true,
         role: true,
-        company: true,
-        phone: true,
-        avatar: true,
-        password: true, // Only needed for verification, will be excluded from response
+        isActive: true,
       },
     });
 
-    if (!user) {
+    if (!user || !user.isActive) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -49,43 +37,34 @@ export async function POST(request: Request) {
     }
 
     // Verify password
-    const isValidPassword = await compare(password, user.password);
-    if (!isValidPassword) {
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       );
     }
 
-    // FIXED: Validate JWT secret
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      console.error('JWT_SECRET environment variable is not set');
-      return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
-    }
-
-    // Create session token
-    const token = sign(
-      { userId: user.id },
-      jwtSecret,
-      { expiresIn: '7d' }
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        userId: user.id, 
+        email: user.email, 
+        role: user.role 
+      },
+      process.env.JWT_SECRET!,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
-
-    // Set cookie
-    cookies().set('session', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
 
-    return NextResponse.json({ user: userWithoutPassword });
+    return NextResponse.json({
+      message: 'Login successful',
+      user: userWithoutPassword,
+      token,
+    });
+
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(

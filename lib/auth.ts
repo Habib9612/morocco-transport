@@ -1,47 +1,34 @@
-import { cookies } from "next/headers"
-import type { NextRequest } from "next/server"
+import jwt from 'jsonwebtoken';
+import { NextRequest } from 'next/server';
 
-export interface AuthUser {
-  id: string
-  email: string
-  role: string
+export interface JWTPayload {
+  userId: string;
+  email: string;
+  role: string;
 }
 
-export function getAuthUser(request?: NextRequest): AuthUser | null {
+export async function verifyJWT(request: NextRequest) {
   try {
-    // Get user from cookies
-    const userCookie = request ? request.cookies.get("user")?.value : cookies().get("user")?.value
-
-    if (!userCookie) {
-      return null
+    const authHeader = request.headers.get('authorization');
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return { success: false, error: 'No token provided' };
     }
 
-    const userData = JSON.parse(userCookie)
-    return {
-      id: userData.id || "",
-      email: userData.email || "",
-      role: userData.role || "user",
-    }
+    const token = authHeader.substring(7);
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JWTPayload;
+    
+    return { success: true, user: decoded };
   } catch (error) {
-    console.error("Auth error:", error)
-    return null
+    return { success: false, error: 'Invalid token' };
   }
 }
 
-export function isAuthenticated(request?: NextRequest): boolean {
-  return getAuthUser(request) !== null
-}
-
-export function hasRole(role: string | string[], request?: NextRequest): boolean {
-  const user = getAuthUser(request)
-
-  if (!user) {
-    return false
-  }
-
-  if (Array.isArray(role)) {
-    return role.includes(user.role)
-  }
-
-  return user.role === role
+export function generateJWT(payload: JWTPayload) {
+  return jwt.sign(
+    payload,
+    process.env.JWT_SECRET!,
+    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+  );
 }

@@ -1,4 +1,4 @@
-DEBUG=* npm run DELIVERED// This is your Prisma schema file,
+// This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -6,179 +6,256 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password      String
-  name          String
-  role          UserRole
-  company       String?
-  phone         String?
-  avatar        String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  shipments     Shipment[] @relation("ShipperShipments")
-  carrierShipments Shipment[] @relation("CarrierShipments")
-  vehicles      Vehicle[]
-  reviews       Review[]
-  notifications Notification[]
-}
-
-model Shipment {
-  id            String    @id @default(cuid())
-  status        ShipmentStatus
-  origin        Location  @relation("OriginShipments", fields: [originId], references: [id])
-  originId      String
-  destination   Location  @relation("DestinationShipments", fields: [destinationId], references: [id])
-  destinationId String
-  cargoType     String
-  weight        Float
-  volume        Float?
-  price         Float
-  description   String?
-  specialRequirements String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  shipperId     String
-  shipper       User      @relation("ShipperShipments", fields: [shipperId], references: [id])
-  carrierId     String?
-  carrier       User?     @relation("CarrierShipments", fields: [carrierId], references: [id])
-  vehicleId     String?
-  vehicle       Vehicle?  @relation(fields: [vehicleId], references: [id])
-  reviews       Review[]
-  tracking      Tracking[]
-}
-
-model Vehicle {
-  id            String    @id @default(cuid())
-  type          VehicleType
-  plateNumber   String
-  capacity      Float
-  status        VehicleStatus
-  currentLocation Location? @relation(fields: [currentLocationId], references: [id])
-  currentLocationId String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  carrierId     String
-  carrier       User      @relation(fields: [carrierId], references: [id])
-  shipments     Shipment[]
-  maintenance   Maintenance[]
-}
-
-model Location {
-  id            String    @id @default(cuid())
-  address       String
-  city          String
-  state         String
-  country       String
-  postalCode    String
-  latitude      Float
-  longitude     Float
-  originShipments     Shipment[] @relation("OriginShipments")
-  destinationShipments Shipment[] @relation("DestinationShipments")
-  vehicles      Vehicle[]
-  trackings     Tracking[]
-}
-
-model Review {
-  id            String    @id @default(cuid())
-  rating        Int
-  comment       String?
-  createdAt     DateTime  @default(now())
-  shipmentId    String
-  shipment      Shipment  @relation(fields: [shipmentId], references: [id])
-  userId        String
-  user          User      @relation(fields: [userId], references: [id])
-}
-
-model Maintenance {
-  id            String    @id @default(cuid())
-  type          MaintenanceType
-  description   String
-  cost          Float
-  date          DateTime
-  status        MaintenanceStatus
-  vehicleId     String
-  vehicle       Vehicle   @relation(fields: [vehicleId], references: [id])
-}
-
-model Notification {
-  id            String    @id @default(cuid())
-  type          NotificationType
-  message       String
-  read          Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id])
-}
-
-model Tracking {
-  id            String    @id @default(cuid())
-  status        TrackingStatus
-  location      Location  @relation(fields: [locationId], references: [id])
-  locationId    String
-  timestamp     DateTime  @default(now())
-  shipmentId    String
-  shipment      Shipment  @relation(fields: [shipmentId], references: [id])
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {
-  INDIVIDUAL
-  CARRIER
+  USER
+  DRIVER
+  ADMIN
   COMPANY
+}
+
+enum TruckStatus {
+  AVAILABLE
+  IN_TRANSIT
+  MAINTENANCE
+  OUT_OF_SERVICE
 }
 
 enum ShipmentStatus {
   PENDING
-  ACCEPTED
+  CONFIRMED
   IN_TRANSIT
   DELIVERED
   CANCELLED
 }
 
-enum VehicleType {
-  FLATBED
-  REFRIGERATED
-  BOX
-  TANKER
-  CONTAINER
+enum FuelType {
+  DIESEL
+  GASOLINE
+  ELECTRIC
+  HYBRID
 }
 
-enum VehicleStatus {
-  AVAILABLE
-  IN_USE
-  MAINTENANCE
-  OFFLINE
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  phone     String?
+  role      UserRole @default(USER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  profile          UserProfile?
+  trucks           Truck[]
+  shipmentsSent    Shipment[] @relation("ShipmentSender")
+  shipmentsReceived Shipment[] @relation("ShipmentReceiver")
+  companies        Company[]
+
+  @@map("users")
 }
 
-enum MaintenanceType {
-  ROUTINE
-  REPAIR
-  INSPECTION
-  EMERGENCY
+model UserProfile {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  address      String?
+  city         String?
+  postalCode   String?
+  country      String  @default("Morocco")
+  licenseNumber String?
+  avatar       String?
+  bio          String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
 }
 
-enum MaintenanceStatus {
-  SCHEDULED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
+model Company {
+  id          String  @id @default(cuid())
+  name        String
+  email       String  @unique
+  phone       String?
+  address     String?
+  city        String?
+  postalCode  String?
+  country     String  @default("Morocco")
+  taxId       String? @unique
+  isVerified  Boolean @default(false)
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  owner     User       @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  trucks    Truck[]
+  shipments Shipment[]
+
+  @@map("companies")
 }
 
-enum NotificationType {
-  SHIPMENT_UPDATE
-  MAINTENANCE_REMINDER
-  PAYMENT
-  SYSTEM
+model Truck {
+  id           String      @id @default(cuid())
+  licensePlate String      @unique
+  model        String
+  make         String?
+  year         Int
+  capacity     Float       // in tons
+  fuelType     FuelType    @default(DIESEL)
+  status       TruckStatus @default(AVAILABLE)
+  currentLocation String?
+  lastMaintenance DateTime?
+  nextMaintenance DateTime?
+  mileage      Int?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  // Relations
+  driver        User?     @relation(fields: [driverId], references: [id])
+  driverId      String?
+  company       Company?  @relation(fields: [companyId], references: [id])
+  companyId     String?
+  shipments     Shipment[]
+  currentShipment Shipment? @relation("CurrentShipment", fields: [currentShipmentId], references: [id])
+  currentShipmentId String?
+  maintenanceLogs MaintenanceLog[]
+  fuelLogs      FuelLog[]
+
+  @@map("trucks")
 }
 
-enum TrackingStatus {
-  PICKED_UP
-  IN_TRANSIT
-  DELAYED
-  DELIVERED
-} 
+model Shipment {
+  id              String         @id @default(cuid())
+  trackingNumber  String         @unique
+  status          ShipmentStatus @default(PENDING)
+  
+  // Pickup details
+  pickupAddress   String
+  pickupCity      String
+  pickupPostal    String?
+  pickupDate      DateTime?
+  pickupContact   String?
+  pickupPhone     String?
+  
+  // Delivery details
+  deliveryAddress String
+  deliveryCity    String
+  deliveryPostal  String?
+  deliveryDate    DateTime?
+  deliveryContact String?
+  deliveryPhone   String?
+  
+  // Shipment details
+  weight          Float?         // in kg
+  dimensions      String?        // JSON string with length, width, height
+  description     String?
+  specialInstructions String?
+  
+  // Pricing
+  price           Float?
+  currency        String         @default("MAD")
+  isPaid          Boolean        @default(false)
+  
+  // Timing
+  estimatedArrival DateTime?
+  actualPickup    DateTime?
+  actualDelivery  DateTime?
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  sender      User     @relation("ShipmentSender", fields: [senderId], references: [id])
+  senderId    String
+  receiver    User     @relation("ShipmentReceiver", fields: [receiverId], references: [id])
+  receiverId  String
+  truck       Truck?   @relation(fields: [truckId], references: [id])
+  truckId     String?
+  currentTruck Truck?  @relation("CurrentShipment")
+  company     Company? @relation(fields: [companyId], references: [id])
+  companyId   String?
+  
+  trackingEvents TrackingEvent[]
+  documents     ShipmentDocument[]
+
+  @@map("shipments")
+}
+
+model TrackingEvent {
+  id          String   @id @default(cuid())
+  shipmentId  String
+  event       String   // e.g., "PICKED_UP", "IN_TRANSIT", "DELIVERED"
+  location    String?
+  description String?
+  timestamp   DateTime @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@map("tracking_events")
+}
+
+model ShipmentDocument {
+  id         String   @id @default(cuid())
+  shipmentId String
+  type       String   // e.g., "INVOICE", "RECEIPT", "PHOTO"
+  filename   String
+  url        String
+  uploadedAt DateTime @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@map("shipment_documents")
+}
+
+model MaintenanceLog {
+  id          String   @id @default(cuid())
+  truckId     String
+  type        String   // e.g., "ROUTINE", "REPAIR", "INSPECTION"
+  description String
+  cost        Float?
+  performedBy String?
+  performedAt DateTime @default(now())
+  nextDue     DateTime?
+
+  truck Truck @relation(fields: [truckId], references: [id], onDelete: Cascade)
+
+  @@map("maintenance_logs")
+}
+
+model FuelLog {
+  id       String   @id @default(cuid())
+  truckId  String
+  amount   Float    // in liters
+  cost     Float
+  location String?
+  mileage  Int?
+  date     DateTime @default(now())
+
+  truck Truck @relation(fields: [truckId], references: [id], onDelete: Cascade)
+
+  @@map("fuel_logs")
+}
+
+model Route {
+  id            String @id @default(cuid())
+  name          String
+  origin        String
+  destination   String
+  distance      Float? // in kilometers
+  estimatedTime Int?   // in minutes
+  tollCost      Float?
+  fuelCost      Float?
+  isActive      Boolean @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("routes")
+}
