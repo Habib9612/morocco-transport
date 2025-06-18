@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 interface WebSocketContextType {
   connected: boolean;
   send: (message: string) => void;
+  lastMessage: string | null; // Added lastMessage
 }
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
@@ -20,6 +21,7 @@ export const useWebSocket = () => {
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [ws, setWs] = useState<WebSocket | null>(null);
+  const [lastMessage, setLastMessage] = useState<string | null>(null); // Added lastMessage state
 
   const connect = useCallback(() => {
     const socket = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001');
@@ -58,6 +60,11 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setIsConnected(false);
     };
 
+    socket.onmessage = (event) => { // Added onmessage handler
+      console.log('WebSocket message received:', event.data);
+      setLastMessage(event.data as string);
+    };
+
     setWs(socket);
 
     return () => {
@@ -79,7 +86,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [ws]);
 
   return (
-    <WebSocketContext.Provider value={{ connected: isConnected, send }}>
+    <WebSocketContext.Provider value={{ connected: isConnected, send, lastMessage }}>
       {children}
     </WebSocketContext.Provider>
   );
