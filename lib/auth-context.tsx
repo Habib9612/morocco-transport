@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
         
-    /    try {
+       tryy {
       // For demo purposes, accept specific credentials
       // In production, this would be an API call
       const validCredentials = [
@@ -43,7 +43,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ];
       
       const validUser = validCredentials.find(
-        cred => cred.email === email && cred.password === password
+        cred => cred.email === email && cred.password === password      );
+
+        if (validUser) {
+          setUser({
+            id: 1,
+            email: validUser.email,
+            name: 'User'
+          });
+          setIsLoading(false);
+        } else {
+          throw new Error('Invalid credentials');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        setIsLoading(false);
+        throw error;
+      }
+    };
       );
       
       if (!validUser) {
