@@ -53,7 +53,13 @@ describe('/api/auth/login', () => {
 
     bcrypt.compare.mockResolvedValue(true);
 
-    const response = await loginHandler(req as any);
+    const webApiReq = new Request(`http://localhost/api/auth/login`, {
+      method: req.method,
+      headers: new Headers(req.headers as Record<string, string>),
+      body: JSON.stringify(req.body),
+    });
+
+    const response = await loginHandler(webApiReq);
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -75,7 +81,13 @@ describe('/api/auth/login', () => {
     const { prisma } = require('@/lib/prisma');
     prisma.user.findUnique.mockResolvedValue(null);
 
-    const response = await loginHandler(req as any);
+    const webApiReq = new Request(`http://localhost/api/auth/login`, {
+      method: req.method,
+      headers: new Headers(req.headers as Record<string, string>),
+      body: JSON.stringify(req.body),
+    });
+
+    const response = await loginHandler(webApiReq);
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -110,7 +122,13 @@ describe('/api/auth/register', () => {
 
     bcrypt.hash.mockResolvedValue('hashed_password');
 
-    const response = await registerHandler(req as any);
+    const webApiReq = new Request(`http://localhost/api/auth/register`, {
+      method: req.method,
+      headers: new Headers(req.headers as Record<string, string>),
+      body: JSON.stringify(req.body),
+    });
+
+    const response = await registerHandler(webApiReq);
     const data = await response.json();
 
     expect(response.status).toBe(201);

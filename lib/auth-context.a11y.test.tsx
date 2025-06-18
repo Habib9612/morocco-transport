@@ -1,4 +1,4 @@
-render, screen, waitFor, actimport { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { AuthProvider } from './auth-context';
 import { LoginForm, SignupForm, UserProfile } from './auth-components';
@@ -24,29 +24,23 @@ describe('Authentication Components Accessibility', () => {
       })
     );
 
-    let container;
+    let container: HTMLElement;
     await act(async () => {
       const result = render(
         <I18nProvider>
           <AuthProvider>
-        </I18nProvider>
-      );
-      <I18nProvider>
-          <AuthProvider>
             <LoginForm />
           </AuthProvider>
-        </I18nProvider>    });      <I18nProvider>
-        <AuthProvider>
-          <LoginForm />
-        </AuthProvider>
-      </I18nProvider>
-    );
+        </I18nProvider>
+      );
+      container = result.container;
+    });
 
     await waitFor(() => {
       expect(screen.queryByRole('status')).not.toBeInTheDocument();
     });
     
-    const results = await axe(container);
+    const results = await axe(container!);
     expect(results).toHaveNoViolations();
   });
 
@@ -58,30 +52,24 @@ describe('Authentication Components Accessibility', () => {
       })
     );
 
-    let container;
+    let container: HTMLElement;
     await act(async () => {
       const result = render(
         <I18nProvider>
           <AuthProvider>
-          <I18nProvider>
-          <AuthProvider>
             <SignupForm />
           </AuthProvider>
-        </I18nProvider>      );
+        </I18nProvider>
+      );
       container = result.container;
-    });      <I18nProvider>
-        <AuthProvider>
-          <SignupForm />
-        </AuthProvider>
-      </I18nProvider>
-    );
+    });
 
     await waitFor(() => {
       expect(screen.queryByRole('status')).not.toBeInTheDocument();
     });
     
-v      return await axe(container);
-    });    expect(results).toHaveNoViolations();
+    const results = await axe(container!);
+    expect(results).toHaveNoViolations();
   });
 
   it('user profile has no accessibility violations', async () => {
@@ -99,28 +87,23 @@ v      return await axe(container);
       })
     );
 
-    const { container } = render(
-      let container;
-      await act(async () => {
-        const result = render(
-          <I18nProvider>
-            <AuthProvider>
-              <UserProfile />
-            </AuthProvider>
-          </I18nProvider>
-        );
-        container = result.container;
-      });        <AuthProvider>
-          <UserProfile />
-        </AuthProvider>
-      </I18nProvider>
-    );
+    let container: HTMLElement;
+    await act(async () => {
+      const result = render(
+        <I18nProvider>
+          <AuthProvider>
+            <UserProfile />
+          </AuthProvider>
+        </I18nProvider>
+      );
+      container = result.container;
+    });
 
     await waitFor(() => {
       expect(screen.queryByRole('status')).not.toBeInTheDocument();
     });
     
-    const results = await axe(container);
+    const results = await axe(container!);
     expect(results).toHaveNoViolations();
   });
 

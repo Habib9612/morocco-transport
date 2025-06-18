@@ -1,5 +1,32 @@
 // Learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
+
+// Polyfill TextEncoder and TextDecoder which are used by undici
+if (typeof global.TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util');
+  global.TextEncoder = TextEncoder;
+  global.TextDecoder = TextDecoder;
+}
+
+if (typeof global.ReadableStream === 'undefined') {
+  const { ReadableStream } = require('stream/web');
+  global.ReadableStream = ReadableStream;
+}
+
+if (typeof global.MessageChannel === 'undefined' || typeof global.MessagePort === 'undefined') {
+  const { MessageChannel, MessagePort } = require('worker_threads');
+  global.MessageChannel = MessageChannel;
+  global.MessagePort = MessagePort;
+}
+
+// Polyfill Web API globals like Request, Response, Headers, fetch
+if (typeof global.Request === 'undefined') {
+  const { Request, Response, Headers, fetch } = require('undici');
+  global.Request = Request;
+  global.Response = Response;
+  global.Headers = Headers;
+  global.fetch = fetch;
+}
 import 'jest-axe/extend-expect';
 
 // Mock next/navigation

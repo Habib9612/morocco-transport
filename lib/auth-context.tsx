@@ -3,14 +3,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
-  id: number;
+  id: string; // Changed to string to match mockUser generation
   email: string;
-  name: string;
+  name:string;
+  role: 'admin' | 'carrier' | 'user'; // Added role
 }
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string, name: string, role: string) => Promise<void>; // Added signup
   logout: () => void;
   isLoading: boolean;
 }
@@ -32,8 +34,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
-        
-       tryy {
+
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setIsLoading(false);
+      throw new Error('Please enter a valid email address');
+    }
+
+    if (password.length < 6) {
+      setIsLoading(false);
+      throw new Error('Password must be at least 6 characters');
+    }
+
+    try {
       // For demo purposes, accept specific credentials
       // In production, this would be an API call
       const validCredentials = [
@@ -43,26 +55,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ];
       
       const validUser = validCredentials.find(
-        cred => cred.email === email && cred.password === password      );
-
-        if (validUser) {
-          setUser({
-            id: 1,
-            email: validUser.email,
-            name: 'User'
-          });
-          setIsLoading(false);
-        } else {
-          throw new Error('Invalid credentials');
-        }
-      } catch (error) {
-        console.error('Login error:', error);
-        setIsLoading(false);
-        throw error;
-      }
-    };
+        cred => cred.email === email && cred.password === password
       );
-      
+
       if (!validUser) {
         throw new Error('Invalid email or password');
       }
@@ -71,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const mockUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: Math.random().toString(36).substr(2, 9), // Generate a random ID
         email: validUser.email,
         name: validUser.role === 'admin' ? 'Admin User' : 
               validUser.role === 'carrier' ? 'Carrier User' : 'Regular User',
@@ -80,32 +75,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      throw error;
-    } finally {
-      setLoading(false);
-    }    if (!/\S+@\S+\.\S+/.test(email)) {
-      throw new Error('Please enter a valid email address');
-    }
-    
-    if (password.length < 6) {
-      throw new Error('Password must be at least 6 characters');
-    }
 
-
-    try {
-      // Mock login - in a real app, this would call your API
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
-      const mockUser: User = {
-        id: 1,
-        email,
-        name: email.split('@')[0]
-      };
-      
-      setUser(mockUser);
     } catch (error) {
-      throw error;
+      console.error('Login error:', error);
+      throw error; // Re-throw the error to be caught by the calling component
     } finally {
       setIsLoading(false);
     }
@@ -116,9 +89,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('user');
   };
 
+  // Basic mock signup function
+  const signup = async (email: string, password: string, name: string, role: string) => {
+    setIsLoading(true);
+    // In a real app, this would call your API and handle user creation
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+    const newUser: User = {
+      id: Math.random().toString(36).substr(2, 9),
+      email,
+      name,
+      role: role as 'admin' | 'carrier' | 'user', // Ensure role matches User type
+    };
+    setUser(newUser);
+    localStorage.setItem('user', JSON.stringify(newUser));
+    setIsLoading(false);
+  };
+
   const value = {
     user,
     login,
+    signup, // Added signup
     logout,
     isLoading
   };

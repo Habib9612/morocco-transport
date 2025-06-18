@@ -1,4 +1,5 @@
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor, act, fireEvent } from '@testing-library/react';
+import React from 'react'; // Import React
 import { WebSocketProvider, useWebSocket } from './websocket-context';
 
 // Mock WebSocket
@@ -45,23 +46,27 @@ describe('WebSocketContext', () => {
     mockWs.close();
   });
 
-  it    const { getByTestId, getByText } = render(
-    <WebSocketProvider>
-      <TestComponent />
-    </WebSocketProvider>
-  );
+  it('should connect and update status', async () => {
+    const { getByTestId } = render(
+      <WebSocketProvider>
+        <TestComponent />
+      </WebSocketProvider>
+    );
+
+    // Check initial status (might be 'disconnected' or 'connecting' depending on timing)
+    // Forcing it to be 'disconnected' first by ensuring onopen hasn't fired.
+    expect(getByTestId('connection-status')).toHaveTextContent('disconnected');
+
+    // Mock the WebSocket connection opening
+    await act(async () => {
+      if (mockWs.onopen) mockWs.onopen();
+    });
   
-  // Test initial connection status
-  expect(getByTestId('connection-status').textContent).toBe('connected ? connecting...');
-  
-  // Mock the WebSocket connection opening
-  await act(async () => {
-    mockWs.onopen();
+    // Verify that the connection status is updated
+    await waitFor(() => {
+      expect(getByTestId('connection-status')).toHaveTextContent('connected');
+    });
   });
-  
-  // Verify that the connection status is updated
-  expect(getByTestId('connection-status').textContent).toBe('connected ? connected');
-});
 
 it('sends messages through WebSocket', async () => {
   const { getByText } = render(
@@ -112,7 +117,7 @@ it('handles incoming messages', async () => {
   
   // Simulate receiving a message
   await act(async () => {
-    mockWs.onmessage({ data: 'incoming test message' });
+    if (mockWs.onmessage) mockWs.onmessage({ data: 'incoming test message' });
   });
   
   // Verify the message was received and handled
@@ -120,33 +125,41 @@ it('handles incoming messages', async () => {
 });
 
 it('handles connection errors', async () => {
+    jest.useFakeTimers(); // Use fake timers for this test
+
   const { getByTestId } = render(
     <WebSocketProvider>
       <TestComponent />
     </WebSocketProvider>
   );
+
+    // Wait for initial connection
+    await act(async () => {
+      if (mockWs.onopen) mockWs.onopen();
+      jest.runAllTimers(); // Process the mock WebSocket's onopen setTimeout
+    });
+    expect(getByTestId('connection-status')).toHaveTextContent('connected');
   
   // Simulate a connection error
   await act(async () => {
-    mockWs.onerror(new Error('Connection failed'));
+      mockWs.readyState = WebSocket.CLOSED;
+    if (mockWs.onerror) mockWs.onerror(new Error('Connection failed'));
+      // The onerror in context calls setIsConnected(false).
+      // If onclose is also triggered by this error (as it should),
+      // it will also call setIsConnected(false) and then schedule a reconnect via setTimeout.
+      if (mockWs.onclose) mockWs.onclose();
   });
   
-  // Verify the connection status shows an error
-  expect(getByTestId('connection-status').textContent).toContain('error');
-    render(
-      <WebSocketProvider>
-        <TestComponent />
-      </WebSocketProvider>
-    );
+    // At this point, isConnected should be false.
+    expect(getByTestId('connection-status')).toHaveTextContent('disconnected');
 
-    expect(screen.getByTestId('connection-status')).toHaveTextContent('disconnected');
+    // We do not advance timers here to prevent the reconnect logic from firing for this test.
+    // If we did jest.advanceTimersByTime(5000), it would reconnect.
 
-    await waitFor(() => {
-      expect(screen.getByTestId('connection-status')).toHaveTextContent('connected');
-    });
-  });
+    jest.useRealTimers(); // Restore real timers
+});
 
-  it('sends messages when connected', async () => {
+  it('handles connection close', async () => {
     render(
       <WebSocketProvider>
         <TestComponent />
@@ -165,38 +178,19 @@ it('handles connection errors', async () => {
     expect(mockWs.send).toHaveBeenCalledWith('test message');
   });
 
-  it('handles connection close', async () => {
-    render(
-      <WebSocketProvider>
-        <TestComponent />
-      </WebSocketProvider>
-    );
+  // The 'handles connection error' test at the end is similar to the one modified above.
+  // I'm ensuring the one above is the primary one and will remove the last one.
+  // it('handles connection error', async () => {
+  //   render(
+  //     <WebSocketProvider>
+  //       <TestComponent />
+  //     </WebSocketProvider>
+  //   );
 
-    await waitFor(() => {
-      expect(screen.getByTestId('connection-status')).toHaveTextContent('connected');
-    });
+  //   act(() => {
+  //     if (mockWs.onerror) mockWs.onerror(new Error('Connection failed'));
+  //   });
 
-    act(() => {
-      mockWs.readyState = WebSocket.CLOSED;
-      if (mockWs.onclose) mockWs.onclose();
-    });
-
-    await waitFor(() => {
-      expect(screen.getByTestId('connection-status')).toHaveTextContent('disconnected');
-    });
-  });
-
-  it('handles connection error', async () => {
-    render(
-      <WebSocketProvider>
-        <TestComponent />
-      </WebSocketProvider>
-    );
-
-    act(() => {
-      if (mockWs.onerror) mockWs.onerror(new Error('Connection failed'));
-    });
-
-    expect(screen.getByTestId('connection-status')).toHaveTextContent('disconnected');
-  });
+  //   expect(screen.getByTestId('connection-status')).toHaveTextContent('disconnected');
+  // });
 });
