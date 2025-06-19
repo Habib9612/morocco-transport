@@ -3,7 +3,18 @@
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.4-38bdf8?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-ORM-2d3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
+[![Prisma](https://img.shields.io/badge/Prisma-ORM-2d3748?style=flat-square&logo=prisma)]
+
+[![Build Status](https://img.shields.io/github/workflow/status/Habib9612/morocco-transport/CI?style=flat-square&logo=github)](https://github.com/Habib9612/morocco-transport/actions)
+[![Code Coverage](https://img.shields.io/codecov/c/github/Habib9612/morocco-transport?style=flat-square&logo=codecov)](https://codecov.io/gh/Habib9612/morocco-transport)
+[![Version](https://img.shields.io/github/package-json/v/Habib9612/morocco-transport?style=flat-square&logo=npm)](https://github.com/Habib9612/morocco-transport/releases)
+[![License](https://img.shields.io/github/license/Habib9612/morocco-transport?style=flat-square)](https://github.com/Habib9612/morocco-transport/blob/main/LICENSE)
+[![Contributors](https://img.shields.io/github/contributors/Habib9612/morocco-transport?style=flat-square&logo=github)](https://github.com/Habib9612/morocco-transport/graphs/contributors)
+[![Stars](https://img.shields.io/github/stars/Habib9612/morocco-transport?style=flat-square&logo=github)](https://github.com/Habib9612/morocco-transport/stargazers)
+[![Forks](https://img.shields.io/github/forks/Habib9612/morocco-transport?style=flat-square&logo=github)](https://github.com/Habib9612/morocco-transport/network/members)
+[![Issues](https://img.shields.io/github/issues/Habib9612/morocco-transport?style=flat-square&logo=github)](https://github.com/Habib9612/morocco-transport/issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/Habib9612/morocco-transport?style=flat-square&logo=github)](https://github.com/Habib9612/morocco-transport/pulls)
+[![Last Commit](https://img.shields.io/github/last-commit/Habib9612/morocco-transport?style=flat-square&logo=github)](https://github.com/Habib9612/morocco-transport/commits/main)(https://www.prisma.io/)
 
 <div align="center">
   <h3> Built with ❤️ for Morocco's Transport Industry </h3>
@@ -210,7 +221,214 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] **IoT Integration** - Real-time vehicle telemetry
 - [ ] **Blockchain Integration** - Transparent and secure transactions
 - [ ] **Multi-Country Expansion** - Extend to other North African countries
-- [ ] **Advanced Analytics** - Machine learning insights and predictions
+- [ ] **Advanced Analytics** 
+
+## 📸 Screenshots
+
+*Coming Soon! We're preparing beautiful screenshots to showcase the MarocTransit platform.*
+
+### Dashboard Overview
+![Dashboard Screenshot](docs/images/dashboard-preview.png)
+*Main dashboard showing real-time analytics and shipment overview*
+
+### Shipment Tracking
+![Tracking Screenshot](docs/images/tracking-preview.png)
+*Live shipment tracking with interactive map and status updates*
+
+### User Management
+![User Management Screenshot](docs/images/users-preview.png)
+*Comprehensive user management interface for admins*
+
+---
+
+## 🚀 Deployment
+
+### Vercel Deployment (Recommended)
+
+1. **Connect to Vercel**
+   ```bash
+   npm install -g vercel
+   vercel login
+   ```
+
+2. **Deploy to Vercel**
+   ```bash
+   vercel --prod
+   ```
+
+3. **Configure Environment Variables**
+   - Go to your Vercel dashboard
+   - Navigate to Project Settings > Environment Variables
+   - Add all variables from your `.env.example` file
+
+### Manual Deployment
+
+1. **Build the application**
+   ```bash
+   npm run build
+   ```
+
+2. **Start production server**
+   ```bash
+   npm run start
+   ```
+
+### Docker Deployment
+
+1. **Build Docker image**
+   ```bash
+   docker build -t maroctransit .
+   ```
+
+2. **Run container**
+   ```bash
+   docker run -p 3000:3000 --env-file .env.local maroctransit
+   ```
+
+### Production Checklist
+
+- [ ] Set `NODE_ENV=production`
+- [ ] Configure production database
+- [ ] Set up SSL certificates
+- [ ] Configure CDN for static assets
+- [ ] Set up monitoring and logging
+- [ ] Configure backup strategies
+
+---
+
+## 📚 API Documentation
+
+### Authentication Endpoints
+
+```http
+POST /api/auth/signin
+POST /api/auth/signup
+POST /api/auth/signout
+GET  /api/auth/session
+```
+
+### Shipment Management
+
+```http
+GET    /api/shipments              # Get all shipments
+POST   /api/shipments              # Create new shipment
+GET    /api/shipments/:id          # Get shipment by ID
+PUT    /api/shipments/:id          # Update shipment
+DELETE /api/shipments/:id          # Delete shipment
+GET    /api/shipments/:id/tracking # Get tracking info
+```
+
+### User Management
+
+```http
+GET    /api/users                  # Get all users (admin only)
+GET    /api/users/:id              # Get user by ID
+PUT    /api/users/:id              # Update user profile
+DELETE /api/users/:id              # Delete user (admin only)
+```
+
+### Company Management
+
+```http
+GET    /api/companies              # Get all companies
+POST   /api/companies              # Create new company
+GET    /api/companies/:id          # Get company by ID
+PUT    /api/companies/:id          # Update company
+DELETE /api/companies/:id          # Delete company
+```
+
+### Response Format
+
+```json
+{
+  "success": true,
+  "data": {},
+  "message": "Operation completed successfully",
+  "timestamp": "2024-01-01T00:00:00Z"
+}
+```
+
+### Error Handling
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid input data",
+    "details": []
+  },
+  "timestamp": "2024-01-01T00:00:00Z"
+}
+```
+
+**📖 Full API documentation is available at:** [api.maroctransit.com](https://api.maroctransit.com)
+
+---
+
+## ❓ Troubleshooting & FAQ
+
+### Common Issues
+
+#### "Database connection failed"
+**Solution:** 
+1. Check your `DATABASE_URL` in `.env.local`
+2. Ensure PostgreSQL is running
+3. Verify database credentials
+4. Run `npx prisma db push` to sync schema
+
+#### "NextAuth configuration error"
+**Solution:**
+1. Verify `NEXTAUTH_SECRET` is set
+2. Check `NEXTAUTH_URL` matches your domain
+3. Ensure OAuth provider credentials are correct
+
+#### "Build fails with TypeScript errors"
+**Solution:**
+1. Run `npm run type-check` to identify issues
+2. Update TypeScript with `npm install typescript@latest`
+3. Clear `.next` folder and rebuild
+
+#### "Slow page loading"
+**Solution:**
+1. Enable Redis caching in production
+2. Optimize database queries
+3. Use CDN for static assets
+4. Enable compression middleware
+
+### Frequently Asked Questions
+
+**Q: How do I add a new transport company?**
+A: Navigate to Admin Panel > Companies > Add New Company. Fill in the required details and verify the company information.
+
+**Q: Can I customize the platform for different regions?**
+A: Yes! The platform supports multi-language and multi-currency configurations. Check the environment variables section.
+
+**Q: How do I enable real-time tracking?**
+A: Set `ENABLE_REAL_TIME_TRACKING=true` in your environment variables and configure the Maps API keys.
+
+**Q: What payment methods are supported?**
+A: We support Stripe, PayPal, and local Moroccan payment methods (CMI). Configure the respective API keys in your environment.
+
+**Q: How do I backup my data?**
+A: Use the built-in backup scripts: `npm run backup:db` for database backup and configure automated backups in your hosting environment.
+
+### Performance Tips
+
+- ⚡ Use Redis for session storage in production
+- 🗺️ Enable map tile caching for better performance
+- 📊 Implement database indexing for frequently queried fields
+- 🎦 Use Next.js Image optimization for faster loading
+- 🔎 Set up monitoring with Sentry for error tracking
+
+### Getting Help
+
+- 📜 Check our [Documentation](https://docs.maroctransit.com)
+- 👪 Join our [Community Discord](https://discord.gg/maroctransit)
+- 📧 Email support: [support@maroctransit.com](mailto:support@maroctransit.com)
+- 🐛 Report bugs: [GitHub Issues](https://github.com/Habib9612/morocco-transport/issues)
+
+---- Machine learning insights and predictions
 
 ---
 
@@ -307,6 +525,37 @@ yarn install
 ```bash
 cp .env.example .env.local
 # Configure your environment variables
+
+   > **Important:** Make sure to update the `.env.local` file with your actual values. See the `.env.example` file for all required variables.
+
+   **Required Environment Variables:**
+   ```env
+   # Database (Required)
+   DATABASE_URL=postgresql://username:password@localhost:5432/maroc_transit
+   
+   # Authentication (Required)
+   NEXTAUTH_SECRET=your-super-secret-32-character-string
+   NEXTAUTH_URL=http://localhost:3000
+   
+   # JWT (Required)
+   JWT_SECRET=another-secret-for-jwt-tokens
+   ```
+
+   **Optional Environment Variables:**
+   ```env
+   # OAuth Providers (Optional)
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
+   
+   # Email Service (Optional)
+   EMAIL_SERVER=smtp://user:pass@mail.example.com:587
+   EMAIL_FROM=noreply@maroctransit.com
+   
+   # Third-party Services (Optional)
+   MAPS_API_KEY=your-google-maps-api-key
+   SENTRY_DSN=your-sentry-dsn-for-error-tracking
+   ```
+
 ```
 
 4. **Database Setup**
@@ -407,7 +656,151 @@ We welcome contributions to MarocTransit! Please follow these steps:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+
+
+## 📸 Screenshots
+
+### Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### Shipment Tracking
+![Shipment Tracking](screenshots/shipment-tracking.png)
+
+### User Management
+![User Management](screenshots/user-management.png)
+
+> **Note:** Screenshots will be added in future updates. For now, please refer to the live demo.
+
+---
+
+## 🚀 Deployment
+
+### Deploying to Vercel
+
+1. **Fork this repository**
+
+2. **Connect to Vercel:**
+   - Visit [vercel.com](https://vercel.com)
+   - Import your forked repository
+   - Configure environment variables
+
+3. **Environment Variables Required:**
+   ```
+   DATABASE_URL=your_postgresql_connection_string
+   NEXTAUTH_SECRET=your_nextauth_secret
+   NEXTAUTH_URL=https://your-domain.vercel.app
+   JWT_SECRET=your_jwt_secret
+   ```
+
+4. **Deploy:**
+   - Click "Deploy"
+   - Wait for the build to complete
+   - Your app will be live!
+
+### Manual Deployment
+
+1. **Build the application:**
+   ```bash
+   npm run build
+   ```
+
+2. **Start the production server:**
+   ```bash
+   npm start
+   ```
+
+### Docker Deployment
+
+1. **Build the Docker image:**
+   ```bash
+   docker build -t maroc-transit .
+   ```
+
+2. **Run the container:**
+   ```bash
+   docker run -p 3000:3000 --env-file .env.local maroc-transit
+   ```
+
+---
+
+## 📚 API Documentation
+
+### Quick API Reference
+
+The application provides several API endpoints for managing transport operations:
+
+#### Authentication
+- `POST /api/auth/signin` - User login
+- `POST /api/auth/signout` - User logout
+- `POST /api/auth/signup` - User registration
+
+#### Shipments
+- `GET /api/shipments` - List all shipments
+- `POST /api/shipments` - Create new shipment
+- `GET /api/shipments/[id]` - Get shipment details
+- `PUT /api/shipments/[id]` - Update shipment
+- `DELETE /api/shipments/[id]` - Delete shipment
+
+#### Users
+- `GET /api/users` - List users (admin only)
+- `POST /api/users` - Create user (admin only)
+- `PUT /api/users/[id]` - Update user
+
+#### Companies
+- `GET /api/companies` - List companies
+- `POST /api/companies` - Create company
+- `PUT /api/companies/[id]` - Update company
+
+> **📖 Full Documentation:** Visit [docs.maroctransit.com](https://docs.maroctransit.com) for complete API documentation.
+
+---
+
+## ❓ Troubleshooting & FAQ
+
+### Common Issues
+
+**Q: I'm getting a database connection error**
+A: Ensure your `DATABASE_URL` is correctly formatted and the database is accessible. Check that your PostgreSQL server is running.
+
+**Q: NextAuth is not working**
+A: Verify that `NEXTAUTH_SECRET` and `NEXTAUTH_URL` are set correctly in your environment variables.
+
+**Q: The application won't start**
+A: 
+1. Make sure you've copied `.env.example` to `.env.local`
+2. Fill in all required environment variables
+3. Run `npm install` to ensure all dependencies are installed
+4. Check that your Node.js version is 18 or higher
+
+**Q: Prisma migrations are failing**
+A: 
+1. Ensure your database is accessible
+2. Run `npx prisma generate` to generate the Prisma client
+3. Run `npx prisma db push` to sync your schema
+
+### Getting Help
+
+- **Issues:** Report bugs or request features on [GitHub Issues](https://github.com/Habib9612/morocco-transport/issues)
+- **Discussions:** Join community discussions on [GitHub Discussions](https://github.com/Habib9612/morocco-transport/discussions)
+- **Email:** Contact us at support@maroctransit.com
+
+### Performance Tips
+
+- Use connection pooling for database connections in production
+- Enable caching for static assets
+- Consider using a CDN for image assets
+- Monitor your application with tools like Sentry or LogRocket
+
+---
+
+## 🏷️ Project Status & Badges
+
+![Build Status](https://img.shields.io/github/workflow/status/Habib9612/morocco-transport/CI)
+![Coverage](https://img.shields.io/codecov/c/github/Habib9612/morocco-transport)
+![Version](https://img.shields.io/github/package-json/v/Habib9612/morocco-transport)
+![License](https://img.shields.io/github/license/Habib9612/morocco-transport)
+![Contributors](https://img.shields.io/github/contributors/Habib9612/morocco-transport)
+
 
 For support, email support@maroctransit.com or join our Slack channel.
 

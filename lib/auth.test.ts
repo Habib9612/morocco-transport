@@ -17,9 +17,9 @@ describe('Auth utility functions', () => {
     });
 
     it('should return user data if "user" cookie exists and is valid JSON', () => {
-      const mockUserData: AuthUser = { id: '1', email: 'test@example.com', role: 'user' };
+      const mockUserData: AuthUser = { id: '1', email: 'test@example.com', name: '', role: 'user' };
       const mockCookieStore = new Map<string, { value: string }>();
-      mockCookieStore.set('user', { value: JSON.stringify(mockUserData) });
+      mockCookieStore.set('user', { value: JSON.stringify({ id: '1', email: 'test@example.com', role: 'user' }) }); // Original mock without name
 
       mockedCookies.mockReturnValue({
         get: (name: string) => mockCookieStore.get(name),
@@ -28,7 +28,7 @@ describe('Auth utility functions', () => {
       } as any); // Use `as any` to simplify mock for `cookies()` return type
 
       const user = getAuthUser();
-      expect(user).toEqual(mockUserData);
+      expect(user).toEqual(mockUserData); // Expectation now includes name: ''
     });
 
     it('should return null if "user" cookie does not exist', () => {
@@ -67,19 +67,19 @@ describe('Auth utility functions', () => {
       } as any);
 
       const user = getAuthUser();
-      expect(user).toEqual({ id: '2', email: '', role: 'user' });
+      expect(user).toEqual({ id: '2', email: '', name: '', role: 'user' }); // Expectation now includes name: ''
     });
 
     it('should handle request object for cookie retrieval (server components)', () => {
-      const mockUserData: AuthUser = { id: '3', email: 'server@example.com', role: 'admin' };
+      const mockUserData: AuthUser = { id: '3', email: 'server@example.com', name: '', role: 'admin' };
       const mockRequest = {
         cookies: {
-          get: jest.fn().mockReturnValue({ value: JSON.stringify(mockUserData) })
+          get: jest.fn().mockReturnValue({ value: JSON.stringify({ id: '3', email: 'server@example.com', role: 'admin' }) }) // Original mock without name
         }
       } as any; // Mock NextRequest
 
       const user = getAuthUser(mockRequest);
-      expect(user).toEqual(mockUserData);
+      expect(user).toEqual(mockUserData); // Expectation now includes name: ''
       expect(mockRequest.cookies.get).toHaveBeenCalledWith('user');
     });
 

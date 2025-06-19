@@ -1,3 +1,4 @@
+import React from 'react'; // Added React import
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { WebSocketProvider, useWebSocket } from './websocket-context';
 
@@ -45,26 +46,8 @@ describe('WebSocketContext', () => {
     mockWs.close();
   });
 
-  it    const { getByTestId, getByText } = render(
-    <WebSocketProvider>
-      <TestComponent />
-    </WebSocketProvider>
-  );
-  
-  // Test initial connection status
-  expect(getByTestId('connection-status').textContent).toBe('connected ? connecting...');
-  
-  // Mock the WebSocket connection opening
-  await act(async () => {
-    mockWs.onopen();
-  });
-  
-  // Verify that the connection status is updated
-  expect(getByTestId('connection-status').textContent).toBe('connected ? connected');
-});
-
 it('sends messages through WebSocket', async () => {
-  const { getByText } = render(
+  const { getByText, getByTestId } = render( // Added getByTestId
     <WebSocketProvider>
       <TestComponent />
     </WebSocketProvider>
@@ -72,12 +55,18 @@ it('sends messages through WebSocket', async () => {
   
   // Set up the connection
   await act(async () => {
-    mockWs.onopen();
+    if (mockWs.onopen) mockWs.onopen(); // Ensure onopen is callable
   });
   
+  // Wait for connection
+  await waitFor(() => {
+    expect(getByTestId('connection-status')).toHaveTextContent('connected');
+  });
+
   // Click the send button
+  const sendButton = getByText('Send Message');
   await act(async () => {
-    fireEvent.click(getByText('Send Message'));
+    sendButton.click(); // userEvent.click is preferred but keeping it simple for now
   });
   
   // Verify a message was sent
@@ -112,27 +101,18 @@ it('handles incoming messages', async () => {
   
   // Simulate receiving a message
   await act(async () => {
-    mockWs.onmessage({ data: 'incoming test message' });
+    if (mockWs.onmessage) mockWs.onmessage({ data: 'incoming test message' }); // Ensure onmessage is callable
   });
   
   // Verify the message was received and handled
   expect(mockOnMessage).toHaveBeenCalledWith('incoming test message');
 });
 
-it('handles connection errors', async () => {
-  const { getByTestId } = render(
-    <WebSocketProvider>
-      <TestComponent />
-    </WebSocketProvider>
-  );
-  
-  // Simulate a connection error
-  await act(async () => {
-    mockWs.onerror(new Error('Connection failed'));
-  });
-  
-  // Verify the connection status shows an error
-  expect(getByTestId('connection-status').textContent).toContain('error');
+// This specific test for connection error handling seems redundant or misplaced
+// as there's another one at the end. Removing this one.
+// it('handles connection errors', async () => { ... });
+
+it('establishes connection', async () => {
     render(
       <WebSocketProvider>
         <TestComponent />
