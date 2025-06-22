@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
+import { env } from '@/lib/env';
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,8 +53,8 @@ export async function POST(request: NextRequest) {
         email: user.email, 
         role: user.role 
       },
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      env.JWT_SECRET,
+      { expiresIn: env.JWT_EXPIRES_IN }
     );
 
     // Remove password from response
