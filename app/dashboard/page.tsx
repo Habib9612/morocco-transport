@@ -1,4 +1,4 @@
-import MarocTransitLanding from './MarocTransitLanding';
+import MarocTransitLanding from '../MarocTransitLanding';
 
 export default function Page() {
   return <MarocTransitLanding />;

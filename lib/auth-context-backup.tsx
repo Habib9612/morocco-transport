@@ -1,40 +1,30 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
-  id: string;
+  id: number;
   email: string;
   name: string;
-  role: 'admin' | 'carrier' | 'user';
 }
 
 interface AuthContextType {
   user: User | null;
-  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
+    // Simulate checking for existing session
     const checkAuth = async () => {
-      try {
-        const savedUser = localStorage.getItem('user');
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
-        }
-      } catch (error) {
-        console.error('Error checking auth:', error);
-      } finally {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     };
     
     checkAuth();
@@ -42,9 +32,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
-    
-    try {
+        
+       try {
       // For demo purposes, accept specific credentials
+      // In production, this would be an API call
       const validCredentials = [
         { email: 'admin@moroctransit.ma', password: 'admin123', role: 'admin' },
         { email: 'carrier@moroctransit.ma', password: 'carrier123', role: 'carrier' },
@@ -52,8 +43,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ];
       
       const validUser = validCredentials.find(
-        cred => cred.email === email && cred.password === password
-      );
+        cred => cred.email === email && cred.password === password      );
+
+        if (validUser) {
+          setUser({
+            id: 1,
+            email: validUser.email,
+            name: 'User'
+          });
+          setIsLoading(false);
+        } else {
+          throw new Error('Invalid credentials');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        setIsLoading(false);
+        throw error;
+      }
+    };
       
       if (!validUser) {
         throw new Error('Invalid email or password');
@@ -75,6 +82,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       throw error;
     } finally {
+      setLoading(false);
+    }    if (!/\S+@\S+\.\S+/.test(email)) {
+      throw new Error('Please enter a valid email address');
+    }
+    
+    if (password.length < 6) {
+      throw new Error('Password must be at least 6 characters');
+    }
+
+
+    try {
+      // Mock login - in a real app, this would call your API
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      
+      const mockUser: User = {
+        id: 1,
+        email,
+        name: email.split('@')[0]
+      };
+      
+      setUser(mockUser);
+    } catch (error) {
+      throw error;
+    } finally {
       setIsLoading(false);
     }
   };
@@ -86,9 +117,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = {
     user,
-    isLoading,
     login,
-    logout
+    logout,
+    isLoading
   };
 
   return (
@@ -105,3 +136,5 @@ export function useAuth() {
   }
   return context;
 }
+
+export default AuthContext;
