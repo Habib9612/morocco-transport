@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import './globals.css'
+// import './globals.css' // Temporarily disabled due to CSS processing issues
 import { AuthProvider } from '../lib/auth-context';
 
 export const metadata: Metadata = {

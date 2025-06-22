@@ -6,6 +6,7 @@ interface User {
   id: number;
   email: string;
   name: string;
+  role?: string;
 }
 
 interface AuthContextType {
@@ -33,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
         
-       tryy {
+    try {
       // For demo purposes, accept specific credentials
       // In production, this would be an API call
       const validCredentials = [
@@ -43,26 +44,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ];
       
       const validUser = validCredentials.find(
-        cred => cred.email === email && cred.password === password      );
-
-        if (validUser) {
-          setUser({
-            id: 1,
-            email: validUser.email,
-            name: 'User'
-          });
-          setIsLoading(false);
-        } else {
-          throw new Error('Invalid credentials');
-        }
-      } catch (error) {
-        console.error('Login error:', error);
-        setIsLoading(false);
-        throw error;
-      }
-    };
+        cred => cred.email === email && cred.password === password
       );
-      
+
       if (!validUser) {
         throw new Error('Invalid email or password');
       }
@@ -71,40 +55,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const mockUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: Math.floor(Math.random() * 1000),
         email: validUser.email,
         name: validUser.role === 'admin' ? 'Admin User' : 
               validUser.role === 'carrier' ? 'Carrier User' : 'Regular User',
-        role: validUser.role as 'admin' | 'carrier' | 'user'
+        role: validUser.role
       };
       
       setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));
     } catch (error) {
-      throw error;
-    } finally {
-      setLoading(false);
-    }    if (!/\S+@\S+\.\S+/.test(email)) {
-      throw new Error('Please enter a valid email address');
-    }
-    
-    if (password.length < 6) {
-      throw new Error('Password must be at least 6 characters');
-    }
-
-
-    try {
-      // Mock login - in a real app, this would call your API
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
-      const mockUser: User = {
-        id: 1,
-        email,
-        name: email.split('@')[0]
-      };
-      
-      setUser(mockUser);
-    } catch (error) {
+      console.error('Login error:', error);
       throw error;
     } finally {
       setIsLoading(false);
