@@ -1,4 +1,4 @@
-package com.maroctransit.auth.controller;
+package com.marocotransport.controller;
 
 import com.maroctransit.auth.dto.ApiResponse;
 import com.maroctransit.auth.dto.JwtAuthResponse;
@@ -8,7 +8,7 @@ import com.maroctransit.auth.security.JwtTokenProvider;
 import com.maroctransit.auth.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,7 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 /**
  * Controller for authentication operations like signup, login, and token refresh
@@ -28,14 +28,17 @@ import javax.validation.Valid;
 @Tag(name = "Authentication API", description = "APIs for user authentication and registration")
 public class AuthController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider tokenProvider;
+    private final UserService userService;
 
-    @Autowired
-    private JwtTokenProvider tokenProvider;
-
-    @Autowired
-    private UserService userService;
+    public AuthController(AuthenticationManager authenticationManager, 
+                         JwtTokenProvider tokenProvider, 
+                         UserService userService) {
+        this.authenticationManager = authenticationManager;
+        this.tokenProvider = tokenProvider;
+        this.userService = userService;
+    }
 
     /**
      * Authenticate user and generate JWT token

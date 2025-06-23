@@ -1,4 +1,4 @@
-auth-context.intepackage com.marocransit.security;
+package com.marocotransport.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
