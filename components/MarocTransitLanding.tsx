@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import {
-  Package,
   Truck,
   Clock,
   TrendingUp,
@@ -10,12 +9,7 @@ import {
   BarChart3,
   Shield,
   Zap,
-  Globe,
   Users,
-  Award,
-  ArrowRight,
-  Star,
-  CheckCircle,
   Menu,
   X
 } from 'lucide-react';
@@ -105,7 +99,7 @@ const MaroccoTransitLanding = () => {
             
             {/* Subtitle */}
             <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Transform Morocco's logistics industry with our AI-powered platform. 
+              Transform Morocco&apos;s logistics industry with our AI-powered platform. 
               Optimize routes, reduce costs, and connect with verified carriers in real-time.
             </p>
 
@@ -147,7 +141,6 @@ const MaroccoTransitLanding = () => {
                     className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
                   >
                     Find Carriers
-                    <ArrowRight className="ml-2 h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -300,7 +293,7 @@ const MaroccoTransitLanding = () => {
                 <span className="text-xl font-bold">MaroccoTransit</span>
               </div>
               <p className="text-gray-400 leading-relaxed">
-                Revolutionizing Morocco's transport industry with AI-powered logistics solutions.
+                Revolutionizing Morocco&apos;s transport industry with AI-powered logistics solutions.
               </p>
             </div>
             <div>

@@ -44,7 +44,7 @@ export async function unregisterServiceWorker() {
 }
 
 // Function to store a message in IndexedDB for offline sync
-export async function storeMessageForSync(message: any) {
+export async function storeMessageForSync(message: Record<string, unknown>) {
   if ('indexedDB' in window) {
     const db = await openDB();
     const tx = db.transaction('outbox', 'readwrite');

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get("query")
 
     let sqlQuery = "SELECT * FROM locations"
-    const params: any[] = []
+    const params: (string | number)[] = []
     const conditions: string[] = []
 
     if (city) {

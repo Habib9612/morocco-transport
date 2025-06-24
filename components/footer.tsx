@@ -53,7 +53,7 @@ export default function Footer() {
             </Link>
 
             <p className="text-gray-400 text-base max-w-md">
-              Morocco's leading logistics platform providing efficient and reliable shipping solutions for businesses
+              Morocco&apos;s leading logistics platform providing efficient and reliable shipping solutions for businesses
               and individuals.
             </p>
 

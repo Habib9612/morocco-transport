@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       JOIN users u ON s.customer_id = u.id
     `
 
-    const params: any[] = []
+    const params: (string | number)[] = []
     const conditions: string[] = []
 
     if (status) {

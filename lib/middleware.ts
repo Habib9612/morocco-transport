@@ -51,7 +51,7 @@ export function withErrorHandling(
   };
 }
 
-export function validateRequiredFields(data: any, fields: string[]) {
+export function validateRequiredFields(data: unknown, fields: string[]) {
   const missing = fields.filter(field => !data[field]);
   if (missing.length > 0) {
     throw createApiError(400, `Missing required fields: ${missing.join(', ')}`);

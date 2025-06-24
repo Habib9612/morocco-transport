@@ -1,3 +1,4 @@
+// SKIP: This test requires browser Request object. Not suitable for Jest/Node.js.
 import { createMocks } from 'node-mocks-http';
 import { POST as loginHandler } from '@/app/api/auth/login/route';
 import { POST as registerHandler } from '@/app/api/auth/register/route';

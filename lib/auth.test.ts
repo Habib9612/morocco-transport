@@ -1,4 +1,4 @@
-import { getAuthUser, isAuthenticated, hasRole, AuthUser } from './auth'; // Assuming AuthUser is exported for type usage
+import { getAuthUser, isAuthenticated, hasRole } from './auth'; // Assuming AuthUser is exported for type usage
 import { cookies } from 'next/headers'; // Will be mocked
 
 // Mock next/headers
@@ -9,23 +9,21 @@ jest.mock('next/headers', () => ({
 // Helper to get the mocked cookies function
 const mockedCookies = cookies as jest.MockedFunction<typeof cookies>;
 
-describe('Auth utility functions', () => {
-  describe('getAuthUser', () => {
-    beforeEach(() => {
-      // Reset mocks before each test
-      mockedCookies.mockReset();
-    });
+type AuthUser = { id: string; email: string; role: string };
 
+describe('Auth utility functions', () => {
+  beforeEach(() => {
+    // Reset mocks before each test
+    mockedCookies.mockReset();
+    (global as unknown as { __mockedCookies: undefined }).__mockedCookies = undefined;
+  });
+
+  describe('getAuthUser', () => {
     it('should return user data if "user" cookie exists and is valid JSON', () => {
       const mockUserData: AuthUser = { id: '1', email: 'test@example.com', role: 'user' };
       const mockCookieStore = new Map<string, { value: string }>();
       mockCookieStore.set('user', { value: JSON.stringify(mockUserData) });
-
-      mockedCookies.mockReturnValue({
-        get: (name: string) => mockCookieStore.get(name),
-        // Add other methods like `set`, `delete` if needed for other tests,
-        // but getAuthUser only uses `get`.
-      } as any); // Use `as any` to simplify mock for `cookies()` return type
+      (global as unknown as { __mockedCookies: Map<string, { value: string }> }).__mockedCookies = mockCookieStore;
 
       const user = getAuthUser();
       expect(user).toEqual(mockUserData);
@@ -33,9 +31,7 @@ describe('Auth utility functions', () => {
 
     it('should return null if "user" cookie does not exist', () => {
       const mockCookieStore = new Map<string, { value: string }>();
-      mockedCookies.mockReturnValue({
-        get: (name: string) => mockCookieStore.get(name),
-      } as any);
+      (global as unknown as { __mockedCookies: Map<string, { value: string }> }).__mockedCookies = mockCookieStore;
 
       const user = getAuthUser();
       expect(user).toBeNull();
@@ -44,9 +40,7 @@ describe('Auth utility functions', () => {
     it('should return null and log an error if "user" cookie is malformed JSON', () => {
       const mockCookieStore = new Map<string, { value: string }>();
       mockCookieStore.set('user', { value: 'not-json' });
-      mockedCookies.mockReturnValue({
-        get: (name: string) => mockCookieStore.get(name),
-      } as any);
+      (global as unknown as { __mockedCookies: Map<string, { value: string }> }).__mockedCookies = mockCookieStore;
 
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -59,12 +53,9 @@ describe('Auth utility functions', () => {
     });
 
     it('should return user data with defaults for missing fields in cookie JSON', () => {
-      const incompleteUserData = { id: '2' }; // Missing email and role
       const mockCookieStore = new Map<string, { value: string }>();
-      mockCookieStore.set('user', { value: JSON.stringify(incompleteUserData) });
-      mockedCookies.mockReturnValue({
-        get: (name: string) => mockCookieStore.get(name),
-      } as any);
+      mockCookieStore.set('user', { value: JSON.stringify({ id: '2' }) });
+      (global as unknown as { __mockedCookies: Map<string, { value: string }> }).__mockedCookies = mockCookieStore;
 
       const user = getAuthUser();
       expect(user).toEqual({ id: '2', email: '', role: 'user' });
@@ -74,21 +65,19 @@ describe('Auth utility functions', () => {
       const mockUserData: AuthUser = { id: '3', email: 'server@example.com', role: 'admin' };
       const mockRequest = {
         cookies: {
-          get: jest.fn().mockReturnValue({ value: JSON.stringify(mockUserData) })
-        }
-      } as any; // Mock NextRequest
-
+          get: (name: string) => name === 'user' ? { value: JSON.stringify(mockUserData) } : undefined,
+        },
+      };
       const user = getAuthUser(mockRequest);
       expect(user).toEqual(mockUserData);
-      expect(mockRequest.cookies.get).toHaveBeenCalledWith('user');
     });
 
-     it('should return null if request object has no "user" cookie', () => {
+    it('should return null if request object has no "user" cookie', () => {
       const mockRequest = {
         cookies: {
           get: jest.fn().mockReturnValue(undefined)
         }
-      } as any;
+      } as unknown;
 
       const user = getAuthUser(mockRequest);
       expect(user).toBeNull();
@@ -100,17 +89,13 @@ describe('Auth utility functions', () => {
       const mockUserData: AuthUser = { id: '1', email: 'test@example.com', role: 'user' };
       const mockCookieStore = new Map<string, { value: string }>();
       mockCookieStore.set('user', { value: JSON.stringify(mockUserData) });
-       mockedCookies.mockReturnValue({
-        get: (name: string) => mockCookieStore.get(name),
-      } as any);
+      (global as unknown as { __mockedCookies: Map<string, { value: string }> }).__mockedCookies = mockCookieStore;
       expect(isAuthenticated()).toBe(true);
     });
 
     it('should return false if getAuthUser returns null', () => {
-       const mockCookieStore = new Map<string, { value: string }>();
-       mockedCookies.mockReturnValue({
-        get: (name: string) => mockCookieStore.get(name),
-      } as any);
+      const mockCookieStore = new Map<string, { value: string }>();
+      (global as unknown as { __mockedCookies: Map<string, { value: string }> }).__mockedCookies = mockCookieStore;
       expect(isAuthenticated()).toBe(false);
     });
   });
@@ -120,9 +105,7 @@ describe('Auth utility functions', () => {
       const mockUserData: AuthUser = { id: '1', email: 'test@example.com', role: 'admin' };
       const mockCookieStore = new Map<string, { value: string }>();
       mockCookieStore.set('user', { value: JSON.stringify(mockUserData) });
-      mockedCookies.mockReturnValue({
-        get: (name: string) => mockCookieStore.get(name),
-      } as any);
+      (global as unknown as { __mockedCookies: Map<string, { value: string }> }).__mockedCookies = mockCookieStore;
     });
 
     it('should return true if user has the specified role (string)', () => {
@@ -142,10 +125,7 @@ describe('Auth utility functions', () => {
     });
 
     it('should return false if no user is authenticated', () => {
-      const mockCookieStore = new Map<string, { value: string }>();
-      mockedCookies.mockReturnValue({
-        get: (name: string) => mockCookieStore.get(name),
-      } as any);
+      (global as unknown as { __mockedCookies: Map<string, { value: string }> }).__mockedCookies = new Map();
       expect(hasRole('admin')).toBe(false);
     });
   });

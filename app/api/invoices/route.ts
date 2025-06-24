@@ -10,13 +10,6 @@ const createInvoiceSchema = z.object({
   dueDate: z.string().transform((str) => new Date(str)),
 });
 
-const updateInvoiceSchema = z.object({
-  amount: z.number().positive('Amount must be positive').optional(),
-  currency: z.string().optional(),
-  dueDate: z.string().transform((str) => new Date(str)).optional(),
-  status: z.enum(['PENDING', 'PAID', 'OVERDUE', 'CANCELLED']).optional(),
-});
-
 // GET /api/invoices - Get invoices with pagination and filters
 export async function GET(request: NextRequest) {
   const authResult = await withAuth(['USER', 'COMPANY', 'ADMIN'])(request);
@@ -31,7 +24,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const offset = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     
     // Non-admin users can only see their own invoices
     if (user.role !== 'ADMIN') {

@@ -1,9 +1,8 @@
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MessageSearch } from './message-search';
 import { I18nProvider } from '@/lib/i18n-context';
 import { KeyboardShortcutsProvider } from '@/lib/keyboard-shortcuts';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import userEvent from '@testing-library/user-event';
 
 expect.extend(toHaveNoViolations);
 

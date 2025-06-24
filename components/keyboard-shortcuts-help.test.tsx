@@ -1,5 +1,4 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { KeyboardShortcutsHelp } from './keyboard-shortcuts-help';
 import { KeyboardShortcutsProvider } from '@/lib/keyboard-shortcuts';

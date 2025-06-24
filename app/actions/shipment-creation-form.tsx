@@ -1,4 +1,4 @@
-fg'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -23,9 +23,7 @@ import {
   Clock, 
   Shield,
   Plus,
-  Minus,
-  Upload,
-  Calculator
+  Minus
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -272,7 +270,7 @@ export default function ShipmentCreationForm() {
                 "cursor-pointer transition-all hover:shadow-md",
                 shipmentData.shipmentType === type.value ? "ring-2 ring-blue-500 bg-blue-50" : ""
               )}
-              onClick={() => updateShipmentData({ shipmentType: type.value as any })}
+              onClick={() => updateShipmentData({ shipmentType: type.value as ShipmentData["shipmentType"] })}
             >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -303,7 +301,7 @@ export default function ShipmentCreationForm() {
                 "cursor-pointer transition-all hover:shadow-md",
                 shipmentData.serviceType === service.value ? "ring-2 ring-blue-500 bg-blue-50" : ""
               )}
-              onClick={() => updateShipmentData({ serviceType: service.value as any })}
+              onClick={() => updateShipmentData({ serviceType: service.value as ShipmentData["serviceType"] })}
             >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -475,7 +473,7 @@ export default function ShipmentCreationForm() {
         <Card className="border-dashed">
           <CardContent className="p-8 text-center">
             <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">No cargo items added yet. Click "Add Item" to get started.</p>
+            <p className="text-gray-500">No cargo items added yet. Click &quot;Add Item&quot; to get started.</p>
           </CardContent>
         </Card>
       )}
@@ -680,7 +678,7 @@ export default function ShipmentCreationForm() {
                 mode="single"
                 selected={shipmentData.preferredDeliveryDate}
                 onSelect={(date) => updateShipmentData({ preferredDeliveryDate: date })}
-                disabled={(date) => date < new Date() || (shipmentData.pickupDate && date < shipmentData.pickupDate)}
+                disabled={(date) => date < new Date() || (!!shipmentData.pickupDate && date < shipmentData.pickupDate)}
                 initialFocus
               />
             </PopoverContent>
@@ -844,7 +842,7 @@ export default function ShipmentCreationForm() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Pickup:</span>
-              <span>{shipmentData.pickupDate ? format(shipmentData.pickupDate, "PPP") : 'Not set'}</span>
+              <span>&quot;{shipmentData.pickupDate ? format(shipmentData.pickupDate, "PPP") : 'Not set'}&quot;</span>
             </div>
           </CardContent>
         </Card>

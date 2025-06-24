@@ -9,14 +9,6 @@ const createTicketSchema = z.object({
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).default('MEDIUM'),
 });
 
-const updateTicketSchema = z.object({
-  subject: z.string().min(1, 'Subject is required').optional(),
-  description: z.string().min(1, 'Description is required').optional(),
-  status: z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']).optional(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
-  assignedTo: z.string().optional(),
-});
-
 // GET /api/support/tickets - Get support tickets
 export async function GET(request: NextRequest) {
   const authResult = await withAuth(['USER', 'COMPANY', 'ADMIN'])(request);
@@ -32,7 +24,7 @@ export async function GET(request: NextRequest) {
     const priority = searchParams.get('priority');
     const offset = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     
     // Non-admin users can only see their own tickets
     if (user.role !== 'ADMIN') {

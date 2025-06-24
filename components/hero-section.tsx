@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, ArrowRight, Truck, Package, MapPin } from 'lucide-react'
+import { Search, ArrowRight, Truck, MapPin } from 'lucide-react'
 import { motion } from "framer-motion"
 
 export default function HeroSection() {

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       FROM drivers d
       JOIN users u ON d.user_id = u.id
     `
-    const params: any[] = []
+    const params: unknown[] = []
 
     if (status) {
       query += " WHERE d.status = $1"

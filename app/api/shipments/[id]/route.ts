@@ -1,11 +1,16 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { executeQuery } from "@/lib/db"
+import { auth } from "@/lib/auth"
 
 // Get a specific shipment
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const id = params.id
+export const GET = auth(async (req) => {
+  if (!req.auth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
+  const id = req.url.split('/').pop();
+
+  try {
     const shipments = await executeQuery(
       `SELECT s.*, 
               o.name as origin_name, o.address as origin_address, o.city as origin_city,
@@ -48,15 +53,19 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     console.error("Error fetching shipment:", error)
     return NextResponse.json({ error: "Failed to fetch shipment" }, { status: 500 })
   }
-}
+});
 
 // Update a shipment
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const id = params.id
-    const { status, priority, weight, volume, scheduled_pickup, scheduled_delivery, actual_pickup, actual_delivery } =
-      await request.json()
+export const PUT = auth(async (req) => {
+  if (!req.auth || req.auth.user?.role !== 'ADMIN') {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
 
+  const id = req.url.split('/').pop();
+  const { status, priority, weight, volume, scheduled_pickup, scheduled_delivery, actual_pickup, actual_delivery } =
+    await req.json();
+
+  try {
     // Check if shipment exists
     const existingShipment = await executeQuery("SELECT * FROM shipments WHERE id = $1", [id])
 
@@ -100,13 +109,17 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     console.error("Error updating shipment:", error)
     return NextResponse.json({ error: "Failed to update shipment" }, { status: 500 })
   }
-}
+});
 
 // Delete a shipment
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const id = params.id
+export const DELETE = auth(async (req) => {
+  if (!req.auth || req.auth.user?.role !== 'ADMIN') {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
 
+  const id = req.url.split('/').pop();
+
+  try {
     // Check if shipment exists
     const existingShipment = await executeQuery("SELECT * FROM shipments WHERE id = $1", [id])
 
@@ -137,4 +150,4 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     console.error("Error deleting shipment:", error)
     return NextResponse.json({ error: "Failed to delete shipment" }, { status: 500 })
   }
-}
+});

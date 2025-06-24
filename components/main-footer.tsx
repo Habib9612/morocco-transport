@@ -63,7 +63,7 @@ export default function MainFooter() {
             </Link>
 
             <p className="text-gray-400 text-base max-w-md">
-              Revolutionizing Morocco's logistics industry with our AI-powered digital freight marketplace. Connecting
+              Revolutionizing Morocco&apos;s logistics industry with our AI-powered digital freight marketplace. Connecting
               shippers with carriers through cutting-edge technology.
             </p>
 

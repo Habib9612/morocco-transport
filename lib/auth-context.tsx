@@ -11,77 +11,117 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  loading: boolean;
+  error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  isLoading: boolean;
+  signup: (email: string, password: string, name: string, role: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Simulate checking for existing session
     const checkAuth = async () => {
-      setIsLoading(false);
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch('/api/auth/check', { credentials: 'include' });
+        if (!response.ok) throw new Error('Auth check failed');
+        const data = await response.json();
+        setUser(data.user || null);
+      } catch {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
     };
-    
     checkAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
-    setIsLoading(true);
-        
+  const login = async (email: string, password: string): Promise<void> => {
+    setLoading(true);
+    setError(null);
     try {
-      // For demo purposes, accept specific credentials
-      // In production, this would be an API call
-      const validCredentials = [
-        { email: 'admin@moroctransit.ma', password: 'admin123', role: 'admin' },
-        { email: 'carrier@moroctransit.ma', password: 'carrier123', role: 'carrier' },
-        { email: 'user@moroctransit.ma', password: 'user123', role: 'user' }
-      ];
-      
-      const validUser = validCredentials.find(
-        cred => cred.email === email && cred.password === password
-      );
-
-      if (!validUser) {
-        throw new Error('Invalid email or password');
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || 'Invalid credentials');
+        setUser(null);
+        return;
       }
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockUser: User = {
-        id: Math.floor(Math.random() * 1000),
-        email: validUser.email,
-        name: validUser.role === 'admin' ? 'Admin User' : 
-              validUser.role === 'carrier' ? 'Carrier User' : 'Regular User',
-        role: validUser.role
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+      setUser(data.user);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Invalid credentials');
+      setUser(null);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+  const signup = async (email: string, password: string, name: string, role: string): Promise<void> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name, role }),
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || 'Email already exists');
+        setUser(null);
+        return;
+      }
+      setUser(data.user);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Email already exists');
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = async (): Promise<void> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data.error || 'Logout failed');
+        return;
+      }
+      setUser(null);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Logout failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const value = {
     user,
+    loading,
+    error,
     login,
+    signup,
     logout,
-    isLoading
   };
 
   return (

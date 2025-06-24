@@ -1,3 +1,5 @@
+// SKIP: This is a Playwright test. Do not run with Jest.
+// To run: npx playwright test
 import { test, expect } from '@playwright/test';
 
 test.describe('Authentication', () => {

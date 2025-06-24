@@ -5,7 +5,7 @@ import { executeQuery } from "@/lib/db"
 export async function getTrucks(status?: string) {
   try {
     let query = "SELECT * FROM trucks"
-    const params: any[] = []
+    const params: string[] = []
 
     if (status) {
       query += " WHERE status = $1"

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { withAuth } from '@/lib/auth-middleware';
+import { auth } from '@/lib/auth';
 import { z } from 'zod';
 
 const updateReviewSchema = z.object({
@@ -9,13 +9,12 @@ const updateReviewSchema = z.object({
 });
 
 // GET /api/reviews/[id] - Get a specific review
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export const GET = auth(async (req) => {
+  const id = req.url.split('/').pop();
+
   try {
     const review = await prisma.review.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: {
           select: {
@@ -58,20 +57,18 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});
 
 // PUT /api/reviews/[id] - Update a review
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const authResult = await withAuth(['USER', 'COMPANY'])(request);
-  if (authResult instanceof NextResponse) return authResult;
-  
-  const { user } = authResult;
+export const PUT = auth(async (req) => {
+  if (!req.auth?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
+  const id = req.url.split('/').pop();
+  
   try {
-    const body = await request.json();
+    const body = await req.json();
     const result = updateReviewSchema.safeParse(body);
     
     if (!result.success) {
@@ -81,9 +78,8 @@ export async function PUT(
       );
     }
 
-    // Check if review exists and user owns it
     const existingReview = await prisma.review.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingReview) {
@@ -93,7 +89,7 @@ export async function PUT(
       );
     }
 
-    if (existingReview.userId !== user.id) {
+    if (existingReview.userId !== req.auth.user.id) {
       return NextResponse.json(
         { error: 'You can only update your own reviews' },
         { status: 403 }
@@ -101,7 +97,7 @@ export async function PUT(
     }
 
     const updatedReview = await prisma.review.update({
-      where: { id: params.id },
+      where: { id },
       data: result.data,
       include: {
         user: {
@@ -141,22 +137,19 @@ export async function PUT(
       { status: 500 }
     );
   }
-}
+});
 
 // DELETE /api/reviews/[id] - Delete a review
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const authResult = await withAuth(['USER', 'COMPANY', 'ADMIN'])(request);
-  if (authResult instanceof NextResponse) return authResult;
-  
-  const { user } = authResult;
+export const DELETE = auth(async (req) => {
+  if (!req.auth?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const id = req.url.split('/').pop();
 
   try {
-    // Check if review exists
     const existingReview = await prisma.review.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingReview) {
@@ -166,8 +159,7 @@ export async function DELETE(
       );
     }
 
-    // Only review owner or admin can delete
-    if (existingReview.userId !== user.id && user.role !== 'ADMIN') {
+    if (existingReview.userId !== req.auth.user.id && req.auth.user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'You can only delete your own reviews' },
         { status: 403 }
@@ -175,7 +167,7 @@ export async function DELETE(
     }
 
     await prisma.review.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({
@@ -188,4 +180,4 @@ export async function DELETE(
       { status: 500 }
     );
   }
-}
+});

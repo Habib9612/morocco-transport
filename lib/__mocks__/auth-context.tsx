@@ -1,14 +1,4 @@
-find ./src -name "auth*.ts*"
-cat <source />
-<context />
-<auth-context className="tsx">-p <source />
-<context>touch <source />
-<context />
-<auth-context className="tsx">code <source />
-<context />
-<auth-context className="tsx">cursor <source />
-<context />
-<auth-context className="tsx"></auth-context></auth-context></auth-context></context></auth-context>import { createContext, useContext } from 'react';
+import { createContext, useContext } from 'react';
 
 const mockUser = {
   id: '1',

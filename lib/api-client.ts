@@ -8,7 +8,7 @@ class ApiError extends Error {
   constructor(
     public status: number,
     public message: string,
-    public data?: any
+    public data?: unknown
   ) {
     super(message);
     this.name = 'ApiError';
@@ -69,7 +69,7 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(data),
       }),
-    signup: (data: any) =>
+    signup: (data: Record<string, unknown>) =>
       apiClient('/api/auth/signup', {
         method: 'POST',
         body: JSON.stringify(data),
@@ -81,14 +81,14 @@ export const api = {
     getSession: () => apiClient('/api/auth/session'),
   },
   shipments: {
-    create: (data: any) =>
+    create: (data: Record<string, unknown>) =>
       apiClient('/api/shipments', {
         method: 'POST',
         body: JSON.stringify(data),
       }),
     getAll: () => apiClient('/api/shipments'),
     getById: (id: string) => apiClient(`/api/shipments/${id}`),
-    update: (id: string, data: any) =>
+    update: (id: string, data: Record<string, unknown>) =>
       apiClient(`/api/shipments/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(data),
@@ -99,14 +99,14 @@ export const api = {
       }),
   },
   vehicles: {
-    create: (data: any) =>
+    create: (data: Record<string, unknown>) =>
       apiClient('/api/vehicles', {
         method: 'POST',
         body: JSON.stringify(data),
       }),
     getAll: () => apiClient('/api/vehicles'),
     getById: (id: string) => apiClient(`/api/vehicles/${id}`),
-    update: (id: string, data: any) =>
+    update: (id: string, data: Record<string, unknown>) =>
       apiClient(`/api/vehicles/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(data),
@@ -117,14 +117,14 @@ export const api = {
       }),
   },
   maintenance: {
-    create: (data: any) =>
+    create: (data: Record<string, unknown>) =>
       apiClient('/api/maintenance', {
         method: 'POST',
         body: JSON.stringify(data),
       }),
     getAll: () => apiClient('/api/maintenance'),
     getById: (id: string) => apiClient(`/api/maintenance/${id}`),
-    update: (id: string, data: any) =>
+    update: (id: string, data: Record<string, unknown>) =>
       apiClient(`/api/maintenance/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(data),

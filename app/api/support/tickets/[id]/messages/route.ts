@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { withAuth } from '@/lib/auth-middleware';
+import { auth } from '@/lib/auth';
 import { z } from 'zod';
 
 const createMessageSchema = z.object({
@@ -8,19 +8,16 @@ const createMessageSchema = z.object({
 });
 
 // GET /api/support/tickets/[id]/messages - Get messages for a ticket
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const authResult = await withAuth(['USER', 'COMPANY', 'ADMIN'])(request);
-  if (authResult instanceof NextResponse) return authResult;
-  
-  const { user } = authResult;
+export const GET = auth(async (req) => {
+  if (!req.auth?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const id = req.url.split('/').pop();
 
   try {
-    // Check if ticket exists and user has permission
     const ticket = await prisma.supportTicket.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!ticket) {
@@ -30,8 +27,7 @@ export async function GET(
       );
     }
 
-    // Non-admin users can only see messages for their own tickets
-    if (user.role !== 'ADMIN' && ticket.userId !== user.id) {
+    if (req.auth.user.role !== 'ADMIN' && ticket.userId !== req.auth.user.id) {
       return NextResponse.json(
         { error: 'You can only view messages for your own tickets' },
         { status: 403 }
@@ -40,7 +36,7 @@ export async function GET(
 
     const messages = await prisma.chatMessage.findMany({
       where: {
-        supportTicketId: params.id,
+        supportTicketId: id,
       },
       include: {
         sender: {
@@ -63,20 +59,18 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});
 
 // POST /api/support/tickets/[id]/messages - Add a message to a ticket
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const authResult = await withAuth(['USER', 'COMPANY', 'ADMIN'])(request);
-  if (authResult instanceof NextResponse) return authResult;
-  
-  const { user } = authResult;
+export const POST = auth(async (req) => {
+  if (!req.auth?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const id = req.url.split('/').pop();
 
   try {
-    const body = await request.json();
+    const body = await req.json();
     const result = createMessageSchema.safeParse(body);
     
     if (!result.success) {
@@ -86,9 +80,8 @@ export async function POST(
       );
     }
 
-    // Check if ticket exists and user has permission
     const ticket = await prisma.supportTicket.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!ticket) {
@@ -98,8 +91,7 @@ export async function POST(
       );
     }
 
-    // Non-admin users can only add messages to their own tickets
-    if (user.role !== 'ADMIN' && ticket.userId !== user.id) {
+    if (req.auth.user.role !== 'ADMIN' && ticket.userId !== req.auth.user.id) {
       return NextResponse.json(
         { error: 'You can only add messages to your own tickets' },
         { status: 403 }
@@ -110,8 +102,8 @@ export async function POST(
 
     const message = await prisma.chatMessage.create({
       data: {
-        supportTicketId: params.id,
-        senderId: user.id,
+        supportTicketId: id,
+        senderId: req.auth.user.id,
         content,
       },
       include: {
@@ -126,10 +118,9 @@ export async function POST(
       },
     });
 
-    // Update ticket status if it was resolved/closed and user is adding a message
-    if (user.role !== 'ADMIN' && (ticket.status === 'RESOLVED' || ticket.status === 'CLOSED')) {
+    if (req.auth.user.role !== 'ADMIN' && (ticket.status === 'RESOLVED' || ticket.status === 'CLOSED')) {
       await prisma.supportTicket.update({
-        where: { id: params.id },
+        where: { id },
         data: { status: 'OPEN' },
       });
     }
@@ -145,4 +136,4 @@ export async function POST(
       { status: 500 }
     );
   }
-}
+});

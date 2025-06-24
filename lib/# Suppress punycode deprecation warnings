@@ -1,8 +1,0 @@
-# Suppress punycode deprecation warnings
-node-options=--no-deprecation
-
-# Use more modern dependency resolution
-legacy-peer-deps=false
-
-# Add overrides for punycode
-overrides.punycode=2.3.1

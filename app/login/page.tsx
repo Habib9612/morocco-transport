@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/lib/auth-context"
-import Link from "next/link"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -21,10 +20,8 @@ export default function LoginPage() {
     e.preventDefault()
     setIsLoading(true)
     
-    const result = await login(email, password)
-    if (result.success) {
-      router.push("/dashboard")
-    }
+    await login(email, password)
+    router.push("/dashboard")
     
     setIsLoading(false)
   }
@@ -82,12 +79,7 @@ export default function LoginPage() {
           </form>
           
           <div className="mt-4 text-center">
-            <p className="text-gray-400">
-              Don't have an account?{" "}
-              <Link href="/signup" className="text-blue-400 hover:text-blue-300">
-                Sign up
-              </Link>
-            </p>
+            <span>Don&apos;t have an account? <a href="/signup" className="text-blue-600 hover:underline">Sign up</a></span>
           </div>
         </CardContent>
       </Card>

@@ -12,7 +12,7 @@ export function LoginForm() {
     e.preventDefault();
     try {
       await login(email, password);
-    } catch (err) {
+    } catch {
       // Error is handled by the auth context
     }
   }
@@ -74,7 +74,7 @@ export function SignupForm() {
     e.preventDefault();
     try {
       await signup(name, email, password, role);
-    } catch (err) {
+    } catch {
       // Error is handled by the auth context
     }
   }

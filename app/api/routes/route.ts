@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       LEFT JOIN users u ON d.user_id = u.id
     `
 
-    const params: any[] = []
+    const params: (string | number)[] = []
     const conditions: string[] = []
 
     if (status) {

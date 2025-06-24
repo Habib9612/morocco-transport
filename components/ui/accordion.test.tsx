@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 
 interface AccordionItemProps {
   title: string;
@@ -46,3 +48,15 @@ export const Accordion: React.FC<AccordionProps> = ({ children, className = '' }
 };
 
 export default Accordion;
+
+describe('AccordionItem', () => {
+  it('renders title and children', () => {
+    render(
+      <AccordionItem title="Test Title">
+        <div>Test Content</div>
+      </AccordionItem>
+    );
+    expect(screen.getByText('Test Title')).toBeInTheDocument();
+    expect(screen.getByText('Test Content')).toBeInTheDocument();
+  });
+});

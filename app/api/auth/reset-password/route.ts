@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 }
 
 // Request password reset token
-async function requestPasswordReset(body: any) {
+async function requestPasswordReset(body: Record<string, unknown>) {
   // Validate input
   const result = requestResetSchema.safeParse(body);
   if (!result.success) {
@@ -48,7 +48,7 @@ async function requestPasswordReset(body: any) {
   const { email } = result.data;
 
   // Find user
-  const user = await db.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { email },
     select: { id: true, email: true, name: true },
   });
@@ -65,7 +65,7 @@ async function requestPasswordReset(body: any) {
   const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour from now
 
   // Save reset token to database
-  await db.user.update({
+  await prisma.user.update({
     where: { id: user.id },
     data: {
       resetToken,
@@ -85,7 +85,7 @@ async function requestPasswordReset(body: any) {
 }
 
 // Confirm password reset with token
-async function confirmPasswordReset(body: any) {
+async function confirmPasswordReset(body: Record<string, unknown>) {
   // Validate input
   const result = confirmResetSchema.safeParse(body);
   if (!result.success) {
@@ -98,7 +98,7 @@ async function confirmPasswordReset(body: any) {
   const { token, password } = result.data;
 
   // Find user with valid reset token
-  const user = await db.user.findFirst({
+  const user = await prisma.user.findFirst({
     where: {
       resetToken: token,
       resetTokenExpiry: {
@@ -119,7 +119,7 @@ async function confirmPasswordReset(body: any) {
   const hashedPassword = await hash(password, 12);
 
   // Update password and clear reset token
-  await db.user.update({
+  await prisma.user.update({
     where: { id: user.id },
     data: {
       password: hashedPassword,

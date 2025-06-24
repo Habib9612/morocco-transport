@@ -11,7 +11,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Helper function to execute raw SQL queries
-export async function executeQuery(query: string, params: any[] = []) {
+export async function executeQuery(query: string, params: unknown[] = []) {
   try {
     const result = await db.$queryRaw(query, params)
     return result

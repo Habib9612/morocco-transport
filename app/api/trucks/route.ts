@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status")
 
     let query = "SELECT * FROM trucks"
-    const params: any[] = []
+    const params: (string | number)[] = []
 
     if (status) {
       query += " WHERE status = $1"

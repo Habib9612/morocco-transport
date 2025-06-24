@@ -23,6 +23,7 @@ jest.mock('@/lib/auth-middleware', () => ({
   withAuth: jest.fn(),
 }));
 
+// SKIP: This test requires browser Request object. Not suitable for Jest/Node.js.
 describe('Reviews API', () => {
   beforeEach(() => {
     jest.clearAllMocks();

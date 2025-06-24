@@ -351,13 +351,12 @@ export default function FleetPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>Fleet Location</CardTitle>
-            <CardDescription>Real-time location of your fleet</CardDescription>
+            <CardTitle>Live Fleet Map</CardTitle>
           </CardHeader>
           <CardContent className="p-0 h-[400px]">
-            <ShipmentMap isFleetView={true} />
+            <ShipmentMap />
           </CardContent>
         </Card>
       </div>

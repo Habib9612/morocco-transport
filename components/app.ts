@@ -1,4 +1,3 @@
-useApi.ts
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../lib/api-client';
 import { toast } from 'sonner';
@@ -13,14 +12,10 @@ interface UseApiResult<T> {
 
 // Options for the useApi hook
 interface UseApiOptions {
-  // If true, the request will not be made automatically on component mount
   manual?: boolean;
-  // Custom error handler
   onError?: (error: Error) => void;
-  // Whether to show error toast
   showErrorToast?: boolean;
-  // Dependencies for refetching (similar to useEffect deps)
-  deps?: any[];
+  deps?: unknown[];
 }
 
 /**
@@ -88,7 +83,7 @@ export function useApi<T>(
     return () => {
       mounted.current = false;
     };
-  }, [fetchData, manual, ...deps]);
+  }, [fetchData, manual, deps]);
 
   return {
     data,
@@ -101,43 +96,29 @@ export function useApi<T>(
 /**
  * Hook for making GET requests
  */
-export function useApiGet<T>(endpoint: string, options?: UseApiOptions): UseApiResult<T> {
-  return useApi(() => api.get<T>(endpoint), options);
+export function useApiGetShipments<T>(options?: UseApiOptions): UseApiResult<T> {
+  return useApi(() => api.shipments.getAll() as Promise<T>, options);
 }
 
 /**
  * Hook for making POST requests
  */
-export function useApiPost<T>(
-  endpoint: string,
-  data: any,
-  options?: UseApiOptions
-): UseApiResult<T> {
-  const dataRef = useRef(data);
-  dataRef.current = data;
-  
-  return useApi(() => api.post<T>(endpoint, dataRef.current), options);
+export function useApiPostShipment<T>(data: Record<string, unknown>, options?: UseApiOptions): UseApiResult<T> {
+  return useApi(() => api.shipments.create(data) as Promise<T>, options);
 }
 
 /**
  * Hook for making PUT requests
  */
-export function useApiPut<T>(
-  endpoint: string,
-  data: any,
-  options?: UseApiOptions
-): UseApiResult<T> {
-  const dataRef = useRef(data);
-  dataRef.current = data;
-  
-  return useApi(() => api.put<T>(endpoint, dataRef.current), options);
+export function useApiPutShipment<T>(id: string, data: Record<string, unknown>, options?: UseApiOptions): UseApiResult<T> {
+  return useApi(() => api.shipments.update(id, data) as Promise<T>, options);
 }
 
 /**
  * Hook for making DELETE requests
  */
-export function useApiDelete<T>(endpoint: string, options?: UseApiOptions): UseApiResult<T> {
-  return useApi(() => api.delete<T>(endpoint), options);
+export function useApiDeleteShipment<T>(id: string, options?: UseApiOptions): UseApiResult<T> {
+  return useApi(() => api.shipments.delete(id) as Promise<T>, options);
 }
 
 export default useApi;

@@ -5,19 +5,18 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Mail, CheckCircle, AlertCircle, Loader, ArrowLeft } from 'lucide-react';
+import { Mail, CheckCircle, Loader } from 'lucide-react';
 
 export default function EmailVerificationPage() {
   const [verificationCode, setVerificationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-  const [error, setError] = useState('');
   const [resendLoading, setResendLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
   
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get('email') || 'your email';
+  const email = searchParams ? searchParams.get('email') : null;
 
   // Countdown for resend button
   useEffect(() => {
@@ -29,12 +28,10 @@ export default function EmailVerificationPage() {
 
   const handleVerifyCode = async () => {
     if (!verificationCode.trim()) {
-      setError('Please enter the verification code');
       return;
     }
 
     setIsLoading(true);
-    setError('');
 
     try {
       // TODO: Replace with actual API call
@@ -52,12 +49,8 @@ export default function EmailVerificationPage() {
         setTimeout(() => {
           router.push('/profile-completion');
         }, 2000);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Invalid verification code');
       }
-    } catch (error) {
-      setError('Network error. Please try again.');
+    } catch {
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +58,6 @@ export default function EmailVerificationPage() {
 
   const handleResendCode = async () => {
     setResendLoading(true);
-    setError('');
 
     try {
       // TODO: Replace with actual API call
@@ -77,11 +69,8 @@ export default function EmailVerificationPage() {
 
       if (response.ok) {
         setCountdown(60); // 60 seconds countdown
-      } else {
-        setError('Failed to resend verification code');
       }
-    } catch (error) {
-      setError('Network error. Please try again.');
+    } catch {
     } finally {
       setResendLoading(false);
     }
@@ -124,7 +113,7 @@ export default function EmailVerificationPage() {
               <Mail className="w-8 h-8 text-blue-600" />
             </div>
             <p className="text-gray-600">
-              We've sent a verification code to
+              We&apos;ve sent a verification code to
             </p>
             <p className="font-semibold text-gray-900">{email}</p>
             <p className="text-sm text-gray-500 mt-2">
@@ -141,17 +130,10 @@ export default function EmailVerificationPage() {
                 onChange={(e) => {
                   const value = e.target.value.replace(/\D/g, '').slice(0, 6);
                   setVerificationCode(value);
-                  setError('');
                 }}
-                className={`text-center text-lg tracking-widest ${error ? 'border-red-500' : ''}`}
+                className={`text-center text-lg tracking-widest`}
                 maxLength={6}
               />
-              {error && (
-                <div className="flex items-center space-x-2 mt-2 text-red-600">
-                  <AlertCircle size={16} />
-                  <p className="text-sm">{error}</p>
-                </div>
-              )}
             </div>
 
             <Button
@@ -172,7 +154,7 @@ export default function EmailVerificationPage() {
 
           <div className="text-center space-y-2">
             <p className="text-sm text-gray-600">
-              Didn't receive the code?
+              Didn&apos;t receive the code?
             </p>
             <Button
               variant="ghost"
@@ -190,17 +172,6 @@ export default function EmailVerificationPage() {
               ) : (
                 'Resend Code'
               )}
-            </Button>
-          </div>
-
-          <div className="pt-4 border-t">
-            <Button
-              variant="ghost"
-              onClick={() => router.push('/signup')}
-              className="w-full flex items-center justify-center space-x-2"
-            >
-              <ArrowLeft size={16} />
-              <span>Back to Signup</span>
             </Button>
           </div>
         </CardContent>

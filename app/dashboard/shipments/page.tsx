@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import {
   CheckCircle2,
   Truck,
@@ -27,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useTranslation } from "@/lib/translation-context"
+import type { Row, Column } from '@tanstack/react-table';
 
 type ShipmentStatus = "delivered" | "in_transit" | "pending" | "delayed"
 
@@ -46,9 +45,6 @@ interface Shipment {
 }
 
 export default function ShipmentsPage() {
-  const { t } = useTranslation()
-  const [selectedOrder, setSelectedOrder] = useState<string | null>(null)
-
   const shipments: Shipment[] = [
     {
       id: "order_vloJEBq",
@@ -184,7 +180,7 @@ export default function ShipmentsPage() {
   const columns = [
     {
       accessorKey: "trackingNumber",
-      header: ({ column }) => (
+      header: ({ column }: { column: Column<Shipment, unknown> }) => (
         <div className="flex items-center">
           Tracking #
           <Button
@@ -197,12 +193,12 @@ export default function ShipmentsPage() {
           </Button>
         </div>
       ),
-      cell: ({ row }) => <div className="font-medium text-white">{row.getValue("trackingNumber")}</div>,
+      cell: ({ row }: { row: Row<Shipment> }) => <div className="font-medium text-white">{row.getValue("trackingNumber")}</div>,
     },
     {
       accessorKey: "route",
       header: "Route",
-      cell: ({ row }) => {
+      cell: ({ row }: { row: Row<Shipment> }) => {
         const shipment = row.original as Shipment
         return (
           <div className="flex flex-col">
@@ -214,7 +210,7 @@ export default function ShipmentsPage() {
     },
     {
       accessorKey: "customer",
-      header: ({ column }) => (
+      header: ({ column }: { column: Column<Shipment, unknown> }) => (
         <div className="flex items-center">
           Customer
           <Button
@@ -227,11 +223,11 @@ export default function ShipmentsPage() {
           </Button>
         </div>
       ),
-      cell: ({ row }) => <div>{row.getValue("customer")}</div>,
+      cell: ({ row }: { row: Row<Shipment> }) => <div>{row.getValue("customer")}</div>,
     },
     {
       accessorKey: "status",
-      header: ({ column }) => (
+      header: ({ column }: { column: Column<Shipment, unknown> }) => (
         <div className="flex items-center">
           Status
           <Button
@@ -244,7 +240,7 @@ export default function ShipmentsPage() {
           </Button>
         </div>
       ),
-      cell: ({ row }) => {
+      cell: ({ row }: { row: Row<Shipment> }) => {
         const status = row.getValue("status") as ShipmentStatus
         return (
           <div className="flex items-center gap-2">
@@ -253,13 +249,16 @@ export default function ShipmentsPage() {
           </div>
         )
       },
-      filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+      filterFn: (row: Row<Shipment>, columnId: string, filterValue: unknown) => {
+        if (Array.isArray(filterValue) && filterValue.every(v => typeof v === 'string')) {
+          return filterValue.includes(row.getValue(columnId));
+        }
+        return false;
       },
     },
     {
       accessorKey: "departureDate",
-      header: ({ column }) => (
+      header: ({ column }: { column: Column<Shipment, unknown> }) => (
         <div className="flex items-center">
           Departure
           <Button
@@ -272,11 +271,11 @@ export default function ShipmentsPage() {
           </Button>
         </div>
       ),
-      cell: ({ row }) => <div>{row.getValue("departureDate")}</div>,
+      cell: ({ row }: { row: Row<Shipment> }) => <div>{row.getValue("departureDate")}</div>,
     },
     {
       accessorKey: "arrivalDate",
-      header: ({ column }) => (
+      header: ({ column }: { column: Column<Shipment, unknown> }) => (
         <div className="flex items-center">
           Arrival
           <Button
@@ -289,23 +288,26 @@ export default function ShipmentsPage() {
           </Button>
         </div>
       ),
-      cell: ({ row }) => <div>{row.getValue("arrivalDate")}</div>,
+      cell: ({ row }: { row: Row<Shipment> }) => <div>{row.getValue("arrivalDate")}</div>,
     },
     {
       accessorKey: "priority",
       header: "Priority",
-      cell: ({ row }) => {
+      cell: ({ row }: { row: Row<Shipment> }) => {
         const priority = row.getValue("priority") as "high" | "medium" | "low"
         return getPriorityBadge(priority)
       },
-      filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+      filterFn: (row: Row<Shipment>, columnId: string, filterValue: unknown) => {
+        if (Array.isArray(filterValue) && filterValue.every(v => typeof v === 'string')) {
+          return filterValue.includes(row.getValue(columnId));
+        }
+        return false;
       },
     },
     {
       accessorKey: "aiOptimized",
       header: "AI Optimization",
-      cell: ({ row }) => {
+      cell: ({ row }: { row: Row<Shipment> }) => {
         const shipment = row.original as Shipment
         return shipment.aiOptimized ? (
           <TooltipProvider>
@@ -329,46 +331,45 @@ export default function ShipmentsPage() {
           </Badge>
         )
       },
-      filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id) ? "optimized" : "standard")
+      filterFn: (row: Row<Shipment>, columnId: string, filterValue: unknown) => {
+        if (Array.isArray(filterValue) && filterValue.every(v => typeof v === 'string')) {
+          return filterValue.includes(row.getValue(columnId) ? "optimized" : "standard");
+        }
+        return false;
       },
     },
     {
       id: "actions",
-      cell: ({ row }) => {
-        const shipment = row.original as Shipment
-        return (
-          <div className="text-right">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white">
-                  <span className="sr-only">Open menu</span>
-                  <Filter className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800 text-gray-300">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-gray-800" />
-                <DropdownMenuItem
-                  className="hover:bg-gray-800 hover:text-white cursor-pointer"
-                  onClick={() => setSelectedOrder(shipment.id)}
-                >
-                  <Eye className="mr-2 h-4 w-4" />
-                  View details
-                </DropdownMenuItem>
-                <DropdownMenuItem className="hover:bg-gray-800 hover:text-white cursor-pointer">
-                  <FileEdit className="mr-2 h-4 w-4" />
-                  Edit shipment
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-500 hover:bg-gray-800 hover:text-red-400 cursor-pointer">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Cancel shipment
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )
-      },
+      cell: () => (
+        <div className="text-right">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white">
+                <span className="sr-only">Open menu</span>
+                <Filter className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800 text-gray-300">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-gray-800" />
+              <DropdownMenuItem
+                className="hover:bg-gray-800 hover:text-white cursor-pointer"
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                View details
+              </DropdownMenuItem>
+              <DropdownMenuItem className="hover:bg-gray-800 hover:text-white cursor-pointer">
+                <FileEdit className="mr-2 h-4 w-4" />
+                Edit shipment
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-red-500 hover:bg-gray-800 hover:text-red-400 cursor-pointer">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Cancel shipment
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      ),
     },
   ]
 

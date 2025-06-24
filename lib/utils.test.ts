@@ -29,7 +29,7 @@ describe('cn utility function', () => {
     expect(cn('p-4', 'p-2')).toBe('p-2'); // p-2 should override p-4
     expect(cn('text-red-500', 'text-blue-500')).toBe('text-blue-500'); // Last conflicting class wins
     expect(cn('px-2 py-1', 'p-4')).toBe('p-4'); // p-4 overrides px-2 and py-1
-    expect(cn('m-2 p-2', 'mx-4')).toBe('p-2 mx-4'); // Non-conflicting margins and paddings
+    expect(cn('m-2 p-2', 'mx-4')).toBe('m-2 p-2 mx-4'); // Non-conflicting margins and paddings
   });
 
   it('should handle complex combinations', () => {

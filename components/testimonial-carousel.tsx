@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronLeft, ChevronRight, Star } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -49,25 +49,25 @@ export default function TestimonialCarousel() {
   const [current, setCurrent] = useState(0)
   const [direction, setDirection] = useState(0)
 
-  const next = () => {
+  const next = useCallback(() => {
     setDirection(1)
     setCurrent((current + 1) % testimonials.length)
-  }
+  }, [current])
 
-  const prev = () => {
+  const prev = useCallback(() => {
     setDirection(-1)
     setCurrent((current - 1 + testimonials.length) % testimonials.length)
-  }
+  }, [current])
 
   useEffect(() => {
     const interval = setInterval(() => {
       next()
     }, 8000)
     return () => clearInterval(interval)
-  }, [current])
+  }, [current, next])
 
   const variants = {
-    enter: (direction) => ({
+    enter: (direction: number) => ({
       x: direction > 0 ? 200 : -200,
       opacity: 0,
     }),
@@ -75,7 +75,7 @@ export default function TestimonialCarousel() {
       x: 0,
       opacity: 1,
     },
-    exit: (direction) => ({
+    exit: (direction: number) => ({
       x: direction < 0 ? 200 : -200,
       opacity: 0,
     }),
@@ -141,7 +141,7 @@ export default function TestimonialCarousel() {
                   ))}
                 </div>
 
-                <blockquote className="text-xl text-white italic mb-8">"{testimonials[current].quote}"</blockquote>
+                <blockquote className="text-xl text-white italic mb-8">&quot;{testimonials[current].quote}&quot;</blockquote>
               </div>
 
               <div className="flex items-center">

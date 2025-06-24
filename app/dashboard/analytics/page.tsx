@@ -6,7 +6,7 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useAuth } from "@/lib/auth-context"
+import { useSession } from "next-auth/react"
 import {
   BarChart,
   Bar,
@@ -59,22 +59,21 @@ const carrierPerformanceData = [
   { name: "Regional Transport", rating: 4.5, onTime: 93, cost: 90 },
 ]
 
-const fleetUtilizationData = [
-  { month: "Jan", utilization: 72 },
-  { month: "Feb", utilization: 75 },
-  { month: "Mar", utilization: 80 },
-  { month: "Apr", utilization: 82 },
-  { month: "May", utilization: 85 },
-  { month: "Jun", utilization: 88 },
-]
-
 export default function AnalyticsPage() {
-  const { user } = useAuth()
+  const { data: session, status } = useSession()
   const [timeRange, setTimeRange] = useState("6m")
+
+  if (status === "loading") {
+    return <div>Loading...</div>
+  }
+
+  if (status === "unauthenticated") {
+    return <div>Access Denied</div>
+  }
 
   // Determine which analytics to show based on user type
   const renderUserSpecificAnalytics = () => {
-    if (user?.userType === "individual") {
+    if (session?.user?.role === "USER") {
       return (
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -241,7 +240,7 @@ export default function AnalyticsPage() {
           </Card>
         </>
       )
-    } else if (user?.userType === "carrier") {
+    } else if (session?.user?.role === "DRIVER") {
       return (
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -414,250 +413,13 @@ export default function AnalyticsPage() {
           </Card>
         </>
       )
-    } else if (user?.userType === "company") {
-      return (
-        <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Fleet Size</CardTitle>
-                <Truck className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">48</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-green-500 flex items-center">
-                    <ArrowUp className="mr-1 h-4 w-4" />4 vehicles
-                  </span>{" "}
-                  from last quarter
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Drivers</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">42</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-green-500 flex items-center">
-                    <ArrowUp className="mr-1 h-4 w-4" />6 drivers
-                  </span>{" "}
-                  from last quarter
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Fleet Utilization</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">88.2%</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-green-500 flex items-center">
-                    <ArrowUp className="mr-1 h-4 w-4" />
-                    3.5%
-                  </span>{" "}
-                  from last month
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Operating Costs</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">$156,420</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-red-500 flex items-center">
-                    <ArrowUp className="mr-1 h-4 w-4" />
-                    5.2%
-                  </span>{" "}
-                  from last month
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
-              <CardHeader>
-                <CardTitle>Fleet Utilization</CardTitle>
-              </CardHeader>
-              <CardContent className="pl-2">
-                <ChartContainer
-                  config={{
-                    utilization: {
-                      label: "Utilization %",
-                      color: "hsl(var(--chart-1))",
-                    },
-                  }}
-                  className="h-[300px]"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={fleetUtilizationData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Line type="monotone" dataKey="utilization" stroke="var(--color-utilization)" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-            <Card className="col-span-3">
-              <CardHeader>
-                <CardTitle>Delivery Performance</CardTitle>
-              </CardHeader>
-              <CardContent className="pl-2">
-                <ChartContainer
-                  config={{
-                    onTime: {
-                      label: "On Time",
-                      color: "hsl(var(--chart-1))",
-                    },
-                    delayed: {
-                      label: "Delayed",
-                      color: "hsl(var(--chart-2))",
-                    },
-                  }}
-                  className="h-[300px]"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={deliveryData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Legend />
-                      <Bar dataKey="onTime" fill="var(--color-onTime)" stackId="a" />
-                      <Bar dataKey="delayed" fill="var(--color-delayed)" stackId="a" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Vehicle Maintenance Status</CardTitle>
-                <CardDescription>Upcoming and overdue maintenance</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    {
-                      id: "TRK-1042",
-                      type: "Box Truck",
-                      status: "Overdue",
-                      service: "Oil Change",
-                      dueDate: "3 days ago",
-                    },
-                    {
-                      id: "VAN-2389",
-                      type: "Cargo Van",
-                      status: "Upcoming",
-                      service: "Tire Rotation",
-                      dueDate: "Tomorrow",
-                    },
-                    {
-                      id: "TRK-5621",
-                      type: "Semi Truck",
-                      status: "Upcoming",
-                      service: "Full Inspection",
-                      dueDate: "3 days",
-                    },
-                    {
-                      id: "VAN-1278",
-                      type: "Cargo Van",
-                      status: "Overdue",
-                      service: "Brake Service",
-                      dueDate: "1 day ago",
-                    },
-                    {
-                      id: "TRK-3490",
-                      type: "Box Truck",
-                      status: "Upcoming",
-                      service: "Transmission Check",
-                      dueDate: "5 days",
-                    },
-                  ].map((vehicle) => (
-                    <div className="flex items-center justify-between" key={vehicle.id}>
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          {vehicle.id} - {vehicle.type}
-                        </p>
-                        <p className="text-sm text-muted-foreground">{vehicle.service}</p>
-                      </div>
-                      <div
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          vehicle.status === "Overdue" ? "bg-red-100 text-red-800" : "bg-amber-100 text-amber-800"
-                        }`}
-                      >
-                        {vehicle.status}: {vehicle.dueDate}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Driver Performance</CardTitle>
-                <CardDescription>Top performing drivers this month</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { name: "Michael Chen", deliveries: 42, onTime: 98, fuelEfficiency: 95 },
-                    { name: "Sarah Johnson", deliveries: 38, onTime: 97, fuelEfficiency: 92 },
-                    { name: "David Rodriguez", deliveries: 36, onTime: 96, fuelEfficiency: 94 },
-                    { name: "Lisa Williams", deliveries: 35, onTime: 95, fuelEfficiency: 91 },
-                    { name: "Robert Kim", deliveries: 33, onTime: 94, fuelEfficiency: 93 },
-                  ].map((driver, index) => (
-                    <div className="flex items-center" key={driver.name}>
-                      <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center mr-4">
-                        <span className="font-medium text-primary">{index + 1}</span>
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium leading-none">{driver.name}</p>
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <span className="mr-2">Deliveries: {driver.deliveries}</span>
-                          <span className="mr-2">•</span>
-                          <span className="mr-2">On-time: {driver.onTime}%</span>
-                          <span className="mr-2">•</span>
-                          <span>Fuel efficiency: {driver.fuelEfficiency}%</span>
-                        </div>
-                      </div>
-                      <div className="font-medium">{90 + index}%</div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </>
-      )
-    } else {
-      return (
-        <div className="flex items-center justify-center h-[60vh]">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2">Analytics Dashboard</h2>
-            <p className="text-muted-foreground">Please select a user type to view analytics</p>
-          </div>
-        </div>
-      )
     }
+
+    return <div>Analytics for your role are not available yet.</div>
   }
 
   return (
-    <div className="space-y-6">
+    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
@@ -865,6 +627,6 @@ export default function AnalyticsPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </main>
   )
 }

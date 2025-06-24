@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useWebSocket } from '@/lib/websocket-context';
-import { LoadingSpinner } from './loading-spinner';
 
 interface Notification {
   id: string;

@@ -1,11 +1,16 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { executeQuery } from "@/lib/db"
+import { auth } from "@/lib/auth"
 
 // Get a specific route
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const id = params.id
+export const GET = auth(async (req) => {
+  if (!req.auth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
+  const id = req.url.split('/').pop();
+
+  try {
     const routes = await executeQuery(
       `SELECT r.*, 
               s.tracking_number, s.status as shipment_status,
@@ -44,14 +49,18 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     console.error("Error fetching route:", error)
     return NextResponse.json({ error: "Failed to fetch route" }, { status: 500 })
   }
-}
+});
 
 // Update a route
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const id = params.id
-    const { truck_id, driver_id, start_time, end_time, distance, status, fuel_consumption } = await request.json()
+export const PUT = auth(async (req) => {
+  if (!req.auth || req.auth.user?.role !== 'ADMIN') {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
 
+  const id = req.url.split('/').pop();
+  const { truck_id, driver_id, start_time, end_time, distance, status, fuel_consumption } = await req.json();
+
+  try {
     // Check if route exists
     const existingRoutes = await executeQuery("SELECT * FROM routes WHERE id = $1", [id])
 
@@ -172,13 +181,17 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     console.error("Error updating route:", error)
     return NextResponse.json({ error: "Failed to update route" }, { status: 500 })
   }
-}
+});
 
 // Delete a route
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const id = params.id
+export const DELETE = auth(async (req) => {
+  if (!req.auth || req.auth.user?.role !== 'ADMIN') {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
 
+  const id = req.url.split('/').pop();
+
+  try {
     // Check if route exists
     const existingRoutes = await executeQuery("SELECT * FROM routes WHERE id = $1", [id])
 
@@ -209,4 +222,4 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     console.error("Error deleting route:", error)
     return NextResponse.json({ error: "Failed to delete route" }, { status: 500 })
   }
-}
+});

@@ -1,11 +1,16 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { executeQuery } from "@/lib/db"
+import { auth } from "@/lib/auth"
 
 // Get a specific driver
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const id = params.id
+export const GET = auth(async (req) => {
+  if (!req.auth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
+  const id = req.url.split('/').pop();
+
+  try {
     const drivers = await executeQuery(
       `SELECT d.*, u.name, u.email 
        FROM drivers d
@@ -23,22 +28,24 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     console.error("Error fetching driver:", error)
     return NextResponse.json({ error: "Failed to fetch driver" }, { status: 500 })
   }
-}
+});
 
 // Update a driver
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const id = params.id
-    const { license_number, license_expiry_date, phone_number, status, rating } = await request.json()
+export const PUT = auth(async (req) => {
+  if (!req.auth || req.auth.user?.role !== 'ADMIN') {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
 
-    // Check if driver exists
+  const id = req.url.split('/').pop();
+  const { license_number, license_expiry_date, phone_number, status, rating } = await req.json();
+
+  try {
     const existingDriver = await executeQuery("SELECT * FROM drivers WHERE id = $1", [id])
 
     if (existingDriver.length === 0) {
       return NextResponse.json({ error: "Driver not found" }, { status: 404 })
     }
 
-    // Update driver
     const result = await executeQuery(
       `UPDATE drivers 
        SET license_number = $1, license_expiry_date = $2, phone_number = $3, 
@@ -48,7 +55,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       [license_number, license_expiry_date, phone_number, status, rating, id],
     )
 
-    // Get user details
     const user = await executeQuery("SELECT name, email FROM users WHERE id = $1", [result[0].user_id])
 
     const driverWithUser = {
@@ -62,21 +68,23 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     console.error("Error updating driver:", error)
     return NextResponse.json({ error: "Failed to update driver" }, { status: 500 })
   }
-}
+});
 
 // Delete a driver
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const id = params.id
+export const DELETE = auth(async (req) => {
+  if (!req.auth || req.auth.user?.role !== 'ADMIN') {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
 
-    // Check if driver exists
+  const id = req.url.split('/').pop();
+
+  try {
     const existingDriver = await executeQuery("SELECT * FROM drivers WHERE id = $1", [id])
 
     if (existingDriver.length === 0) {
       return NextResponse.json({ error: "Driver not found" }, { status: 404 })
     }
 
-    // Check if driver is assigned to any active routes
     const activeRoutes = await executeQuery(
       `SELECT * FROM routes 
        WHERE driver_id = $1 
@@ -88,7 +96,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: "Cannot delete driver that is assigned to active routes" }, { status: 400 })
     }
 
-    // Delete driver
     await executeQuery("DELETE FROM drivers WHERE id = $1", [id])
 
     return NextResponse.json({ success: true })
@@ -96,4 +103,4 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     console.error("Error deleting driver:", error)
     return NextResponse.json({ error: "Failed to delete driver" }, { status: 500 })
   }
-}
+});
