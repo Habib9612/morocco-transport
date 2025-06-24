@@ -1,9 +1,9 @@
 package com.marocotransport.controller;
 
-import com.maroctransit.auth.dto.ApiResponse;
-import com.maroctransit.auth.dto.JobDTO;
-import com.maroctransit.auth.dto.JobRequest;
-import com.maroctransit.auth.service.JobService;
+import com.marocotransport.auth.dto.ApiResponse;
+import com.marocotransport.auth.dto.JobDTO;
+import com.marocotransport.auth.dto.JobRequest;
+import com.marocotransport.auth.service.JobService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

@@ -1,9 +1,9 @@
 package com.marocotransport.controller;
 
-import com.maroctransit.auth.dto.ApiResponse;
-import com.maroctransit.auth.dto.MatchingRequestDTO;
-import com.maroctransit.auth.dto.MatchingResultDTO;
-import com.maroctransit.auth.service.MatchingService;
+import com.marocotransport.auth.dto.ApiResponse;
+import com.marocotransport.auth.dto.MatchingRequestDTO;
+import com.marocotransport.auth.dto.MatchingResultDTO;
+import com.marocotransport.auth.service.MatchingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,11 +1,11 @@
 package com.marocotransport.controller;
 
-import com.maroctransit.auth.dto.ApiResponse;
-import com.maroctransit.auth.dto.JwtAuthResponse;
-import com.maroctransit.auth.dto.LoginRequest;
-import com.maroctransit.auth.dto.SignUpRequest;
-import com.maroctransit.auth.security.JwtTokenProvider;
-import com.maroctransit.auth.service.UserService;
+import com.marocotransport.auth.dto.ApiResponse;
+import com.marocotransport.auth.dto.JwtAuthResponse;
+import com.marocotransport.auth.dto.LoginRequest;
+import com.marocotransport.auth.dto.SignUpRequest;
+import com.marocotransport.auth.security.JwtTokenProvider;
+import com.marocotransport.auth.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
