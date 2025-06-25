@@ -20,7 +20,7 @@ import {
   X
 } from 'lucide-react';
 
-const MaroccoTransitLanding = () => {
+const MarocTransitLanding = () => {
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -340,4 +340,4 @@ const MaroccoTransitLanding = () => {
   );
 };
 
-export default MaroccoTransitLanding;
+export default MarocTransitLanding;
