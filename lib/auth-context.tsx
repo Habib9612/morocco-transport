@@ -11,9 +11,11 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  isLoading: boolean;
+  error: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  isLoading: boolean;
+  clearError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,18 +23,31 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate checking for existing session
-    const checkAuth = async () => {
-      setIsLoading(false);
+    // Check for existing session
+    const initializeAuth = async () => {
+      try {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+        }
+      } catch (err) {
+        console.error('Auth initialization failed:', err);
+        setError('Failed to initialize authentication');
+      } finally {
+        setIsLoading(false);
+      }
     };
     
-    checkAuth();
+    initializeAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
+    setError(null);
         
     try {
       // For demo purposes, accept specific credentials
@@ -64,9 +79,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      setError(errorMessage);
+      console.error('Login error:', err);
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -74,14 +91,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null);
+    setError(null);
     localStorage.removeItem('user');
+  };
+
+  const clearError = () => {
+    setError(null);
   };
 
   const value = {
     user,
+    isLoading,
+    error,
     login,
     logout,
-    isLoading
+    clearError
   };
 
   return (
