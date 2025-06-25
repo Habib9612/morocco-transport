@@ -1,44 +1,77 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { executeQuery } from "@/lib/db"
+import { db } from "@/lib/db"
+import type { Shipment, ShipmentWithDetails } from "@/types"
 
 // Get all shipments
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const status = searchParams.get("status")
-    const customerId = searchParams.get("customer_id")
+    const senderId = searchParams.get("sender_id")
+    const receiverId = searchParams.get("receiver_id")
 
-    let query = `
-      SELECT s.*, 
-             o.name as origin_name, o.address as origin_address, o.city as origin_city,
-             d.name as destination_name, d.address as destination_address, d.city as destination_city,
-             u.name as customer_name, u.email as customer_email
-      FROM shipments s
-      JOIN locations o ON s.origin_id = o.id
-      JOIN locations d ON s.destination_id = d.id
-      JOIN users u ON s.customer_id = u.id
-    `
-
-    const params: any[] = []
-    const conditions: string[] = []
-
+    const where: any = {}
+    
     if (status) {
-      conditions.push("s.status = $" + (params.length + 1))
-      params.push(status)
+      where.status = status.toUpperCase()
+    }
+    
+    if (senderId) {
+      where.senderId = senderId
+    }
+    
+    if (receiverId) {
+      where.receiverId = receiverId
     }
 
-    if (customerId) {
-      conditions.push("s.customer_id = $" + (params.length + 1))
-      params.push(customerId)
-    }
-
-    if (conditions.length > 0) {
-      query += " WHERE " + conditions.join(" AND ")
-    }
-
-    query += " ORDER BY s.created_at DESC"
-
-    const shipments = await executeQuery(query, params)
+    const shipments = await db.shipment.findMany({
+      where,
+      include: {
+        sender: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true
+          }
+        },
+        receiver: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true
+          }
+        },
+        truck: {
+          select: {
+            id: true,
+            licensePlate: true,
+            model: true,
+            make: true,
+            status: true
+          }
+        },
+        company: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        trackingEvents: {
+          orderBy: {
+            timestamp: 'desc'
+          },
+          take: 5
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
 
     return NextResponse.json(shipments)
   } catch (error) {
@@ -51,66 +84,128 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const {
-      customer_id,
-      origin_id,
-      destination_id,
-      status,
-      priority,
+      senderId,
+      receiverId,
+      pickupAddress,
+      pickupCity,
+      pickupPostal,
+      pickupDate,
+      pickupContact,
+      pickupPhone,
+      deliveryAddress,
+      deliveryCity,
+      deliveryPostal,
+      deliveryDate,
+      deliveryContact,
+      deliveryPhone,
       weight,
-      volume,
-      scheduled_pickup,
-      scheduled_delivery,
+      dimensions,
+      description,
+      specialInstructions,
+      price,
+      truckId,
+      companyId
     } = await request.json()
 
     // Validate input
-    if (!customer_id || !origin_id || !destination_id) {
-      return NextResponse.json({ error: "Customer ID, origin ID, and destination ID are required" }, { status: 400 })
+    if (!senderId || !receiverId || !pickupAddress || !pickupCity || !deliveryAddress || !deliveryCity) {
+      return NextResponse.json({ 
+        error: "Sender ID, receiver ID, pickup address, pickup city, delivery address, and delivery city are required" 
+      }, { status: 400 })
+    }
+
+    // Verify sender and receiver exist
+    const [sender, receiver] = await Promise.all([
+      db.user.findUnique({ where: { id: senderId } }),
+      db.user.findUnique({ where: { id: receiverId } })
+    ])
+
+    if (!sender) {
+      return NextResponse.json({ error: "Sender not found" }, { status: 404 })
+    }
+
+    if (!receiver) {
+      return NextResponse.json({ error: "Receiver not found" }, { status: 404 })
     }
 
     // Generate tracking number
-    const trackingNumber = "SHP-" + Date.now() + "-" + Math.floor(Math.random() * 1000)
+    const trackingNumber = "MRT-" + Date.now() + "-" + Math.floor(Math.random() * 10000).toString().padStart(4, '0')
 
     // Create shipment
-    const result = await executeQuery(
-      `INSERT INTO shipments 
-       (tracking_number, customer_id, origin_id, destination_id, status, priority, 
-        weight, volume, scheduled_pickup, scheduled_delivery) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
-       RETURNING *`,
-      [
+    const shipment = await db.shipment.create({
+      data: {
         trackingNumber,
-        customer_id,
-        origin_id,
-        destination_id,
-        status || "pending",
-        priority || "medium",
-        weight,
-        volume,
-        scheduled_pickup,
-        scheduled_delivery,
-      ],
-    )
+        senderId,
+        receiverId,
+        pickupAddress,
+        pickupCity,
+        pickupPostal,
+        pickupDate: pickupDate ? new Date(pickupDate) : undefined,
+        pickupContact,
+        pickupPhone,
+        deliveryAddress,
+        deliveryCity,
+        deliveryPostal,
+        deliveryDate: deliveryDate ? new Date(deliveryDate) : undefined,
+        deliveryContact,
+        deliveryPhone,
+        weight: weight ? parseFloat(weight) : undefined,
+        dimensions,
+        description,
+        specialInstructions,
+        price: price ? parseFloat(price) : undefined,
+        truckId,
+        companyId,
+        status: 'PENDING'
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true
+          }
+        },
+        receiver: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true
+          }
+        },
+        truck: {
+          select: {
+            id: true,
+            licensePlate: true,
+            model: true,
+            make: true
+          }
+        },
+        company: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    })
 
-    // Get related data
-    const shipment = result[0]
+    // Create initial tracking event
+    await db.trackingEvent.create({
+      data: {
+        shipmentId: shipment.id,
+        event: 'SHIPMENT_CREATED',
+        description: 'Shipment has been created and is pending confirmation',
+        location: pickupCity
+      }
+    })
 
-    const [origin] = await executeQuery("SELECT * FROM locations WHERE id = $1", [origin_id])
-    const [destination] = await executeQuery("SELECT * FROM locations WHERE id = $1", [destination_id])
-    const [customer] = await executeQuery("SELECT name, email FROM users WHERE id = $1", [customer_id])
-
-    const shipmentWithDetails = {
-      ...shipment,
-      origin_name: origin.name,
-      origin_address: origin.address,
-      origin_city: origin.city,
-      destination_name: destination.name,
-      destination_address: destination.address,
-      destination_city: destination.city,
-      customer_name: customer.name,
-      customer_email: customer.email,
-    }
-
-    return NextResponse.json(shipmentWithDetails, { status: 201 })
+    return NextResponse.json(shipment, { status: 201 })
   } catch (error) {
     console.error("Error creating shipment:", error)
     return NextResponse.json({ error: "Failed to create shipment" }, { status: 500 })

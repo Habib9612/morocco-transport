@@ -1,23 +1,68 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { executeQuery } from "@/lib/db"
+import { db } from "@/lib/db"
+import type { Truck, TruckWithDetails } from "@/types"
 
 // Get all trucks
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const status = searchParams.get("status")
+    const companyId = searchParams.get("company_id")
+    const driverId = searchParams.get("driver_id")
 
-    let query = "SELECT * FROM trucks"
-    const params: any[] = []
-
+    const where: any = {}
+    
     if (status) {
-      query += " WHERE status = $1"
-      params.push(status)
+      where.status = status.toUpperCase()
+    }
+    
+    if (companyId) {
+      where.companyId = companyId
+    }
+    
+    if (driverId) {
+      where.driverId = driverId
     }
 
-    query += " ORDER BY created_at DESC"
-
-    const trucks = await executeQuery(query, params)
+    const trucks = await db.truck.findMany({
+      where,
+      include: {
+        driver: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true
+          }
+        },
+        company: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        currentShipment: {
+          select: {
+            id: true,
+            trackingNumber: true,
+            status: true,
+            pickupCity: true,
+            deliveryCity: true
+          }
+        },
+        maintenanceLogs: {
+          orderBy: {
+            performedAt: 'desc'
+          },
+          take: 3
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
 
     return NextResponse.json(trucks)
   } catch (error) {
@@ -29,30 +74,93 @@ export async function GET(request: NextRequest) {
 // Create a new truck
 export async function POST(request: NextRequest) {
   try {
-    const { license_plate, model, capacity, status, fuel_efficiency } = await request.json()
+    const { 
+      licensePlate, 
+      model, 
+      make, 
+      year, 
+      capacity, 
+      fuelType, 
+      currentLocation, 
+      driverId, 
+      companyId 
+    } = await request.json()
 
     // Validate input
-    if (!license_plate || !model || !capacity) {
-      return NextResponse.json({ error: "License plate, model, and capacity are required" }, { status: 400 })
+    if (!licensePlate || !model || !year || !capacity) {
+      return NextResponse.json({ 
+        error: "License plate, model, year, and capacity are required" 
+      }, { status: 400 })
     }
 
     // Check if truck with license plate already exists
-    const existingTruck = await executeQuery("SELECT * FROM trucks WHERE license_plate = $1", [license_plate])
+    const existingTruck = await db.truck.findUnique({
+      where: { licensePlate }
+    })
 
-    if (existingTruck.length > 0) {
-      return NextResponse.json({ error: "Truck with this license plate already exists" }, { status: 409 })
+    if (existingTruck) {
+      return NextResponse.json({ 
+        error: "Truck with this license plate already exists" 
+      }, { status: 409 })
+    }
+
+    // Verify driver exists if provided
+    if (driverId) {
+      const driver = await db.user.findUnique({
+        where: { id: driverId, role: 'DRIVER' }
+      })
+      
+      if (!driver) {
+        return NextResponse.json({ error: "Driver not found" }, { status: 404 })
+      }
+    }
+
+    // Verify company exists if provided
+    if (companyId) {
+      const company = await db.company.findUnique({
+        where: { id: companyId }
+      })
+      
+      if (!company) {
+        return NextResponse.json({ error: "Company not found" }, { status: 404 })
+      }
     }
 
     // Create truck
-    const result = await executeQuery(
-      `INSERT INTO trucks 
-       (license_plate, model, capacity, status, fuel_efficiency) 
-       VALUES ($1, $2, $3, $4, $5) 
-       RETURNING *`,
-      [license_plate, model, capacity, status || "available", fuel_efficiency],
-    )
+    const truck = await db.truck.create({
+      data: {
+        licensePlate,
+        model,
+        make,
+        year: parseInt(year),
+        capacity: parseFloat(capacity),
+        fuelType: fuelType || 'DIESEL',
+        status: 'AVAILABLE',
+        currentLocation,
+        driverId,
+        companyId
+      },
+      include: {
+        driver: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true
+          }
+        },
+        company: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    })
 
-    return NextResponse.json(result[0], { status: 201 })
+    return NextResponse.json(truck, { status: 201 })
   } catch (error) {
     console.error("Error creating truck:", error)
     return NextResponse.json({ error: "Failed to create truck" }, { status: 500 })

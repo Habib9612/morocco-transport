@@ -25,7 +25,8 @@ export default function DashboardSidebar() {
     },
     {
       href: "/dashboard/nearby",
-      label: "Nearby Loa  DropdownMenuGroMapPin,
+      label: "Nearby Loads",
+      icon: MapPin,
       roles: ["carrier"]
     },
     {

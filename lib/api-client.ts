@@ -1,4 +1,16 @@
 import { toast } from 'sonner';
+import type { 
+  ApiResponse, 
+  Shipment, 
+  Truck, 
+  RouteData, 
+  User,
+  CreateShipmentRequest,
+  CreateTruckRequest,
+  CreateRouteRequest,
+  LoginRequest,
+  RegisterRequest
+} from '@/types'
 
 interface RequestOptions extends RequestInit {
   showToast?: boolean;
