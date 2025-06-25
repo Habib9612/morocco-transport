@@ -1,8 +1,8 @@
-package com.maroctransit.auth.config;
+package com.marocotransport.config;
 
-import com.maroctransit.auth.security.JwtAuthenticationFilter;
-import com.maroctransit.auth.security.JwtAuthenticationEntryPoint;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.marocotransport.security.JwtAuthenticationFilter;
+import com.marocotransport.security.JwtAuthenticationEntryPoint;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -30,11 +30,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 )
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    private UserDetailsService userDetailsService;
-    
-    @Autowired
-    private JwtAuthenticationEntryPoint unauthorizedHandler;
+    private final UserDetailsService userDetailsService;
+    private final JwtAuthenticationEntryPoint unauthorizedHandler;
+
+    public SecurityConfig(UserDetailsService userDetailsService, 
+                         JwtAuthenticationEntryPoint unauthorizedHandler) {
+        this.userDetailsService = userDetailsService;
+        this.unauthorizedHandler = unauthorizedHandler;
+    }
     
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {

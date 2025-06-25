@@ -1,4 +1,4 @@
-package com.maroctransit.auth.controller;
+package com.marocotransport.controller;
 
 import com.maroctransit.auth.dto.ApiResponse;
 import com.maroctransit.auth.dto.JobDTO;
@@ -8,13 +8,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.List;
 
 /**
@@ -25,8 +25,11 @@ import java.util.List;
 @Tag(name = "Job Management", description = "APIs for managing transport jobs")
 public class JobController {
 
-    @Autowired
-    private JobService jobService;
+    private final JobService jobService;
+
+    public JobController(JobService jobService) {
+        this.jobService = jobService;
+    }
 
     /**
      * Create a new job (Shipper only)

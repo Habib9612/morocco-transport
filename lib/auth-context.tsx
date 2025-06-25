@@ -6,7 +6,11 @@ interface User {
   id: string;
   email: string;
   name: string;
+<<<<<<< HEAD
   role: 'admin' | 'carrier' | 'user';
+=======
+  role?: string;
+>>>>>>> fa5f4e20f614a160d0af89a63263d94fc66f7f9e
 }
 
 interface AuthContextType {
@@ -42,7 +46,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
+<<<<<<< HEAD
     
+=======
+        
+>>>>>>> fa5f4e20f614a160d0af89a63263d94fc66f7f9e
     try {
       // For demo purposes, accept specific credentials
       const validCredentials = [
@@ -54,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const validUser = validCredentials.find(
         cred => cred.email === email && cred.password === password
       );
-      
+
       if (!validUser) {
         throw new Error('Invalid email or password');
       }
@@ -63,16 +71,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const mockUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: Math.floor(Math.random() * 1000),
         email: validUser.email,
         name: validUser.role === 'admin' ? 'Admin User' : 
               validUser.role === 'carrier' ? 'Carrier User' : 'Regular User',
-        role: validUser.role as 'admin' | 'carrier' | 'user'
+        role: validUser.role
       };
       
       setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));
     } catch (error) {
+<<<<<<< HEAD
+=======
+      console.error('Login error:', error);
+>>>>>>> fa5f4e20f614a160d0af89a63263d94fc66f7f9e
       throw error;
     } finally {
       setIsLoading(false);

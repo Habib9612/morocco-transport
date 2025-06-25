@@ -1,4 +1,4 @@
-package com.maroctransit.auth.security;
+package com.marocotransport.security;
 
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
