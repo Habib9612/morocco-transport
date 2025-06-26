@@ -1,4 +1,4 @@
-package com.maroctransit.auth.dto;
+package com.marocotransport.dto;
 
 import java.time.LocalDateTime;
 
