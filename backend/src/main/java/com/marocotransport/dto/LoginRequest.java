@@ -1,6 +1,6 @@
-package com.maroctransit.auth.dto;
+package com.marocotransport.dto;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * DTO for login requests
