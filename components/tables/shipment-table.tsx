@@ -31,10 +31,76 @@ interface Shipment {
 }
 
 interface ShipmentTableProps {
-  shipments: Shipment[]
   onSelectOrder: (id: string) => void
   selectedOrder: string | null
 }
+
+const shipments: Shipment[] = [
+  {
+    id: "order_vloJEBq",
+    trackingNumber: "SHP-2023-1234",
+    origin: "Chicago, IL",
+    destination: "New York, NY",
+    customer: "Acme Corp",
+    status: "in_transit",
+    departureDate: "2025-03-20",
+    arrivalDate: "2025-03-23",
+    priority: "high",
+    aiOptimized: true,
+    aiSavings: 350,
+  },
+  {
+    id: "order_a7bCdE",
+    trackingNumber: "SHP-2023-1235",
+    origin: "Los Angeles, CA",
+    destination: "Seattle, WA",
+    customer: "TechGiant Inc",
+    status: "delivered",
+    departureDate: "2025-03-18",
+    arrivalDate: "2025-03-21",
+    priority: "medium",
+    aiOptimized: true,
+    aiSavings: 420,
+  },
+  {
+    id: "order_f8gHiJ",
+    trackingNumber: "SHP-2023-1236",
+    origin: "Miami, FL",
+    destination: "Atlanta, GA",
+    customer: "Southern Distributors",
+    status: "delayed",
+    departureDate: "2025-03-19",
+    arrivalDate: "2025-03-22",
+    priority: "high",
+    aiOptimized: false,
+  },
+  {
+    id: "order_k9lMnO",
+    trackingNumber: "SHP-2023-1237",
+    origin: "Dallas, TX",
+    destination: "Phoenix, AZ",
+    customer: "Desert Supplies Co",
+    status: "pending",
+    departureDate: "2025-03-22",
+    arrivalDate: "2025-03-25",
+    priority: "low",
+    aiOptimized: true,
+    aiSavings: 280,
+  },
+  {
+    id: "order_p0qRsT",
+    trackingNumber: "SHP-2023-1238",
+    origin: "Boston, MA",
+    destination: "Washington, DC",
+    customer: "East Coast Traders",
+    status: "in_transit",
+    departureDate: "2025-03-21",
+    arrivalDate: "2025-03-23",
+    priority: "medium",
+    aiOptimized: true,
+    aiSavings: 175,
+  },
+]
 
 const getStatusIcon = (status: ShipmentStatus) => {
   switch (status) {
@@ -101,7 +167,7 @@ const getPriorityBadge = (priority: "high" | "medium" | "low") => {
   }
 }
 
-export default function ShipmentTable({ shipments, onSelectOrder, selectedOrder }: ShipmentTableProps) {
+export default function ShipmentTable({ onSelectOrder, selectedOrder }: ShipmentTableProps) {
   return (
     <div className="rounded-md border border-[#2d3748]">
       <Table>
@@ -134,15 +200,15 @@ export default function ShipmentTable({ shipments, onSelectOrder, selectedOrder 
                   <span className="text-xs text-gray-400">To: {shipment.destination}</span>
                 </div>
               </TableCell>
-              <TableCell>{shipment.customer}</TableCell>
+              <TableCell className="text-gray-300">{shipment.customer}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
                   {getStatusIcon(shipment.status)}
                   {getStatusBadge(shipment.status)}
                 </div>
               </TableCell>
-              <TableCell>{shipment.departureDate}</TableCell>
-              <TableCell>{shipment.arrivalDate}</TableCell>
+              <TableCell className="text-gray-300">{shipment.departureDate}</TableCell>
+              <TableCell className="text-gray-300">{shipment.arrivalDate}</TableCell>
               <TableCell>{getPriorityBadge(shipment.priority)}</TableCell>
               <TableCell>
                 {shipment.aiOptimized ? (
@@ -169,24 +235,27 @@ export default function ShipmentTable({ shipments, onSelectOrder, selectedOrder 
               </TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white">
-                      <span className="sr-only">Open menu</span>
+                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
                       <MoreHorizontal className="h-4 w-4" />
+                      <span className="sr-only">Open menu</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800 text-gray-300">
+                  <DropdownMenuContent align="end" className="bg-[#1e293b] border-[#2d3748] text-gray-300">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-gray-800" />
-                    <DropdownMenuItem className="hover:bg-gray-800 hover:text-white cursor-pointer">
+                    <DropdownMenuSeparator className="bg-[#2d3748]" />
+                    <DropdownMenuItem
+                      className="hover:bg-[#2d3748] hover:text-white cursor-pointer"
+                      onClick={() => onSelectOrder(shipment.id)}
+                    >
                       <Eye className="mr-2 h-4 w-4" />
                       View details
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="hover:bg-gray-800 hover:text-white cursor-pointer">
+                    <DropdownMenuItem className="hover:bg-[#2d3748] hover:text-white cursor-pointer">
                       <FileEdit className="mr-2 h-4 w-4" />
                       Edit shipment
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-500 hover:bg-gray-800 hover:text-red-400 cursor-pointer">
+                    <DropdownMenuItem className="text-red-500 hover:bg-[#2d3748] hover:text-red-400 cursor-pointer">
                       <Trash2 className="mr-2 h-4 w-4" />
                       Cancel shipment
                     </DropdownMenuItem>

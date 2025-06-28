@@ -1,21 +1,49 @@
 # 🚛 MarocTransit - Morocco's Premier Transport Platform
 
-A comprehensive logistics and transportation management platform built with Next.js, TypeScript, and Spring Boot.
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.0-green?style=flat-square&logo=spring)](https://spring.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
 
-## 🎯 Features
+<div align="center">
+  <h3>🚛 Built with ❤️ for Morocco's Transport Industry</h3>
+  <p>Connect Shippers with Carriers Instantly</p>
+</div>
 
-- **🔐 Real Authentication** - JWT-based authentication with user management
-- **📊 Live Dashboard** - Real-time analytics and shipment tracking
+## 🌟 Overview
+
+MarocTransit is a comprehensive logistics and transportation management platform designed specifically for Morocco's transport industry. Our platform leverages advanced AI algorithms to intelligently match carriers with shippers, optimizing transportation efficiency and reducing costs across the supply chain.
+
+### 🎯 Key Features
+
+- **🤖 AI-Powered Matching** - Intelligent carrier-shipper pairing based on multiple factors
+- **📊 Real-time Analytics** - Live dashboard with performance metrics and insights
 - **🚚 Fleet Management** - Complete truck and driver management system
 - **📦 Shipment Tracking** - End-to-end shipment lifecycle management
-- **🤖 AI Integration** - Route optimization and intelligent matching
-- **📱 Responsive Design** - Modern UI with mobile-first approach
-- **🌍 Multi-language** - Internationalization support
+- **🔐 Secure Authentication** - JWT-based authentication with role-based access
+- **📱 Responsive Design** - Modern UI optimized for all devices
+- **🌍 Multi-language** - Support for Arabic, French, and English
 - **🔔 Real-time Notifications** - Instant updates and alerts
 
 ## 🏗️ Architecture
 
-### Frontend (Next.js 14 + TypeScript)
+### Frontend Stack
+- **Framework**: Next.js 14 with App Router
+- **Language**: TypeScript (100% type coverage)
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **State Management**: React Context API
+- **Authentication**: JWT-based with custom context
+- **Real-time**: WebSocket integration for live updates
+
+### Backend Stack
+- **Framework**: Spring Boot (Java 17)
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT tokens with Spring Security
+- **API**: RESTful endpoints with proper error handling
+- **Documentation**: OpenAPI/Swagger integration
+
+## 📁 Project Structure
+
 ```
 morocco-transport-2/
 ├── app/                          # Next.js App Router
@@ -41,7 +69,11 @@ morocco-transport-2/
 │   └── layout.tsx                # Root layout with AuthProvider
 ├── components/                   # Reusable UI components
 │   ├── ui/                       # Base UI components (shadcn/ui)
+│   ├── landing/                  # Landing page components
 │   ├── dashboard/                # Dashboard-specific components
+│   ├── forms/                    # Form components
+│   ├── tables/                   # Data table components
+│   ├── charts/                   # Chart and visualization components
 │   └── admin/                    # Admin panel components
 ├── lib/                          # Core libraries and utilities
 │   ├── api-client.ts             # API client for backend communication
@@ -52,40 +84,19 @@ morocco-transport-2/
 ├── prisma/                       # Database schema and migrations
 │   ├── schema.prisma             # Database schema
 │   └── migrations/               # Database migrations
+├── backend/                      # Spring Boot backend
+│   ├── src/main/java/com/marocotransport/
+│   │   ├── controller/           # REST API controllers
+│   │   ├── service/              # Business logic layer
+│   │   ├── repository/           # Data access layer
+│   │   ├── entity/               # JPA entities
+│   │   ├── dto/                  # Data Transfer Objects
+│   │   ├── security/             # Security configuration
+│   │   └── config/               # Application configuration
+│   └── pom.xml                   # Maven dependencies
 └── scripts/                      # Database setup scripts
     ├── 01-create-tables.sql      # Schema creation
     └── 02-seed-data.sql          # Initial data seeding
-```
-
-### Backend (Spring Boot + Java)
-```
-backend/
-├── src/main/java/com/marocotransport/
-│   ├── controller/               # REST API controllers
-│   │   ├── AuthController.java   # Authentication endpoints
-│   │   ├── UserController.java   # User management
-│   │   ├── ShipmentController.java # Shipment operations
-│   │   └── TruckController.java  # Fleet management
-│   ├── service/                  # Business logic layer
-│   │   ├── UserService.java      # User operations
-│   │   ├── ShipmentService.java  # Shipment logic
-│   │   └── TruckService.java     # Fleet operations
-│   ├── repository/               # Data access layer
-│   │   ├── UserRepository.java   # User data access
-│   │   ├── ShipmentRepository.java # Shipment data access
-│   │   └── TruckRepository.java  # Fleet data access
-│   ├── entity/                   # JPA entities
-│   │   ├── User.java             # User entity
-│   │   ├── Shipment.java         # Shipment entity
-│   │   └── Truck.java            # Truck entity
-│   ├── dto/                      # Data Transfer Objects
-│   │   ├── ApiResponse.java      # Standard API responses
-│   │   └── LoginRequest.java     # Authentication DTOs
-│   ├── security/                 # Security configuration
-│   │   ├── JwtTokenProvider.java # JWT token management
-│   │   └── SecurityConfig.java   # Security configuration
-│   └── config/                   # Application configuration
-└── pom.xml                       # Maven dependencies
 ```
 
 ## 🚀 Quick Start
