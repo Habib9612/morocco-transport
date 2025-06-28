@@ -2,26 +2,26 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
 import DashboardSidebar from "@/components/dashboard-sidebar"
 import DashboardHeader from "@/components/dashboard-header"
 import { Toaster } from "@/components/ui/sonner"
+import { useAuth } from "@/lib/auth-context"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { status } = useSession()
+  const { user, loading, isAuthenticated } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!loading && !isAuthenticated) {
       router.push("/login")
     }
-  }, [status, router])
+  }, [loading, isAuthenticated, router])
 
-  if (status === "loading") {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div>Loading...</div>
@@ -29,7 +29,7 @@ export default function DashboardLayout({
     )
   }
 
-  if (status === "authenticated") {
+  if (isAuthenticated && user) {
     return (
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
         <DashboardSidebar />

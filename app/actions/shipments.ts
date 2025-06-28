@@ -18,7 +18,7 @@ export async function getShipments(filters?: {
       JOIN users u ON s.customer_id = u.id
     `
 
-    const params: (string | number)[] = []
+    const params: any[] = []
     const conditions: string[] = []
 
     if (filters?.status) {

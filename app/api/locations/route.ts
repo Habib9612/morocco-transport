@@ -1,48 +1,75 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { executeQuery } from "@/lib/db"
+import { executeQuery, buildPaginationQuery, buildFilterQuery, buildSortQuery } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 
 // Get all locations
 export async function GET(request: NextRequest) {
   try {
+    const user = await requireAuth()(request)
     const searchParams = request.nextUrl.searchParams
-    const city = searchParams.get("city")
-    const query = searchParams.get("query")
+    const page = Number.parseInt(searchParams.get("page") || "1")
+    const limit = Number.parseInt(searchParams.get("limit") || "10")
+    const sortBy = searchParams.get("sort_by")
+    const sortOrder = (searchParams.get("sort_order") || "DESC") as "ASC" | "DESC"
 
-    let sqlQuery = "SELECT * FROM locations"
-    const params: (string | number)[] = []
-    const conditions: string[] = []
-
-    if (city) {
-      conditions.push("city = $" + (params.length + 1))
-      params.push(city)
+    // Build filters
+    const filters: any = {
+      location_type: searchParams.get("location_type"),
+      city: searchParams.get("city"),
+      country: searchParams.get("country"),
+      is_active: searchParams.get("is_active") === "false" ? false : true,
     }
 
-    if (query) {
-      conditions.push("(name ILIKE $" + (params.length + 1) + " OR address ILIKE $" + (params.length + 1) + ")")
-      params.push(`%${query}%`)
-    }
+    let query = "SELECT * FROM locations"
 
-    if (conditions.length > 0) {
-      sqlQuery += " WHERE " + conditions.join(" AND ")
-    }
+    const { whereClause, params } = buildFilterQuery(filters)
+    query += whereClause
 
-    sqlQuery += " ORDER BY name"
+    // Add sorting
+    query += ` ${buildSortQuery(sortBy, sortOrder)}`
 
-    const locations = await executeQuery(sqlQuery, params)
+    // Get total count
+    const countQuery = query.replace(/SELECT.*FROM/, "SELECT COUNT(*) as total FROM").split("ORDER BY")[0]
+    const countResult = await executeQuery(countQuery, params)
+    const total = Number.parseInt(countResult[0].total)
 
-    return NextResponse.json(locations)
+    // Apply pagination
+    const paginatedQuery = buildPaginationQuery(query, page, limit)
+    const locations = await executeQuery(paginatedQuery, params)
+
+    return NextResponse.json({
+      locations,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    })
   } catch (error) {
     console.error("Error fetching locations:", error)
-    return NextResponse.json({ error: "Failed to fetch locations" }, { status: 500 })
+    return NextResponse.json({ error: error.message || "Failed to fetch locations" }, { status: 500 })
   }
 }
 
 // Create a new location
 export async function POST(request: NextRequest) {
   try {
-    const { name, address, city, state, country, postal_code, latitude, longitude } = await request.json()
+    const user = await requireAuth(["admin", "company", "carrier"])(request)
 
-    // Validate input
+    const {
+      name,
+      address,
+      city,
+      state,
+      country = "Morocco",
+      postal_code,
+      latitude,
+      longitude,
+      location_type = "address",
+    } = await request.json()
+
+    // Validate required fields
     if (!name || !address || !city || !country) {
       return NextResponse.json({ error: "Name, address, city, and country are required" }, { status: 400 })
     }
@@ -50,15 +77,15 @@ export async function POST(request: NextRequest) {
     // Create location
     const result = await executeQuery(
       `INSERT INTO locations 
-       (name, address, city, state, country, postal_code, latitude, longitude) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+       (name, address, city, state, country, postal_code, latitude, longitude, location_type)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
-      [name, address, city, state, country, postal_code, latitude, longitude],
+      [name, address, city, state, country, postal_code, latitude, longitude, location_type],
     )
 
     return NextResponse.json(result[0], { status: 201 })
   } catch (error) {
     console.error("Error creating location:", error)
-    return NextResponse.json({ error: "Failed to create location" }, { status: 500 })
+    return NextResponse.json({ error: error.message || "Failed to create location" }, { status: 500 })
   }
 }

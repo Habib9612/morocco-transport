@@ -20,7 +20,7 @@ export default function FeaturesSectionDemo() {
     },
     {
       title: "Ease of use",
-      description: "It's as easy as using an Apple, and as expensive as buying one.",
+      description: "It&apos;s as easy as using an Apple, and as expensive as buying one.",
       icon: <IconEaseInOut />,
     },
     {

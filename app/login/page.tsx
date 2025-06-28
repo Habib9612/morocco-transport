@@ -5,13 +5,12 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/lib/auth-context"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [role, setRole] = useState("individual")
+  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const { login } = useAuth()
   const router = useRouter()
@@ -19,11 +18,15 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
-    await login(email, password)
-    router.push("/dashboard")
-    
-    setIsLoading(false)
+    setError(null)
+    try {
+      await login(email, password)
+      router.push("/dashboard")
+    } catch (err) {
+      setError("Invalid email or password.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -36,18 +39,6 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Role Selection */}
-            <Select value={role} onValueChange={setRole}>
-              <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-                <SelectValue placeholder="Select account type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="individual">Individual Shipper</SelectItem>
-                <SelectItem value="carrier">Carrier</SelectItem>
-                <SelectItem value="company">Fleet Manager</SelectItem>
-              </SelectContent>
-            </Select>
-
             {/* Email Input */}
             <Input
               type="email"
@@ -68,6 +59,10 @@ export default function LoginPage() {
               required
             />
 
+            {error && (
+              <div className="text-red-500 text-sm text-center">{error}</div>
+            )}
+
             {/* Submit Button */}
             <Button 
               type="submit" 
@@ -77,7 +72,6 @@ export default function LoginPage() {
               {isLoading ? "Logging in..." : "Login"}
             </Button>
           </form>
-          
           <div className="mt-4 text-center">
             <span>Don&apos;t have an account? <a href="/signup" className="text-blue-600 hover:underline">Sign up</a></span>
           </div>
