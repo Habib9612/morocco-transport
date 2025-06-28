@@ -42,7 +42,7 @@ export default function ValueProposition() {
       icon: <Truck className="h-12 w-12 text-blue-600" />,
       title: "Fleet Utilization Analytics",
       description:
-        "Maximize your fleet's productivity with AI analytics that identify underutilized vehicles and optimize assignment to increase capacity utilization by 35%.",
+        "Maximize your fleet&apos;s productivity with AI analytics that identify underutilized vehicles and optimize assignment to increase capacity utilization by 35%.",
       learnMore:
         "The fleet analytics platform aggregates operational data to identify usage patterns, allowing fleet managers to make data-driven decisions about vehicle distribution, acquisition, and retirement.",
     },
@@ -99,7 +99,7 @@ export default function ValueProposition() {
   )
 }
 
-function BenefitCard({ icon, title, description, learnMore }) {
+function BenefitCard({ icon, title, description, learnMore }: { icon: React.ReactNode; title: string; description: string; learnMore: string }) {
   return (
     <Card className="h-full flex flex-col transition-all duration-300 hover:shadow-lg border border-gray-200">
       <CardHeader className="pb-2">

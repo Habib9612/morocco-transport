@@ -1,5 +1,4 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@/lib/theme-context';
 import { I18nProvider } from '@/lib/i18n-context';
 import { ThemeSwitcher } from './theme-switcher';

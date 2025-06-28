@@ -1,46 +1,56 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { verify } from 'jsonwebtoken';
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
+import { verifyToken } from "@/lib/auth"
 
-// Add paths that don't require authentication
-const publicPaths = [
-  '/',
-  '/login',
-  '/signup',
-  '/forgot-password',
-  '/api/auth/login',
-  '/api/auth/signup',
-  '/api/auth/forgot-password',
-];
+export function middleware(request: NextRequest) {
+  // Skip middleware for public routes
+  const publicRoutes = ["/", "/login", "/signup", "/forgot-password"]
+  const isPublicRoute = publicRoutes.some((route) => request.nextUrl.pathname === route)
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Allow public paths
-  if (publicPaths.includes(pathname)) {
-    return NextResponse.next();
+  if (isPublicRoute) {
+    return NextResponse.next()
   }
 
-  // Check for session token
-  const sessionToken = request.cookies.get('session')?.value;
-
-  if (!sessionToken) {
-    // Redirect to login if no session token
-    const url = new URL('/login', request.url);
-    url.searchParams.set('from', pathname);
-    return NextResponse.redirect(url);
+  // Skip middleware for API auth routes
+  if (request.nextUrl.pathname.startsWith("/api/auth/")) {
+    return NextResponse.next()
   }
 
-  try {
-    // Verify token
-    verify(sessionToken, process.env.JWT_SECRET || 'your-secret-key');
-    return NextResponse.next();
-  } catch (error) {
-    // Invalid token, redirect to login
-    const url = new URL('/login', request.url);
-    url.searchParams.set('from', pathname);
-    return NextResponse.redirect(url);
+  // Add CORS headers for API routes
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    const response = NextResponse.next()
+
+    response.headers.set("Access-Control-Allow-Origin", "*")
+    response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+    response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+    return response
   }
+
+  // Check for authentication on protected routes
+  if (request.nextUrl.pathname.startsWith("/dashboard") || request.nextUrl.pathname.startsWith("/api/")) {
+    const token =
+      request.cookies.get("auth-token")?.value || request.headers.get("authorization")?.replace("Bearer ", "")
+
+    if (!token) {
+      if (request.nextUrl.pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
+      return NextResponse.redirect(new URL("/login", request.url))
+    }
+
+    try {
+      verifyToken(token)
+      return NextResponse.next()
+    } catch (error) {
+      if (request.nextUrl.pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Invalid token" }, { status: 401 })
+      }
+      return NextResponse.redirect(new URL("/login", request.url))
+    }
+  }
+
+  return NextResponse.next()
 }
 
 export const config = {
@@ -52,6 +62,7 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public folder
      */
-    '/((?!_next/static|_next/image|favicon.ico|public/).*)',
+    "/((?!_next/static|_next/image|favicon.ico|public/).*)",
+    "/api/:path*",
   ],
-};
+}

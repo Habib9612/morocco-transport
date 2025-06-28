@@ -1,15 +1,20 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { executeQuery } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 
 // Get a specific driver
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const user = await requireAuth()(request)
     const id = params.id
 
     const drivers = await executeQuery(
-      `SELECT d.*, u.name, u.email 
+      `SELECT d.*, 
+             u.name, u.email, u.city, u.country, u.address,
+             l.name as current_location_name, l.address as current_location_address, l.city as current_location_city
        FROM drivers d
-       JOIN users u ON d.user_id = u.id
+       LEFT JOIN users u ON d.user_id = u.id
+       LEFT JOIN locations l ON d.current_location_id = l.id
        WHERE d.id = $1`,
       [id],
     )
@@ -18,18 +23,25 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Driver not found" }, { status: 404 })
     }
 
-    return NextResponse.json(drivers[0])
+    const driver = drivers[0]
+
+    // Check permissions
+    if (user.role !== "admin" && user.id !== driver.user_id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
+    }
+
+    return NextResponse.json(driver)
   } catch (error) {
     console.error("Error fetching driver:", error)
-    return NextResponse.json({ error: "Failed to fetch driver" }, { status: 500 })
+    return NextResponse.json({ error: error.message || "Failed to fetch driver" }, { status: 500 })
   }
 }
 
 // Update a driver
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const user = await requireAuth()(request)
     const id = params.id
-    const { license_number, license_expiry_date, phone_number, status, rating } = await request.json()
 
     // Check if driver exists
     const existingDriver = await executeQuery("SELECT * FROM drivers WHERE id = $1", [id])
@@ -38,35 +50,55 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Driver not found" }, { status: 404 })
     }
 
-    // Update driver
-    const result = await executeQuery(
-      `UPDATE drivers 
-       SET license_number = $1, license_expiry_date = $2, phone_number = $3, 
-           status = $4, rating = $5, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $6
-       RETURNING *`,
-      [license_number, license_expiry_date, phone_number, status, rating, id],
-    )
+    const driver = existingDriver[0]
 
-    // Get user details
-    const user = await executeQuery("SELECT name, email FROM users WHERE id = $1", [result[0].user_id])
-
-    const driverWithUser = {
-      ...result[0],
-      name: user[0].name,
-      email: user[0].email,
+    // Check permissions
+    if (user.role !== "admin" && user.id !== driver.user_id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 
-    return NextResponse.json(driverWithUser)
+    const updateData = await request.json()
+
+    // Check if license number is being changed and if it's already taken
+    if (updateData.license_number && updateData.license_number !== driver.license_number) {
+      const licenseCheck = await executeQuery("SELECT id FROM drivers WHERE license_number = $1 AND id != $2", [
+        updateData.license_number,
+        id,
+      ])
+
+      if (licenseCheck.length > 0) {
+        return NextResponse.json({ error: "License number already taken" }, { status: 409 })
+      }
+    }
+
+    // Build update query
+    const updateFields = Object.entries(updateData)
+      .filter(([_, value]) => value !== undefined)
+      .map(([key], index) => `${key} = $${index + 1}`)
+
+    const updateValues = Object.values(updateData).filter((value) => value !== undefined)
+    updateValues.push(id)
+
+    const updateQuery = `
+      UPDATE drivers 
+      SET ${updateFields.join(", ")}, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $${updateValues.length}
+      RETURNING *
+    `
+
+    const result = await executeQuery(updateQuery, updateValues)
+
+    return NextResponse.json(result[0])
   } catch (error) {
     console.error("Error updating driver:", error)
-    return NextResponse.json({ error: "Failed to update driver" }, { status: 500 })
+    return NextResponse.json({ error: error.message || "Failed to update driver" }, { status: 500 })
   }
 }
 
-// Delete a driver
+// Delete a driver (soft delete)
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const user = await requireAuth(["admin"])(request)
     const id = params.id
 
     // Check if driver exists
@@ -76,24 +108,22 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: "Driver not found" }, { status: 404 })
     }
 
-    // Check if driver is assigned to any active routes
+    // Check if driver has active routes
     const activeRoutes = await executeQuery(
-      `SELECT * FROM routes 
-       WHERE driver_id = $1 
-       AND status NOT IN ('completed', 'cancelled')`,
+      "SELECT * FROM routes WHERE driver_id = $1 AND status IN ('planned', 'active')",
       [id],
     )
 
     if (activeRoutes.length > 0) {
-      return NextResponse.json({ error: "Cannot delete driver that is assigned to active routes" }, { status: 400 })
+      return NextResponse.json({ error: "Cannot delete driver with active routes" }, { status: 400 })
     }
 
-    // Delete driver
-    await executeQuery("DELETE FROM drivers WHERE id = $1", [id])
+    // Soft delete driver
+    await executeQuery("UPDATE drivers SET is_active = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = $1", [id])
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, message: "Driver deactivated successfully" })
   } catch (error) {
     console.error("Error deleting driver:", error)
-    return NextResponse.json({ error: "Failed to delete driver" }, { status: 500 })
+    return NextResponse.json({ error: error.message || "Failed to delete driver" }, { status: 500 })
   }
 }

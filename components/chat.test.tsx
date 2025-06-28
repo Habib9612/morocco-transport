@@ -17,14 +17,6 @@ const mockRecipient = {
   name: 'John Doe'
 };
 
-// Mock WebSocket implementation
-const mockWebSocket = {
-  send: jest.fn(),
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
-  close: jest.fn()
-};
-
 // Mock auth context
 jest.mock('@/lib/auth-context', () => ({
   ...jest.requireActual('@/lib/auth-context'),

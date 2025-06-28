@@ -8,61 +8,26 @@ import { Badge } from "@/components/ui/badge"
 import { MapPin, Package, Clock } from "lucide-react"
 import { ShipmentMap } from "@/components/shipment-map"
 
-// Mock data for nearby shippers/carriers
-const MOCK_NEARBY = [
-  {
-    id: "1",
-    name: "John Doe",
-    type: "individual",
-    location: {
-      lat: 40.7128,
-      lng: -74.006,
-      address: "New York, NY",
-    },
-    distance: "2.3 miles",
-    shipmentType: "Furniture",
-    weight: "250 lbs",
-    dimensions: "4x3x2 ft",
-    deadline: "2 days",
-    price: "$350",
-  },
-  {
-    id: "2",
-    name: "ABC Logistics",
-    type: "company",
-    location: {
-      lat: 40.7328,
-      lng: -74.026,
-      address: "Jersey City, NJ",
-    },
-    distance: "5.1 miles",
-    shipmentType: "Electronics",
-    weight: "120 lbs",
-    dimensions: "2x2x2 ft",
-    deadline: "1 day",
-    price: "$280",
-  },
-  {
-    id: "3",
-    name: "Sarah Smith",
-    type: "individual",
-    location: {
-      lat: 40.6928,
-      lng: -73.986,
-      address: "Brooklyn, NY",
-    },
-    distance: "6.7 miles",
-    shipmentType: "Household Goods",
-    weight: "350 lbs",
-    dimensions: "5x4x3 ft",
-    deadline: "3 days",
-    price: "$420",
-  },
-]
+type NearbyItem = {
+  id: string;
+  name: string;
+  type: string;
+  location: {
+    lat: number;
+    lng: number;
+    address: string;
+  };
+  distance: string;
+  shipmentType: string;
+  weight: string;
+  dimensions: string;
+  deadline: string;
+  price: string;
+};
 
 export default function NearbyPage() {
-  const { user } = useAuth()
-  const [nearby, setNearby] = useState(MOCK_NEARBY)
+  const { user } = useAuth();
+  const [nearby] = useState<NearbyItem[]>([])
   const [selectedItem, setSelectedItem] = useState<string | null>(null)
   const [requestSent, setRequestSent] = useState<Record<string, boolean>>({})
 
@@ -70,7 +35,7 @@ export default function NearbyPage() {
     return null
   }
 
-  const isCarrier = user.userType === "carrier"
+  const isCarrier = typeof user === 'object' && user !== null && 'userType' in user && user.userType === 'carrier';
   const title = isCarrier ? "Nearby Shipments" : "Nearby Carriers"
 
   const handleSendRequest = (id: string) => {
@@ -78,21 +43,28 @@ export default function NearbyPage() {
     // In a real app, this would send a request to the API
   }
 
-  const mapMarkers = nearby.map((item) => ({
+  type Marker = {
+    id: string;
+    position: { lat: number; lng: number };
+    title: string;
+    isSelected: boolean;
+    isCurrent?: boolean;
+  };
+  const mapMarkers: Marker[] = nearby.map((item) => ({
     id: item.id,
     position: { lat: item.location.lat, lng: item.location.lng },
     title: item.name,
     isSelected: selectedItem === item.id,
   }))
 
-  if (user.location) {
+  if (typeof user === 'object' && user !== null && 'location' in user && user.location && typeof user.location === 'object' && 'lat' in user.location && 'lng' in user.location) {
     mapMarkers.push({
       id: "current",
-      position: { lat: user.location.lat, lng: user.location.lng },
+      position: { lat: (user.location as { lat: number; lng: number }).lat, lng: (user.location as { lat: number; lng: number }).lng },
       title: "Your Location",
       isSelected: false,
       isCurrent: true,
-    })
+    });
   }
 
   return (

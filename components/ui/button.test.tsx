@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom'; // For extended matchers like .toBeInTheDocument()
-import { Button, buttonVariants } from './button'; // Assuming buttonVariants might be useful for class checks
+import { Button } from './button';
 
 describe('Button Component', () => {
   it('should render with default props', () => {

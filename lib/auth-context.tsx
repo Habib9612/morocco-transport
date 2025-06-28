@@ -1,102 +1,110 @@
-"use client";
+"use client"
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { apiClient } from './api-client'
+import { toast } from 'sonner'
 
 interface User {
-  id: number;
-  email: string;
-  name: string;
-  role?: string;
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+  role: string
+  isActive: boolean
 }
 
 interface AuthContextType {
-  user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  isLoading: boolean;
+  user: User | null
+  loading: boolean
+  login: (email: string, password: string) => Promise<void>
+  signup: (userData: any) => Promise<void>
+  logout: () => Promise<void>
+  isAuthenticated: boolean
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Simulate checking for existing session
-    const checkAuth = async () => {
-      setIsLoading(false);
-    };
-    
-    checkAuth();
-  }, []);
+    checkAuthStatus()
+  }, [])
+
+  const checkAuthStatus = async () => {
+    try {
+      const token = localStorage.getItem('authToken')
+      if (token) {
+        apiClient.setAuthToken(token)
+        const response = await apiClient.request<User>('/auth/me')
+        setUser(response.data)
+      }
+    } catch (error) {
+      localStorage.removeItem('authToken')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
-        
     try {
-      // For demo purposes, accept specific credentials
-      // In production, this would be an API call
-      const validCredentials = [
-        { email: 'admin@moroctransit.ma', password: 'admin123', role: 'admin' },
-        { email: 'carrier@moroctransit.ma', password: 'carrier123', role: 'carrier' },
-        { email: 'user@moroctransit.ma', password: 'user123', role: 'user' }
-      ];
-      
-      const validUser = validCredentials.find(
-        cred => cred.email === email && cred.password === password
-      );
-
-      if (!validUser) {
-        throw new Error('Invalid email or password');
-      }
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockUser: User = {
-        id: Math.floor(Math.random() * 1000),
-        email: validUser.email,
-        name: validUser.role === 'admin' ? 'Admin User' : 
-              validUser.role === 'carrier' ? 'Carrier User' : 'Regular User',
-        role: validUser.role
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      const response = await apiClient.auth.login({ email, password })
+      const { user, token } = response.data
+      setUser(user)
+      localStorage.setItem('authToken', token)
+      apiClient.setAuthToken(token)
+      toast.success('Login successful!')
     } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
+      toast.error('Login failed. Please check your credentials.')
+      throw error
     }
-  };
+  }
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-  };
+  const signup = async (userData: any) => {
+    try {
+      const response = await apiClient.auth.signup(userData)
+      const { user, token } = response.data
+      setUser(user)
+      localStorage.setItem('authToken', token)
+      apiClient.setAuthToken(token)
+      toast.success('Account created successfully!')
+    } catch (error) {
+      toast.error('Signup failed. Please try again.')
+      throw error
+    }
+  }
 
-  const value = {
-    user,
-    login,
-    logout,
-    isLoading
-  };
+  const logout = async () => {
+    try {
+      await apiClient.auth.logout()
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      setUser(null)
+      localStorage.removeItem('authToken')
+      apiClient.setAuthToken('')
+    }
+  }
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      login,
+      signup,
+      logout,
+      isAuthenticated: !!user
+    }}>
       {children}
     </AuthContext.Provider>
-  );
+  )
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider')
   }
-  return context;
+  return context
 }
-
-export default AuthContext;

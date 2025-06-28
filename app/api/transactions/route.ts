@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     const invoiceId = searchParams.get('invoiceId');
     const offset = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     
     // Non-admin users can only see their own transactions
     if (user.role !== 'ADMIN') {
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
       });
 
       if (invoice) {
-        const totalPaid = invoice.transactions.reduce((sum, t) => sum + t.amount, 0);
+        const totalPaid = invoice.transactions.reduce((sum: number, t: { amount: number }) => sum + t.amount, 0);
         if (totalPaid >= invoice.amount) {
           await prisma.invoice.update({
             where: { id: invoiceId },

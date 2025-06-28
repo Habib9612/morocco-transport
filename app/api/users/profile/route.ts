@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyJWT } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    const authResult = await verifyJWT(request);
-    if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: 401 });
-    }
-
     const user = await prisma.user.findUnique({
-      where: { id: authResult.user.userId },
+      where: { id: session.user.userId },
       select: {
         id: true,
         email: true,
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ user });
   } catch (error) {
-    console.error('Get profile error:', error);
+    console.error('Get profile error', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -38,26 +38,21 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  try {
-    const authResult = await verifyJWT(request);
-    if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: 401 });
-    }
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
-    const { firstName, lastName, phone, profile } = await request.json();
+  try {
+    const body = await request.json();
+    const { firstName, lastName, phone } = body;
 
     const updatedUser = await prisma.user.update({
-      where: { id: authResult.user.userId },
+      where: { id: session.user.userId },
       data: {
         firstName,
         lastName,
         phone,
-        profile: profile ? {
-          upsert: {
-            create: profile,
-            update: profile,
-          },
-        } : undefined,
       },
       select: {
         id: true,
@@ -66,16 +61,14 @@ export async function PUT(request: NextRequest) {
         lastName: true,
         phone: true,
         role: true,
+        createdAt: true,
         profile: true,
       },
     });
 
-    return NextResponse.json({
-      message: 'Profile updated successfully',
-      user: updatedUser,
-    });
+    return NextResponse.json({ user: updatedUser });
   } catch (error) {
-    console.error('Update profile error:', error);
+    console.error('Update profile error', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

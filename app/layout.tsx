@@ -1,17 +1,13 @@
 import { Metadata } from 'next'
-// import './globals.css' // Temporarily disabled due to CSS processing issues
-import { AuthProvider } from '../lib/auth-context';
+import './globals.css'
+import { AuthProvider } from '../lib/auth-context'
 
 export const metadata: Metadata = {
   title: "Morocco Transport Application",
   description: "Comprehensive logistics and transportation management platform for Morocco.",
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
@@ -20,5 +16,5 @@ export default function RootLayout({
         </AuthProvider>
       </body>
     </html>
-  )
+  );
 }
