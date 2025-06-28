@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Truck, BarChart3, MapPin, Clock, Shield, Users, Smartphone, Zap } from "lucide-react"
-import Image from 'next/image'
 
 const features = [
   {
@@ -116,11 +115,9 @@ export default function FeatureShowcase() {
             className="absolute inset-0"
           >
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60 z-10" />
-            <Image
+            <img
               src={features[activeFeature].image || "/placeholder.svg"}
               alt={features[activeFeature].title}
-              width={600}
-              height={400}
               className="w-full h-full object-cover"
             />
             <div className="absolute bottom-0 left-0 right-0 p-6 z-20">

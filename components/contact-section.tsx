@@ -21,7 +21,7 @@ export default function ContactSection() {
             <Card className="bg-black border-gray-800">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-bold text-white">Connect With Our Team</CardTitle>
-                <p className="text-gray-400 mt-2">Let&apos;s discuss how we can optimize your logistics</p>
+                <p className="text-gray-400 mt-2">Let's discuss how we can optimize your logistics</p>
               </CardHeader>
               <CardContent>
                 <form className="space-y-6">
