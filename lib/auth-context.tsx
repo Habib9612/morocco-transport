@@ -1,130 +1,101 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { useRouter } from "next/navigation"
-import type { UserType } from "@/components/user-type-selector"
-import { useTranslation } from "@/lib/translation-context"
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { apiClient } from './api-client'
+import { toast } from 'sonner'
 
 interface User {
   id: string
   email: string
-  name: string
-  userType: UserType
-  company?: string
-  location?: {
-    lat: number
-    lng: number
-    address: string
-  }
+  firstName: string
+  lastName: string
+  role: string
+  isActive: boolean
 }
 
 interface AuthContextType {
   user: User | null
-  login: (email: string, password: string, userType: UserType) => Promise<void>
-  signup: (email: string, password: string, name: string, userType: UserType) => Promise<void>
-  logout: () => void
-  isLoading: boolean
-  updateUserLocation: (location: { lat: number; lng: number; address: string }) => void
+  loading: boolean
+  login: (email: string, password: string) => Promise<void>
+  signup: (userData: any) => Promise<void>
+  logout: () => Promise<void>
+  isAuthenticated: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
-  const { t } = useTranslation()
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check if user is logged in
-    const checkAuth = async () => {
-      try {
-        const storedUser = localStorage.getItem("logisticsUser")
-        if (storedUser) {
-          setUser(JSON.parse(storedUser))
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    checkAuth()
+    checkAuthStatus()
   }, [])
 
-  const login = async (email: string, password: string, userType: UserType) => {
-    setIsLoading(true)
-
+  const checkAuthStatus = async () => {
     try {
-      // In a real app, this would be an API call
-      // For demo purposes, we'll simulate a successful login
-      const mockUser: User = {
-        id: Math.random().toString(36).substring(2, 9),
-        email,
-        name: email.split("@")[0],
-        userType,
-        location: {
-          lat: 40.7128,
-          lng: -74.006,
-          address: "New York, NY",
-        },
+      const token = localStorage.getItem('authToken')
+      if (token) {
+        apiClient.setAuthToken(token)
+        const response = await apiClient.request<User>('/auth/me')
+        setUser(response.data)
       }
-
-      setUser(mockUser)
-      localStorage.setItem("logisticsUser", JSON.stringify(mockUser))
-      return Promise.resolve()
     } catch (error) {
-      return Promise.reject(error)
+      localStorage.removeItem('authToken')
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
-  const signup = async (email: string, password: string, name: string, userType: UserType) => {
-    setIsLoading(true)
-
+  const login = async (email: string, password: string) => {
     try {
-      // In a real app, this would be an API call
-      // For demo purposes, we'll simulate a successful signup
-      const mockUser: User = {
-        id: Math.random().toString(36).substring(2, 9),
-        email,
-        name,
-        userType,
-        location: {
-          lat: 40.7128,
-          lng: -74.006,
-          address: "New York, NY",
-        },
-      }
-
-      setUser(mockUser)
-      localStorage.setItem("logisticsUser", JSON.stringify(mockUser))
-      return Promise.resolve()
+      const response = await apiClient.auth.login({ email, password })
+      const { user, token } = response.data
+      setUser(user)
+      localStorage.setItem('authToken', token)
+      apiClient.setAuthToken(token)
+      toast.success('Login successful!')
     } catch (error) {
-      return Promise.reject(error)
-    } finally {
-      setIsLoading(false)
+      toast.error('Login failed. Please check your credentials.')
+      throw error
     }
   }
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem("logisticsUser")
-    router.push("/login")
+  const signup = async (userData: any) => {
+    try {
+      const response = await apiClient.auth.signup(userData)
+      const { user, token } = response.data
+      setUser(user)
+      localStorage.setItem('authToken', token)
+      apiClient.setAuthToken(token)
+      toast.success('Account created successfully!')
+    } catch (error) {
+      toast.error('Signup failed. Please try again.')
+      throw error
+    }
   }
 
-  const updateUserLocation = (location: { lat: number; lng: number; address: string }) => {
-    if (user) {
-      const updatedUser = { ...user, location }
-      setUser(updatedUser)
-      localStorage.setItem("logisticsUser", JSON.stringify(updatedUser))
+  const logout = async () => {
+    try {
+      await apiClient.auth.logout()
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      setUser(null)
+      localStorage.removeItem('authToken')
+      apiClient.setAuthToken('')
     }
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, isLoading, updateUserLocation }}>
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      login,
+      signup,
+      logout,
+      isAuthenticated: !!user
+    }}>
       {children}
     </AuthContext.Provider>
   )
@@ -132,8 +103,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider')
   }
   return context
 }

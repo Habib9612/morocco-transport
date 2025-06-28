@@ -20,18 +20,21 @@ export class ApiClient {
 
   public async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`;
-    let headers: HeadersInit = {
+    const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...options.headers,
     };
-    // Only set Authorization if headers is a plain object
-    if (this.token && typeof headers === 'object' && !Array.isArray(headers)) {
+    
+    if (this.token) {
       (headers as Record<string, string>)['Authorization'] = `Bearer ${this.token}`;
     }
 
     try {
       const response = await fetch(url, { ...options, headers });
-      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
       return await response.json();
     } catch (error) {
       toast.error('API request failed');
@@ -39,6 +42,7 @@ export class ApiClient {
     }
   }
 
+  // Authentication
   auth = {
     login: (credentials: { email: string; password: string }) =>
       this.request<{ user: any; token: string }>('/auth/login', {
@@ -51,26 +55,92 @@ export class ApiClient {
         body: JSON.stringify(userData),
       }),
     logout: () => this.request('/auth/logout', { method: 'POST' }),
+    me: () => this.request<any>('/auth/me'),
   };
 
+  // Users
   users = {
-    getProfile: () => this.request<any>('/users/profile'),
-    updateProfile: (data: any) =>
-      this.request<any>('/users/profile', {
+    getAll: () => this.request<any[]>('/users'),
+    getById: (id: string) => this.request<any>(`/users/${id}`),
+    update: (id: string, data: any) =>
+      this.request<any>(`/users/${id}`, {
         method: 'PUT',
         body: JSON.stringify(data),
       }),
+    delete: (id: string) => this.request(`/users/${id}`, { method: 'DELETE' }),
   };
 
+  // Shipments
   shipments = {
-    getAll: (params?: Record<string, string | number>) =>
-      this.request<any>(`/shipments?${params ? new URLSearchParams(params as any) : ''}`),
-    create: (shipmentData: any) =>
+    getAll: (params?: Record<string, any>) => {
+      const queryString = params ? new URLSearchParams(params).toString() : '';
+      return this.request<any[]>(`/shipments${queryString ? `?${queryString}` : ''}`);
+    },
+    getById: (id: string) => this.request<any>(`/shipments/${id}`),
+    create: (data: any) =>
       this.request<any>('/shipments', {
         method: 'POST',
-        body: JSON.stringify(shipmentData),
+        body: JSON.stringify(data),
       }),
-    getById: (id: string) => this.request<any>(`/shipments/${id}`),
+    update: (id: string, data: any) =>
+      this.request<any>(`/shipments/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    delete: (id: string) => this.request(`/shipments/${id}`, { method: 'DELETE' }),
+    tracking: (id: string) => this.request<any>(`/shipments/${id}/tracking`),
+  };
+
+  // Trucks
+  trucks = {
+    getAll: (params?: Record<string, any>) => {
+      const queryString = params ? new URLSearchParams(params).toString() : '';
+      return this.request<any[]>(`/trucks${queryString ? `?${queryString}` : ''}`);
+    },
+    getById: (id: string) => this.request<any>(`/trucks/${id}`),
+    create: (data: any) =>
+      this.request<any>('/trucks', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    update: (id: string, data: any) =>
+      this.request<any>(`/trucks/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    delete: (id: string) => this.request(`/trucks/${id}`, { method: 'DELETE' }),
+  };
+
+  // Analytics
+  analytics = {
+    dashboard: () => this.request<any>('/analytics/dashboard'),
+    shipments: (params?: Record<string, any>) => {
+      const queryString = params ? new URLSearchParams(params).toString() : '';
+      return this.request<any>(`/analytics/shipments${queryString ? `?${queryString}` : ''}`);
+    },
+    revenue: (params?: Record<string, any>) => {
+      const queryString = params ? new URLSearchParams(params).toString() : '';
+      return this.request<any>(`/analytics/revenue${queryString ? `?${queryString}` : ''}`);
+    },
+  };
+
+  // Notifications
+  notifications = {
+    getAll: () => this.request<any[]>('/notifications'),
+    markAsRead: (id: string) =>
+      this.request(`/notifications/${id}`, { method: 'PUT' }),
+    markAllAsRead: () =>
+      this.request('/notifications/mark-all-read', { method: 'PUT' }),
+  };
+
+  // Messages
+  messages = {
+    getAll: () => this.request<any[]>('/messages'),
+    send: (data: any) =>
+      this.request<any>('/messages', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   };
 }
 
