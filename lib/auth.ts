@@ -1,20 +1,17 @@
 import bcrypt from "bcryptjs"
-import { executeQuery } from "./db"
+import { prisma } from "./db"
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production"
 const JWT_EXPIRES_IN = "7d"
 
 export interface User {
   id: string
-  name: string
+  firstName: string
+  lastName: string
   email: string
   role: string
-  user_type: string
-  phone_number?: string
-  city?: string
-  country?: string
-  is_verified: boolean
-  is_active: boolean
+  phone?: string | null
+  isActive: boolean
 }
 
 export interface AuthResult {
@@ -35,7 +32,6 @@ export function generateToken(user: User): string {
     id: user.id,
     email: user.email,
     role: user.role,
-    user_type: user.user_type,
     exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days
   }
 
@@ -82,30 +78,31 @@ export async function comparePassword(password: string, hashedPassword: string):
 // Authenticate user
 export async function authenticateUser(email: string, password: string): Promise<AuthResult> {
   try {
-    const users = await executeQuery("SELECT * FROM users WHERE email = $1 AND is_active = TRUE", [email])
+    const user = await prisma.user.findUnique({
+      where: { 
+        email: email,
+        isActive: true
+      }
+    })
 
-    if (users.length === 0) {
+    if (!user) {
       return { success: false, message: "Invalid credentials" }
     }
 
-    const user = users[0]
-    const isValidPassword = await comparePassword(password, user.password_hash)
+    const isValidPassword = await comparePassword(password, user.password)
 
     if (!isValidPassword) {
       return { success: false, message: "Invalid credentials" }
     }
 
-    const userWithoutPassword = {
+    const userWithoutPassword: User = {
       id: user.id,
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       role: user.role,
-      user_type: user.user_type,
-      phone_number: user.phone_number,
-      city: user.city,
-      country: user.country,
-      is_verified: user.is_verified,
-      is_active: user.is_active,
+      phone: user.phone,
+      isActive: user.isActive,
     }
 
     const token = generateToken(userWithoutPassword)
@@ -127,12 +124,33 @@ export async function getUserFromToken(token: string): Promise<User | null> {
   try {
     const decoded = verifyToken(token)
 
-    const users = await executeQuery(
-      "SELECT id, name, email, role, user_type, phone_number, city, country, is_verified, is_active FROM users WHERE id = $1 AND is_active = TRUE",
-      [decoded.id],
-    )
+    const user = await prisma.user.findUnique({
+      where: { 
+        id: decoded.id,
+        isActive: true
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        phone: true,
+        isActive: true,
+      }
+    })
 
-    return users.length > 0 ? users[0] : null
+    if (!user) return null
+
+    return {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+      phone: user.phone,
+      isActive: user.isActive,
+    }
   } catch (error) {
     return null
   }
@@ -140,7 +158,7 @@ export async function getUserFromToken(token: string): Promise<User | null> {
 
 // Check user permissions
 export function hasPermission(user: User, requiredRole: string[]): boolean {
-  return requiredRole.includes(user.role) || requiredRole.includes(user.user_type)
+  return requiredRole.includes(user.role)
 }
 
 // Middleware for API routes
