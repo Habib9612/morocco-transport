@@ -25,6 +25,69 @@ MarocTransit is a comprehensive logistics and transportation management platform
 - **🌍 Multi-language** - Support for Arabic, French, and English
 - **🔔 Real-time Notifications** - Instant updates and alerts
 
+## 🚀 Quick Start (5 Minutes)
+
+### Prerequisites
+- Node.js 18+ (`node --version`)
+- npm (`npm --version`)
+- Java 17+ (`java --version`)
+- Maven (`mvn --version`)
+
+### Automated Deployment
+```bash
+# Clone the repository
+git clone https://github.com/Habib9612/morocco-transport.git
+cd morocco-transport
+git checkout production-ready
+
+# Run automated setup
+chmod +x scripts/deploy-local.sh
+./scripts/deploy-local.sh
+
+# Start the application
+npm run dev
+```
+
+### Manual Deployment
+```bash
+# Install dependencies
+npm install
+
+# Setup environment
+cp .env.local.example .env.local
+
+# Setup database
+npx prisma generate
+npx prisma db push
+
+# Start development server
+npm run dev
+```
+
+### Access Your Platform
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8080
+
+## 🔧 Troubleshooting
+
+### Quick Fix Script
+```bash
+# Run automated error fixing
+./scripts/fix-errors.sh
+
+# Or fix specific issues
+./scripts/fix-errors.sh --ports    # Fix port conflicts
+./scripts/fix-errors.sh --node     # Fix Node.js issues
+./scripts/fix-errors.sh --prisma   # Fix database issues
+```
+
+### Common Issues
+- **Port conflicts**: `lsof -ti:3000 | xargs kill -9`
+- **Database issues**: `npx prisma db push --force-reset`
+- **Build errors**: `npm run build`
+
+For detailed troubleshooting, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
+
 ## 🏗️ Architecture
 
 ### Frontend Stack
@@ -98,56 +161,6 @@ morocco-transport-2/
     ├── 01-create-tables.sql      # Schema creation
     └── 02-seed-data.sql          # Initial data seeding
 ```
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+ and npm
-- Java 17+ and Maven
-- PostgreSQL (or SQLite for development)
-
-### 1. Clone and Setup
-```bash
-git clone https://github.com/Habib9612/morocco-transport.git
-cd morocco-transport
-```
-
-### 2. Frontend Setup
-```bash
-# Install dependencies
-npm install
-
-# Set up environment variables
-cp .env.local.example .env.local
-# Edit .env.local with your configuration
-
-# Set up database
-npx prisma generate
-npx prisma db push
-
-# Run database scripts
-psql -d your_database -f scripts/01-create-tables.sql
-psql -d your_database -f scripts/02-seed-data.sql
-
-# Start development server
-npm run dev
-```
-
-### 3. Backend Setup
-```bash
-cd backend
-
-# Install dependencies
-mvn clean install
-
-# Start Spring Boot server
-mvn spring-boot:run
-```
-
-### 4. Access the Application
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8080
-- Database: Configured in `.env.local`
 
 ## 🔧 Environment Configuration
 
@@ -250,6 +263,13 @@ docker run -p 8080:8080 marocotransport-backend
 - ✅ Error handling and loading states
 - ✅ Type-safe API communication
 - ✅ Database migrations and seeding
+
+## 📚 Documentation
+
+- **[Quick Start Guide](QUICK_START.md)** - Get started in 5 minutes
+- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Detailed deployment instructions
+- **[API Documentation](API_DOCUMENTATION.md)** - Complete API reference
+- **[Project Summary](PROJECT_SUMMARY.md)** - Technical overview
 
 ## 🤝 Contributing
 
