@@ -97,29 +97,29 @@ const MOCK_MESSAGES = [
   },
 ]
 
+type Conversation = {
+  id: string;
+  with: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  };
+  lastMessage: {
+    text: string;
+    timestamp: string;
+    isRead: boolean;
+  };
+  unread: number;
+};
+
 function formatTime(timestamp: string) {
   const date = new Date(timestamp)
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
 }
 
-function formatDate(timestamp: string) {
-  const date = new Date(timestamp)
-  const today = new Date()
-  const yesterday = new Date(today)
-  yesterday.setDate(yesterday.getDate() - 1)
-
-  if (date.toDateString() === today.toDateString()) {
-    return "Today"
-  } else if (date.toDateString() === yesterday.toDateString()) {
-    return "Yesterday"
-  } else {
-    return date.toLocaleDateString()
-  }
-}
-
 export default function MessagesPage() {
   const { user } = useAuth()
-  const [conversations, setConversations] = useState(MOCK_CONVERSATIONS)
+  const [conversations] = useState<Conversation[]>(MOCK_CONVERSATIONS)
   const [activeConversation, setActiveConversation] = useState<string | null>(null)
   const [messages, setMessages] = useState(MOCK_MESSAGES)
   const [newMessage, setNewMessage] = useState("")

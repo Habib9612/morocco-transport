@@ -137,9 +137,9 @@ export default function LocationsPage() {
         loc.id === id
           ? {
               ...loc,
-              name: newLocation.name,
-              address: newLocation.address,
-              city: newLocation.city,
+              name: newLocation.name || loc.name,
+              address: newLocation.address || loc.address,
+              city: newLocation.city || loc.city,
               country: newLocation.country || loc.country,
               type: newLocation.type as "pickup" | "delivery" | "both",
             }
@@ -221,7 +221,7 @@ export default function LocationsPage() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-white">Saved Locations</CardTitle>
-                <Tabs defaultValue="all" onValueChange={(v) => setFilter(v as any)}>
+                <Tabs defaultValue="all" onValueChange={(v) => setFilter(v === 'both' ? 'all' : v as 'pickup' | 'delivery' | 'all')}>
                   <TabsList className="grid w-[300px] grid-cols-3 bg-gray-800">
                     <TabsTrigger value="all" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                       All

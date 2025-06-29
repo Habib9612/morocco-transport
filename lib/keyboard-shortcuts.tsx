@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useEffect, ReactNode, useMemo } from 'react';
 import { useTheme } from './theme-context';
 
 interface Shortcut {
@@ -18,7 +18,7 @@ interface KeyboardShortcutsContextType {
 const KeyboardShortcutsContext = createContext<KeyboardShortcutsContextType | undefined>(undefined);
 
 export function KeyboardShortcutsProvider({ children }: { children: ReactNode }) {
-  const shortcuts = new Map<string, Shortcut>();
+  const shortcuts = useMemo(() => new Map<string, Shortcut>(), []);
 
   const registerShortcut = (shortcut: Shortcut) => {
     shortcuts.set(shortcut.key, shortcut);
@@ -47,7 +47,7 @@ export function KeyboardShortcutsProvider({ children }: { children: ReactNode })
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [shortcuts]);
 
   return (
     <KeyboardShortcutsContext.Provider value={{ registerShortcut, unregisterShortcut }}>

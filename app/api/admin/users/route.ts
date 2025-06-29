@@ -13,15 +13,6 @@ const createUserSchema = z.object({
   role: z.enum(['USER', 'DRIVER', 'ADMIN', 'COMPANY']),
 });
 
-const updateUserSchema = z.object({
-  email: z.string().email('Invalid email address').optional(),
-  firstName: z.string().min(1, 'First name is required').optional(),
-  lastName: z.string().min(1, 'Last name is required').optional(),
-  phone: z.string().optional(),
-  role: z.enum(['USER', 'DRIVER', 'ADMIN', 'COMPANY']).optional(),
-  isActive: z.boolean().optional(),
-});
-
 // GET /api/admin/users - Get all users with pagination
 export async function GET(request: NextRequest) {
   const authResult = await withAuth(['ADMIN'])(request);
@@ -36,7 +27,7 @@ export async function GET(request: NextRequest) {
     const isActive = searchParams.get('isActive');
     const offset = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     
     if (search) {
       where.OR = [

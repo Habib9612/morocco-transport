@@ -18,9 +18,9 @@ export async function verifyToken(token: string) {
       throw new Error('JWT_SECRET environment variable is not set');
     }
 
-    const decoded = jwt.verify(token, secret) as any;
+    const decoded = jwt.verify(token, secret) as unknown;
     return decoded;
-  } catch (error) {
+  } catch {
     throw new Error('Invalid token');
   }
 }
@@ -59,7 +59,7 @@ export async function authenticate(request: NextRequest) {
     }
 
     return { user };
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Invalid authentication' },
       { status: 401 }
@@ -69,7 +69,7 @@ export async function authenticate(request: NextRequest) {
 
 // Role-based authorization
 export function authorize(allowedRoles: string[]) {
-  return async (request: NextRequest, user: any) => {
+  return async (request: NextRequest, user: unknown) => {
     if (!allowedRoles.includes(user.role)) {
       return NextResponse.json(
         { error: 'Insufficient permissions' },

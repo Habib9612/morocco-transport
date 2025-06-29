@@ -1,407 +1,283 @@
-# 🚛 MarocTransit - Morocco Transport Platform
+# 🚛 MarocTransit - Morocco's Premier Transport Platform
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.4-38bdf8?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-ORM-2d3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.0-green?style=flat-square&logo=spring)](https://spring.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
 
 <div align="center">
-  <h3> Built with ❤️ for Morocco's Transport Industry </h3>
+  <h3>🚛 Built with ❤️ for Morocco's Transport Industry</h3>
   <p>Connect Shippers with Carriers Instantly</p>
 </div>
 
 ## 🌟 Overview
 
-MarocTransit is a cutting-edge transport platform designed specifically for Morocco's logistics and transportation needs. Our platform streamlines the connection between shippers and carriers, providing an efficient, secure, and user-friendly solution for managing transportation services across Morocco.
+MarocTransit is a comprehensive logistics and transportation management platform designed specifically for Morocco's transport industry. Our platform leverages advanced AI algorithms to intelligently match carriers with shippers, optimizing transportation efficiency and reducing costs across the supply chain.
 
-## ✨ Platform Features
+### 🎯 Key Features
 
-### 🔐 **Authentication & Security**
-- **Secure User Registration** - Multi-step signup process with email verification
-- **Advanced Login System** - Protected access with session management
-- **Password Recovery** - Secure password reset functionality
-- **Role-Based Access Control** - Different permissions for shippers, carriers, and admins
+- **🤖 AI-Powered Matching** - Intelligent carrier-shipper pairing based on multiple factors
+- **📊 Real-time Analytics** - Live dashboard with performance metrics and insights
+- **🚚 Fleet Management** - Complete truck and driver management system
+- **📦 Shipment Tracking** - End-to-end shipment lifecycle management
+- **🔐 Secure Authentication** - JWT-based authentication with role-based access
+- **📱 Responsive Design** - Modern UI optimized for all devices
+- **🌍 Multi-language** - Support for Arabic, French, and English
+- **🔔 Real-time Notifications** - Instant updates and alerts
 
-### 📊 **Comprehensive Dashboard**
-- **Real-time Analytics** - Track shipments, revenue, and performance metrics
-- **Interactive Maps** - Live tracking of vehicles and shipments
-- **Custom Settings** - Personalized user preferences and configurations
-- **Notification Center** - Real-time alerts and updates
-
-### 🚚 **Shipment Management**
-- **Smart Shipment Creation** - Intuitive interface for booking transport services
-- **Live Tracking** - Real-time GPS tracking of all shipments
-- **Status Updates** - Automatic notifications at every stage
-- **Digital Documentation** - Paperless receipt and delivery confirmations
-- **Route Optimization** - AI-powered route planning for efficiency
-
-### 👥 **Driver & Carrier Management**
-- **Driver Profiles** - Comprehensive driver information and ratings
-- **Vehicle Management** - Fleet tracking and maintenance schedules
-- **Performance Analytics** - Driver performance metrics and insights
-- **Document Management** - Digital storage of licenses and certifications
-
-### 💬 **Communication Hub**
-- **In-app Messaging** - Direct communication between all parties
-- **Push Notifications** - Instant alerts for important updates
-- **Customer Support** - 24/7 integrated support system
-- **Multilingual Support** - Arabic, French, and English interfaces
-
-### 📍 **Location Services**
-- **Morocco-Wide Coverage** - Services across all major Moroccan cities
-- **Smart Routing** - Optimal route calculations considering traffic and road conditions
-- **Geofencing** - Location-based alerts and automated status updates
-- **Nearby Services** - Find carriers and services in your area
-
-### 💰 **Financial Management**
-- **Transparent Pricing** - Clear, upfront pricing with no hidden fees
-- **Multiple Payment Options** - Cash, card, and digital wallet support
-- **Invoicing System** - Automated invoice generation and management
-- **Financial Reports** - Detailed earning and expense tracking
-
-### 📱 **Mobile-First Design**
-- **Responsive Interface** - Optimized for desktop, tablet, and mobile
-- **Progressive Web App** - App-like experience on any device
-- **Offline Capabilities** - Key features work without internet connection
-- **Touch-Optimized** - Intuitive touch interfaces for mobile users
-
-## 🛠 Technical Stack
-
-- **Frontend**: Next.js 14 with App Router
-- **Language**: TypeScript for type safety
-- **Styling**: Tailwind CSS for modern, responsive design
-- **Database**: Prisma ORM with PostgreSQL
-- **Authentication**: NextAuth.js with JWT tokens
-- **Testing**: Jest with comprehensive test coverage
-- **Code Quality**: ESLint and Prettier for consistent code
-- **Deployment**: Vercel with automatic CI/CD
-
-## 🚀 Getting Started
+## 🚀 Quick Start (5 Minutes)
 
 ### Prerequisites
-- Node.js 18+ 
-- npm, yarn, or pnpm
-- PostgreSQL database
+- Node.js 18+ (`node --version`)
+- npm (`npm --version`)
+- Java 17+ (`java --version`)
+- Maven (`mvn --version`)
 
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Habib9612/morocco-transport.git
-   cd morocco-transport
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   # or
-   yarn install
-   # or
-   pnpm install
-   ```
-
-3. **Environment Setup**
-   ```bash
-   cp .env.example .env.local
-   ```
-   Fill in your environment variables:
-   ```
-   DATABASE_URL="your-postgresql-connection-string"
-   NEXTAUTH_SECRET="your-nextauth-secret"
-   NEXTAUTH_URL="http://localhost:3000"
-   ```
-
-4. **Database Setup**
-   ```bash
-   npx prisma generate
-   npx prisma db push
-   ```
-
-5. **Run the development server**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   # or
-   pnpm dev
-   ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## 📁 Project Structure
-
-```
-morocco-transport/
-├── app/                          # Next.js App Router
-│   ├── api/                     # API routes
-│   │   ├── auth/               # Authentication endpoints
-│   │   ├── shipments/          # Shipment management APIs
-│   │   └── drivers/            # Driver management APIs
-│   ├── dashboard/              # Dashboard pages
-│   │   ├── settings/           # User settings
-│   │   ├── shipments/          # Shipment management
-│   │   ├── messages/           # Communication center
-│   │   └── locations/          # Location services
-│   ├── auth/                   # Authentication pages
-│   └── components/             # Reusable UI components
-├── lib/                        # Utility functions
-├── models/                     # Database models
-├── middleware.ts               # Next.js middleware
-├── prisma/                     # Database schema
-└── public/                     # Static assets
-```
-
-## 🔧 Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run test` - Run test suite
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Generate test coverage report
-
-## 🌍 Supported Regions
-
-MarocTransit currently serves major Moroccan cities including:
-- **Casablanca** - Economic capital and port city
-- **Rabat** - National capital
-- **Marrakech** - Tourist and cultural hub
-- **Fez** - Historical and cultural center
-- **Tangier** - Northern gateway to Europe
-- **Agadir** - Atlantic coast and agriculture
-- **Meknes** - Central Morocco
-- **Oujda** - Eastern border region
-
-## 📞 Support & Contact
-
-- **Website**: [maroctransit.com](https://maroctransit.com)
-- **Documentation**: [docs.maroctransit.com](https://docs.maroctransit.com)
-- **API Reference**: [api.maroctransit.com](https://api.maroctransit.com)
-- **Email**: support@maroctransit.com
-- **Slack Channel**: Join our community for real-time support
-
-## 🤝 Contributing
-
-We welcome contributions from the community! Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Next.js Team** - For the amazing React framework
-- **Prisma Team** - For the excellent database toolkit
-- **Tailwind CSS** - For the utility-first CSS framework
-- **Vercel** - For seamless deployment and hosting
-- **Morocco's Transport Community** - For inspiration and feedback
-
-## 🔮 Roadmap
-
-- [ ] **Mobile Apps** - Native iOS and Android applications
-- [ ] **AI-Powered Matching** - Smart carrier-shipper pairing
-- [ ] **IoT Integration** - Real-time vehicle telemetry
-- [ ] **Blockchain Integration** - Transparent and secure transactions
-- [ ] **Multi-Country Expansion** - Extend to other North African countries
-- [ ] **Advanced Analytics** - Machine learning insights and predictions
-
----
-
-<div align="center">
-  <p>Made with ❤️ in Morocco 🇲🇦</p>
-  <p>© 2024 MarocTransit. All rights reserved.</p>
-</div> 🚛 MarocTransit - Morocco Transport Platform
-
-<div align="center">
-
-![MarocTransit Logo](https://img.shields.io/badge/MarocTransit-Transport%20Platform-blue?style=for-the-badge&logo=truck)
-
-[![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-89.4%25-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react)](https://reactjs.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3-38bdf8?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-ORM-2d3748?style=flat-square&logo=prisma)](https://prisma.io/)
-
-**Connect Shippers with Carriers Instantly**
-
-</div>
-
-## 🌟 Overview
-
-MarocTransit is a cutting-edge transport platform designed specifically for Morocco's logistics landscape. Our platform leverages advanced machine learning algorithms to intelligently match carriers with shippers, optimizing transportation efficiency and reducing costs across the supply chain.
-
-The platform implements sophisticated matching algorithms that consider multiple factors including load size compatibility, route preferences, historical reliability metrics, and cost efficiency to predict successful transport partnerships.
-
-## 🎯 Key Features
-
-### 🤖 Intelligent Matching Algorithms
-- **Multi-factor Analysis**: Matches carriers and shippers based on:
-  - Load size compatibility
-  - Route/location preferences
-  - Historical reliability metrics
-  - Cost efficiency optimization
-
-### 🔧 Technical Capabilities
-- **RESTful API Interfaces**: Seamless integration with frontend and backend services
-- **Batch Processing**: Support for bulk matching operations
-- **Real-time Updates**: Model retraining capability as new data becomes available
-- **Advanced Analytics**: Comprehensive reporting and insights dashboard
-
-### 🌐 Modern Web Application
-- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
-- **Real-time Communication**: WebSocket integration for live updates
-- **User Authentication**: Secure login and user management system
-- **Interactive Dashboard**: Comprehensive control panel for carriers and shippers
-
-## 🏗 Architecture
-
-### Frontend
-- **Framework**: Next.js 14 with React 18
-- **Styling**: Tailwind CSS for responsive design
-- **State Management**: React Context API with custom hooks
-- **Real-time Features**: WebSocket integration for live notifications
-
-### Backend
-- **API**: RESTful services with Next.js API routes
-- **Database**: Prisma ORM for database management
-- **Authentication**: JWT-based secure authentication
-- **File Processing**: Support for various document formats
-
-### Machine Learning
-- **Algorithm**: Gradient boosting implementation
-- **Data Processing**: Multi-criteria decision analysis
-- **Performance Tracking**: Success rate optimization
-- **Continuous Learning**: Model updates based on new transport data
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn package manager
-- PostgreSQL database
-- Git
-
-### Installation
-
-1. **Clone the repository**
+### Automated Deployment
 ```bash
+# Clone the repository
 git clone https://github.com/Habib9612/morocco-transport.git
 cd morocco-transport
+git checkout production-ready
+
+# Run automated setup
+chmod +x scripts/deploy-local.sh
+./scripts/deploy-local.sh
+
+# Start the application
+npm run dev
 ```
 
-2. **Install dependencies**
+### Manual Deployment
 ```bash
+# Install dependencies
 npm install
-# or
-yarn install
-```
 
-3. **Environment Setup**
-```bash
-cp .env.example .env.local
-# Configure your environment variables
-```
+# Setup environment
+cp .env.local.example .env.local
 
-4. **Database Setup**
-```bash
+# Setup database
 npx prisma generate
 npx prisma db push
-npx prisma db seed
-```
 
-5. **Run the development server**
-```bash
+# Start development server
 npm run dev
-# or
-yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the application.
+### Access Your Platform
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8080
+
+## 🔧 Troubleshooting
+
+### Quick Fix Script
+```bash
+# Run automated error fixing
+./scripts/fix-errors.sh
+
+# Or fix specific issues
+./scripts/fix-errors.sh --ports    # Fix port conflicts
+./scripts/fix-errors.sh --node     # Fix Node.js issues
+./scripts/fix-errors.sh --prisma   # Fix database issues
+```
+
+### Common Issues
+- **Port conflicts**: `lsof -ti:3000 | xargs kill -9`
+- **Database issues**: `npx prisma db push --force-reset`
+- **Build errors**: `npm run build`
+
+For detailed troubleshooting, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
+
+## 🏗️ Architecture
+
+### Frontend Stack
+- **Framework**: Next.js 14 with App Router
+- **Language**: TypeScript (100% type coverage)
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **State Management**: React Context API
+- **Authentication**: JWT-based with custom context
+- **Real-time**: WebSocket integration for live updates
+
+### Backend Stack
+- **Framework**: Spring Boot (Java 17)
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT tokens with Spring Security
+- **API**: RESTful endpoints with proper error handling
+- **Documentation**: OpenAPI/Swagger integration
 
 ## 📁 Project Structure
 
 ```
-morocco-transport/
-├── 📱 app/                 # Next.js 14 App Router
-├── 🧩 components/          # Reusable React components
-├── 🎣 hooks/              # Custom React hooks
-├── 📚 lib/                # Utility functions and configurations
-├── 🗄️ models/             # Database models and schemas
-├── 📄 pages/              # Additional pages and API routes
-├── 🗃️ prisma/             # Database schema and migrations
-├── 🎨 styles/             # Global styles and Tailwind config
-├── 🧪 __tests__/          # Test files and test utilities
-├── 📋 jest.config.js      # Jest testing configuration
-├── 📝 tsconfig.json       # TypeScript configuration
-└── 📦 package.json        # Dependencies and scripts
+morocco-transport-2/
+├── app/                          # Next.js App Router
+│   ├── api/                      # API Routes
+│   │   ├── auth/                 # Authentication endpoints
+│   │   ├── shipments/            # Shipment management
+│   │   ├── trucks/               # Fleet management
+│   │   ├── analytics/            # Business analytics
+│   │   ├── notifications/        # Real-time notifications
+│   │   └── users/                # User management
+│   ├── actions/                  # Server Actions
+│   │   ├── auth.ts               # Authentication logic
+│   │   ├── shipments.ts          # Shipment operations
+│   │   ├── trucks.ts             # Fleet operations
+│   │   └── analytics.ts          # Analytics processing
+│   ├── dashboard/                # Protected dashboard pages
+│   │   ├── analytics/            # Analytics dashboard
+│   │   ├── shipments/            # Shipment management
+│   │   ├── trucks/               # Fleet management
+│   │   └── messages/             # Communication center
+│   ├── login/                    # Authentication pages
+│   ├── signup/                   # User registration
+│   └── layout.tsx                # Root layout with AuthProvider
+├── components/                   # Reusable UI components
+│   ├── ui/                       # Base UI components (shadcn/ui)
+│   ├── landing/                  # Landing page components
+│   ├── dashboard/                # Dashboard-specific components
+│   ├── forms/                    # Form components
+│   ├── tables/                   # Data table components
+│   ├── charts/                   # Chart and visualization components
+│   └── admin/                    # Admin panel components
+├── lib/                          # Core libraries and utilities
+│   ├── api-client.ts             # API client for backend communication
+│   ├── auth-context.tsx          # Authentication context provider
+│   ├── hooks/                    # Custom React hooks
+│   │   └── use-dashboard-data.ts # Data fetching hooks
+│   └── utils.ts                  # Utility functions
+├── prisma/                       # Database schema and migrations
+│   ├── schema.prisma             # Database schema
+│   └── migrations/               # Database migrations
+├── backend/                      # Spring Boot backend
+│   ├── src/main/java/com/marocotransport/
+│   │   ├── controller/           # REST API controllers
+│   │   ├── service/              # Business logic layer
+│   │   ├── repository/           # Data access layer
+│   │   ├── entity/               # JPA entities
+│   │   ├── dto/                  # Data Transfer Objects
+│   │   ├── security/             # Security configuration
+│   │   └── config/               # Application configuration
+│   └── pom.xml                   # Maven dependencies
+└── scripts/                      # Database setup scripts
+    ├── 01-create-tables.sql      # Schema creation
+    └── 02-seed-data.sql          # Initial data seeding
 ```
+
+## 🔧 Environment Configuration
+
+Create `.env.local` with the following variables:
+
+```bash
+# Database
+DATABASE_URL="file:./dev.db"
+
+# Authentication
+NEXTAUTH_SECRET="your-super-secret-key-here"
+NEXTAUTH_URL="http://localhost:3000"
+
+# API Configuration
+NEXT_PUBLIC_API_BASE_URL="http://localhost:3000/api"
+NEXT_PUBLIC_WEBSOCKET_URL="ws://localhost:3001"
+
+# External Services
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="your-google-maps-api-key"
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="your-stripe-key"
+
+# Email (for notifications)
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-app-password"
+
+# JWT Secret
+JWT_SECRET="your-jwt-secret-key"
+```
+
+## 📊 API Endpoints
+
+### Authentication
+- `POST /api/auth/login` - User login
+- `POST /api/auth/signup` - User registration
+- `POST /api/auth/logout` - User logout
+- `GET /api/auth/me` - Get current user
+
+### Shipments
+- `GET /api/shipments` - List all shipments
+- `POST /api/shipments` - Create new shipment
+- `GET /api/shipments/:id` - Get shipment details
+- `PUT /api/shipments/:id` - Update shipment
+- `DELETE /api/shipments/:id` - Delete shipment
+- `GET /api/shipments/:id/tracking` - Get tracking info
+
+### Analytics
+- `GET /api/analytics/dashboard` - Dashboard analytics
+- `GET /api/analytics/shipments` - Shipment analytics
+- `GET /api/analytics/revenue` - Revenue analytics
+
+### Notifications
+- `GET /api/notifications` - List notifications
+- `PUT /api/notifications/:id` - Mark as read
+- `PUT /api/notifications/mark-all-read` - Mark all as read
 
 ## 🧪 Testing
 
-### Running Tests
 ```bash
-# Run all tests
-npm run test
+# Frontend tests
+npm test
 
-# Run tests with coverage
-npm run test:coverage
+# Backend tests
+cd backend
+mvn test
 
-# Run tests in CI mode
-npm run test:ci
-
-# Run tests in watch mode
-npm run test:watch
+# E2E tests
+npm run test:e2e
 ```
 
-### Test Coverage
-The project maintains comprehensive test coverage including:
-- Unit tests for utilities and components
-- Integration tests for API endpoints
-- End-to-end tests for critical user journeys
+## 🚀 Deployment
 
-## 🔧 Available Scripts
+### Frontend (Vercel)
+```bash
+npm run build
+vercel --prod
+```
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run test` - Run Jest tests
-- `npm run test:coverage` - Run tests with coverage report
+### Backend (Docker)
+```bash
+cd backend
+docker build -t marocotransport-backend .
+docker run -p 8080:8080 marocotransport-backend
+```
 
-## 📊 Tech Stack
+## 📝 Development
 
-| Category | Technology | Purpose |
-|----------|------------|---------|
-| **Frontend** | Next.js 14, React 18, TypeScript | Modern web application framework |
-| **Styling** | Tailwind CSS, PostCSS | Responsive and utility-first CSS |
-| **Database** | Prisma, PostgreSQL | Type-safe database access |
-| **Testing** | Jest, React Testing Library | Comprehensive testing suite |
-| **DevOps** | Docker, ESLint, Prettier | Development and deployment tools |
-| **Authentication** | JWT, NextAuth.js | Secure user authentication |
-| **Real-time** | WebSocket, Socket.io | Live updates and notifications |
+### Code Structure
+- **Frontend**: Next.js with TypeScript, Tailwind CSS, and shadcn/ui
+- **Backend**: Spring Boot with JPA, JWT authentication, and REST APIs
+- **Database**: Prisma ORM with PostgreSQL/SQLite
+- **State Management**: React Context for authentication and global state
+
+### Key Features Implemented
+- ✅ Real authentication with JWT tokens
+- ✅ Live dashboard with real-time data
+- ✅ Complete CRUD operations for all entities
+- ✅ Responsive design with modern UI
+- ✅ Error handling and loading states
+- ✅ Type-safe API communication
+- ✅ Database migrations and seeding
+
+## 📚 Documentation
+
+- **[Quick Start Guide](QUICK_START.md)** - Get started in 5 minutes
+- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Detailed deployment instructions
+- **[API Documentation](API_DOCUMENTATION.md)** - Complete API reference
+- **[Project Summary](PROJECT_SUMMARY.md)** - Technical overview
 
 ## 🤝 Contributing
 
-We welcome contributions to MarocTransit! Please follow these steps:
-
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Create a Pull Request
-
-### Development Guidelines
-- Follow TypeScript best practices
-- Write comprehensive tests for new features
-- Ensure code passes all linting checks
-- Update documentation for significant changes
+5. Open a Pull Request
 
 ## 📄 License
 
@@ -409,21 +285,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🆘 Support
 
-For support, email support@maroctransit.com or join our Slack channel.
-
-## 🙏 Acknowledgments
-
-- [Next.js](https://nextjs.org/) - The React framework for production
-- [Prisma](https://prisma.io/) - Next-generation Node.js and TypeScript ORM
-- [Tailwind CSS](https://tailwindcss.com/) - A utility-first CSS framework
-- [Vercel](https://vercel.com/) - Platform for frontend frameworks and static sites
+For support, email support@marocotransport.com or create an issue in this repository.
 
 ---
 
-<div align="center">
-
-**Built with ❤️ for Morocco's Transport Industry**
-
-[Website](https://maroctransit.com) • [Documentation](https://docs.maroctransit.com) • [API Reference](https://api.maroctransit.com)
-
-</div>
+**Built with ❤️ for Morocco's logistics industry**

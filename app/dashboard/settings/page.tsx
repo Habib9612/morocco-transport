@@ -20,16 +20,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function SettingsPage() {
-  const { user, updateUserLocation } = useAuth()
+  const { user } = useAuth()
   const { t } = useTranslation()
 
   const [activeTab, setActiveTab] = useState("profile")
   const [formState, setFormState] = useState({
     name: user?.name || "",
     email: user?.email || "",
-    company: user?.company || "",
+    company: "",
     phone: "",
-    address: user?.location?.address || "",
+    address: "",
     language: "en",
     timeZone: "UTC",
     dateFormat: "MM/DD/YYYY",
@@ -65,18 +65,9 @@ export default function SettingsPage() {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      // Update user location if address was changed
-      if (formState.address !== user?.location?.address) {
-        updateUserLocation({
-          lat: user?.location?.lat || 0,
-          lng: user?.location?.lng || 0,
-          address: formState.address,
-        })
-      }
-
       setSaveStatus("success")
       setTimeout(() => setSaveStatus("idle"), 3000)
-    } catch (error) {
+    } catch {
       setSaveStatus("error")
       setTimeout(() => setSaveStatus("idle"), 3000)
     }
@@ -97,7 +88,7 @@ export default function SettingsPage() {
         newPassword: "",
         confirmPassword: "",
       }))
-    } catch (error) {
+    } catch {
       setSaveStatus("error")
       setTimeout(() => setSaveStatus("idle"), 3000)
     }
@@ -191,18 +182,6 @@ export default function SettingsPage() {
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="company" className="text-gray-300">
-                          {t("settings.profile.company")}
-                        </Label>
-                        <Input
-                          id="company"
-                          name="company"
-                          value={formState.company}
-                          onChange={handleInputChange}
-                          className="bg-gray-800 border-gray-700 text-white"
-                        />
-                      </div>
-                      <div className="space-y-2">
                         <Label htmlFor="phone" className="text-gray-300">
                           {t("settings.profile.phone")}
                         </Label>
@@ -239,11 +218,6 @@ export default function SettingsPage() {
                   {saveStatus === "success" && (
                     <span className="text-green-500 flex items-center">
                       <Check className="mr-1 h-4 w-4" /> {t("settings.saved")}
-                    </span>
-                  )}
-                  {saveStatus === "error" && (
-                    <span className="text-red-500 flex items-center">
-                      <AlertCircle className="mr-1 h-4 w-4" /> {t("settings.error")}
                     </span>
                   )}
                 </div>
@@ -366,11 +340,6 @@ export default function SettingsPage() {
                       <Check className="mr-1 h-4 w-4" /> {t("settings.saved")}
                     </span>
                   )}
-                  {saveStatus === "error" && (
-                    <span className="text-red-500 flex items-center">
-                      <AlertCircle className="mr-1 h-4 w-4" /> {t("settings.error")}
-                    </span>
-                  )}
                 </div>
                 <Button
                   onClick={handleSaveProfile}
@@ -440,11 +409,6 @@ export default function SettingsPage() {
                   {saveStatus === "success" && (
                     <span className="text-green-500 flex items-center">
                       <Check className="mr-1 h-4 w-4" /> {t("settings.saved")}
-                    </span>
-                  )}
-                  {saveStatus === "error" && (
-                    <span className="text-red-500 flex items-center">
-                      <AlertCircle className="mr-1 h-4 w-4" /> {t("settings.error")}
                     </span>
                   )}
                 </div>
@@ -533,11 +497,6 @@ export default function SettingsPage() {
                   {saveStatus === "success" && (
                     <span className="text-green-500 flex items-center">
                       <Check className="mr-1 h-4 w-4" /> {t("settings.saved")}
-                    </span>
-                  )}
-                  {saveStatus === "error" && (
-                    <span className="text-red-500 flex items-center">
-                      <AlertCircle className="mr-1 h-4 w-4" /> {t("settings.error")}
                     </span>
                   )}
                 </div>

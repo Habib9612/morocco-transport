@@ -83,7 +83,7 @@ export function ReviewForm({ shipmentId, onSuccess, onCancel }: ReviewFormProps)
             <FormField
               control={form.control}
               name="rating"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
                   <FormLabel>Rating</FormLabel>
                   <FormControl>
@@ -116,14 +116,13 @@ export function ReviewForm({ shipmentId, onSuccess, onCancel }: ReviewFormProps)
             <FormField
               control={form.control}
               name="comment"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
                   <FormLabel>Comment (Optional)</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Share your experience with this shipment..."
                       className="min-h-[100px]"
-                      {...field}
                     />
                   </FormControl>
                   <FormMessage />

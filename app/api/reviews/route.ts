@@ -10,11 +10,6 @@ const createReviewSchema = z.object({
   driverId: z.string().optional(),
 });
 
-const updateReviewSchema = z.object({
-  rating: z.number().min(1).max(5, 'Rating must be between 1 and 5').optional(),
-  comment: z.string().optional(),
-});
-
 // GET /api/reviews - Get reviews with optional filters
 export async function GET(request: NextRequest) {
   try {
@@ -26,7 +21,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (shipmentId) where.shipmentId = shipmentId;
     if (driverId) where.driverId = driverId;
     if (userId) where.userId = userId;

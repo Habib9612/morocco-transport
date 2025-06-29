@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -6,6 +7,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Truck, MapPin, Clock, Shield, Star, Users, ArrowRight, Phone, Mail, Menu, X } from 'lucide-react'
 import Link from 'next/link'
+=======
+import React from 'react';
+import HeroSection from '../components/landing/hero-section';
+import FeaturesSection from '../components/landing/features-section';
+import FeatureShowcase from '../components/landing/feature-showcase';
+import ContactSection from '../components/landing/contact-section';
+import TestimonialsSection from '../components/landing/testimonials-section';
+import StatsSection from '../components/landing/stats-section';
+import FinalCta from '../components/landing/final-cta';
+import Footer from '../components/landing/footer';
+>>>>>>> 94ceef641d456dbf9d1363a1707df2939762d46d
 
 export default function HomePage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -50,6 +62,7 @@ export default function HomePage() {
   ]
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       {/* Navigation */}
       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
@@ -293,3 +306,17 @@ export default function HomePage() {
     </div>
   )
 }
+=======
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <HeroSection />
+      <FeaturesSection />
+      <FeatureShowcase />
+      <StatsSection />
+      <TestimonialsSection />
+      <ContactSection />
+      <FinalCta />
+      <Footer />
+    </div>
+  );
+} 
+>>>>>>> 94ceef641d456dbf9d1363a1707df2939762d46d

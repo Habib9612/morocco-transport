@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+<<<<<<< HEAD
+=======
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+>>>>>>> 94ceef641d456dbf9d1363a1707df2939762d46d

@@ -1,46 +1,48 @@
 "use client"
 
-import { useAuth } from "@/lib/auth-context"
-import { useRouter } from "next/navigation"
 import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import DashboardSidebar from "@/components/dashboard-sidebar"
 import DashboardHeader from "@/components/dashboard-header"
+import { Toaster } from "@/components/ui/sonner"
+import { useAuth } from "@/lib/auth-context"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { user, isLoading } = useAuth()
+  const { user, loading, isAuthenticated } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!loading && !isAuthenticated) {
       router.push("/login")
     }
-  }, [user, isLoading, router])
+  }, [loading, isAuthenticated, router])
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-screen">
+        <div>Loading...</div>
       </div>
     )
   }
 
-  if (!user) {
-    return null
+  if (isAuthenticated && user) {
+    return (
+      <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+        <DashboardSidebar />
+        <div className="flex flex-col">
+          <DashboardHeader />
+          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-muted/40">
+            {children}
+          </main>
+        </div>
+        <Toaster />
+      </div>
+    )
   }
 
-  return (
-    <div className="min-h-screen bg-gray-900 flex">
-      <DashboardSidebar />
-      <div className="flex-1 ml-64">
-        <DashboardHeader />
-        <main className="p-6">
-          {children}
-        </main>
-      </div>
-    </div>
-  )
+  return null
 }

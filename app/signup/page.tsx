@@ -2,156 +2,125 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useAuth } from "@/lib/auth-context"
 import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Eye, EyeOff } from "lucide-react"
+import { useAuth } from "@/lib/auth-context"
 
 export default function SignupPage() {
+  const router = useRouter()
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
-    confirmPassword: "",
-    role: "individual" as 'individual' | 'carrier' | 'company'
   })
-  const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const { signup } = useAuth()
-  const router = useRouter()
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-    
-    if (!formData.name) newErrors.name = "Name is required"
-    if (!formData.email) newErrors.email = "Email is required"
-    if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters"
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match"
-    }
-    
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    
-    if (!validateForm()) return
-    
     setIsLoading(true)
-    const result = await signup(formData)
-    
-    if (result.success) {
+    setError(null)
+    try {
+      await signup(formData)
       router.push("/dashboard")
+    } catch (err) {
+      setError("Signup failed. Please check your details and try again.")
+    } finally {
+      setIsLoading(false)
     }
-    
-    setIsLoading(false)
   }
 
   return (
-    <div className="min-h-screen logistics-gradient">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-center min-h-screen p-6"
-      >
-        <Card className="w-full max-w-md bg-gray-900 border-gray-800">
-          <CardHeader>
-            <CardTitle className="text-2xl text-white text-center">
-              Create Account
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Role Selection */}
-              <Select value={formData.role} onValueChange={(value: 'individual' | 'carrier' | 'company') => setFormData({...formData, role: value})}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-                  <SelectValue placeholder="Account Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="individual">Individual Shipper</SelectItem>
-                  <SelectItem value="carrier">Carrier</SelectItem>
-                  <SelectItem value="company">Fleet Manager</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Name Input */}
-              <div>
+    <div className="flex items-center justify-center min-h-screen bg-muted/40">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Create an account</CardTitle>
+          <CardDescription>
+            Enter your information to get started
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
                 <Input
-                  type="text"
-                  placeholder="Full Name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="bg-gray-800 border-gray-700 text-white"
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
                   required
                 />
-                {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
               </div>
-
-              {/* Email Input */}
-              <div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
                 <Input
-                  type="email"
-                  placeholder="Email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className="bg-gray-800 border-gray-700 text-white"
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
                   required
                 />
-                {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
               </div>
-
-              {/* Password Input */}
-              <div>
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  className="bg-gray-800 border-gray-700 text-white"
-                  required
-                />
-                {errors.password && <p className="text-red-400 text-sm mt-1">{errors.password}</p>}
-              </div>
-
-              {/* Confirm Password Input */}
-              <div>
-                <Input
-                  type="password"
-                  placeholder="Confirm Password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                  className="bg-gray-800 border-gray-700 text-white"
-                  required
-                />
-                {errors.confirmPassword && <p className="text-red-400 text-sm mt-1">{errors.confirmPassword}</p>}
-              </div>
-
-              {/* Submit Button */}
-              <Button 
-                type="submit" 
-                className="w-full bg-blue-600 hover:bg-blue-700"
-                disabled={isLoading}
-              >
-                {isLoading ? "Creating Account..." : "Create Account"}
-              </Button>
-            </form>
-            
-            <div className="mt-4 text-center">
-              <p className="text-gray-400">
-                Already have an account?{" "}
-                <Link href="/login" className="text-blue-400 hover:text-blue-300">
-                  Login
-                </Link>
-              </p>
             </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="space-y-2 relative">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={handleInputChange}
+                required
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-7 h-7 w-7"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+            {error && (
+              <div className="text-red-500 text-sm text-center">{error}</div>
+            )}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Creating account..." : "Create account"}
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="text-center text-sm">
+          Already have an account?{" "}
+          <Link href="/login" className="font-semibold text-primary hover:underline">
+            Log in
+          </Link>
+        </CardFooter>
+      </Card>
     </div>
   )
 }

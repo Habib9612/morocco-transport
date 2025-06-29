@@ -4,7 +4,65 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Seeding database...');
+  console.log('🌱 Starting database seed...');
+
+  // Hash passwords
+  const hashedPassword = await bcrypt.hash('password123', 12);
+
+  // Create test users
+  const testUsers = [
+    {
+      email: 'admin@maroctransit.com',
+      password: hashedPassword,
+      firstName: 'Admin',
+      lastName: 'User',
+      role: UserRole.ADMIN,
+      phone: '+212600000000',
+      isActive: true,
+    },
+    {
+      email: 'driver@maroctransit.com',
+      password: hashedPassword,
+      firstName: 'Driver',
+      lastName: 'User',
+      role: UserRole.DRIVER,
+      phone: '+212600000001',
+      isActive: true,
+    },
+    {
+      email: 'user@maroctransit.com',
+      password: hashedPassword,
+      firstName: 'Regular',
+      lastName: 'User',
+      role: UserRole.USER,
+      phone: '+212600000002',
+      isActive: true,
+    },
+    {
+      email: 'company@maroctransit.com',
+      password: hashedPassword,
+      firstName: 'Company',
+      lastName: 'User',
+      role: UserRole.COMPANY,
+      phone: '+212600000003',
+      isActive: true,
+    },
+  ];
+
+  for (const userData of testUsers) {
+    const existingUser = await prisma.user.findUnique({
+      where: { email: userData.email }
+    });
+
+    if (!existingUser) {
+      await prisma.user.create({
+        data: userData
+      });
+      console.log(`✅ Created user: ${userData.email}`);
+    } else {
+      console.log(`⏭️  User already exists: ${userData.email}`);
+    }
+  }
 
   // Create admin user
   const adminPassword = await bcrypt.hash('admin123', 12);
@@ -222,17 +280,17 @@ async function main() {
     ],
   });
 
-  console.log('✅ Database seeded successfully!');
-  console.log('\n📋 Test Accounts Created:');
-  console.log('👨‍💼 Admin: admin@maroctransit.ma / admin123');
-  console.log('🚛 Driver: driver@maroctransit.ma / driver123');
-  console.log('👤 Customer 1: customer1@example.com / customer123');
-  console.log('👤 Customer 2: customer2@example.com / customer123');
+  console.log('🎉 Database seeding completed!');
+  console.log('\n📋 Test Accounts:');
+  console.log('Email: admin@maroctransit.com | Password: password123 | Role: Admin');
+  console.log('Email: driver@maroctransit.com | Password: password123 | Role: Driver');
+  console.log('Email: user@maroctransit.com | Password: password123 | Role: User');
+  console.log('Email: company@maroctransit.com | Password: password123 | Role: Company');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('❌ Seeding failed:', e);
     process.exit(1);
   })
   .finally(async () => {
