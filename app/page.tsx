@@ -1,134 +1,295 @@
-"use client";
+'use client'
 
-import React from 'react';
+import { useState, useEffect } from 'react'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Truck, MapPin, Clock, Shield, Star, Users, ArrowRight, Phone, Mail, Menu, X } from 'lucide-react'
+import Link from 'next/link'
 
 export default function HomePage() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const features = [
+    {
+      icon: <Truck className="h-8 w-8 text-blue-600" />,
+      title: "Modern Fleet",
+      description: "State-of-the-art vehicles equipped with GPS tracking and safety features"
+    },
+    {
+      icon: <Clock className="h-8 w-8 text-green-600" />,
+      title: "On-Time Service",
+      description: "Punctual departures and arrivals with real-time tracking updates"
+    },
+    {
+      icon: <MapPin className="h-8 w-8 text-red-600" />,
+      title: "Wide Coverage",
+      description: "Extensive network covering all major cities and remote areas in Morocco"
+    },
+    {
+      icon: <Shield className="h-8 w-8 text-purple-600" />,
+      title: "Safe & Secure",
+      description: "Professional drivers and comprehensive insurance for peace of mind"
+    }
+  ]
+
+  const stats = [
+    { number: "50+", label: "Cities Connected" },
+    { number: "1000+", label: "Daily Trips" },
+    { number: "99.8%", label: "On-Time Rate" },
+    { number: "500K+", label: "Happy Customers" }
+  ]
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Enhanced Navigation */}
-      <nav className="bg-white shadow-lg border-b border-indigo-200">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      {/* Navigation */}
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <span className="text-2xl font-bold text-indigo-600 bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
-                🚛 MarocTransit
-              </span>
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-2">
+              <Truck className="h-8 w-8 text-blue-600" />
+              <span className="text-2xl font-bold text-gray-900">MarocTransit</span>
             </div>
-            <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-4">
-                <a href="#" className="text-indigo-600 hover:text-indigo-800 px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</a>
-                <a href="#" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Services</a>
-                <a href="#" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">About</a>
-                <a href="#" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Contact</a>
-                <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-md">
-                  Sign In
-                </button>
-              </div>
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              <Link href="#home" className="text-gray-700 hover:text-blue-600 transition-colors">Home</Link>
+              <Link href="#services" className="text-gray-700 hover:text-blue-600 transition-colors">Services</Link>
+              <Link href="#about" className="text-gray-700 hover:text-blue-600 transition-colors">About</Link>
+              <Link href="#contact" className="text-gray-700 hover:text-blue-600 transition-colors">Contact</Link>
+              <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white">
+                Login
+              </Button>
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                Book Now
+              </Button>
+            </div>
+
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
             </div>
           </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden bg-white border-t shadow-lg">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              <Link href="#home" className="block px-3 py-2 text-gray-700 hover:text-blue-600">Home</Link>
+              <Link href="#services" className="block px-3 py-2 text-gray-700 hover:text-blue-600">Services</Link>
+              <Link href="#about" className="block px-3 py-2 text-gray-700 hover:text-blue-600">About</Link>
+              <Link href="#contact" className="block px-3 py-2 text-gray-700 hover:text-blue-600">Contact</Link>
+              <div className="flex space-x-2 px-3 py-2">
+                <Button variant="outline" size="sm" className="flex-1">Login</Button>
+                <Button size="sm" className="flex-1">Book Now</Button>
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-indigo-600 to-blue-700 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <section id="home" className="pt-16 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Morocco's Premier <span className="text-yellow-300">Transport Platform</span>
+            <Badge className="mb-4 bg-blue-100 text-blue-800 hover:bg-blue-200">
+              🚀 Morocco's Leading Transport Service
+            </Badge>
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+              Transport Solutions for
+              <span className="text-blue-600 block">Modern Morocco</span>
             </h1>
-            <p className="text-xl md:text-2xl text-indigo-100 mb-8 max-w-3xl mx-auto">
-              AI-powered logistics solutions connecting carriers and shippers across Morocco
+            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              Connecting cities, delivering dreams. Experience reliable, efficient, and modern transport services across Morocco with real-time tracking and professional service.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-yellow-400 hover:bg-yellow-500 text-indigo-900 px-8 py-4 rounded-xl text-lg font-semibold transition-all transform hover:scale-105 shadow-lg">
-                Get Started
-              </button>
-              <button className="border-2 border-white text-white hover:bg-white hover:text-indigo-600 px-8 py-4 rounded-xl text-lg font-semibold transition-all">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-3">
+                Book Your Trip
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button size="lg" variant="outline" className="text-lg px-8 py-3">
                 Learn More
-              </button>
+              </Button>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Metrics Section */}
-      <div className="py-16 bg-white">
+      {/* Stats Section */}
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center p-8 bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl shadow-lg border border-green-200">
-              <div className="text-4xl font-bold text-green-600 mb-2">30%</div>
-              <div className="text-gray-700 font-semibold">Cost Reduction</div>
-              <p className="text-sm text-gray-600 mt-2">Save on transportation costs with optimized routes</p>
-            </div>
-            <div className="text-center p-8 bg-gradient-to-br from-blue-50 to-cyan-100 rounded-2xl shadow-lg border border-blue-200">
-              <div className="text-4xl font-bold text-blue-600 mb-2">24%</div>
-              <div className="text-gray-700 font-semibold">Fuel Savings</div>
-              <p className="text-sm text-gray-600 mt-2">Intelligent routing reduces fuel consumption</p>
-            </div>
-            <div className="text-center p-8 bg-gradient-to-br from-purple-50 to-violet-100 rounded-2xl shadow-lg border border-purple-200">
-              <div className="text-4xl font-bold text-purple-600 mb-2">45%</div>
-              <div className="text-gray-700 font-semibold">Increased Efficiency</div>
-              <p className="text-sm text-gray-600 mt-2">Streamlined operations and real-time tracking</p>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">{stat.number}</div>
+                <div className="text-gray-600">{stat.label}</div>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
-
-      {/* Quick Match Form */}
-      <div className="py-16 bg-gradient-to-br from-gray-50 to-blue-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-            <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">Find Your Perfect Carrier Match</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Origin</label>
-                <input 
-                  type="text" 
-                  placeholder="Enter origin city..." 
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Destination</label>
-                <input 
-                  type="text" 
-                  placeholder="Enter destination city..." 
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                />
-              </div>
-            </div>
-            <div className="mt-6 text-center">
-              <button className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-12 py-4 rounded-xl text-lg font-semibold transition-all transform hover:scale-105 shadow-lg">
-                🔍 Find Carriers
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      </section>
 
       {/* Features Section */}
-      <div className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Advanced Features</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-6 bg-gradient-to-br from-orange-50 to-red-100 rounded-xl shadow-md border border-orange-200">
-              <div className="text-2xl mb-4">🔧</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Predictive Maintenance</h3>
-              <p className="text-gray-600">AI-powered maintenance scheduling to prevent breakdowns</p>
-            </div>
-            <div className="p-6 bg-gradient-to-br from-teal-50 to-cyan-100 rounded-xl shadow-md border border-teal-200">
-              <div className="text-2xl mb-4">🗺️</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Route Optimization</h3>
-              <p className="text-gray-600">Smart algorithms for efficient delivery routes</p>
-            </div>
-            <div className="p-6 bg-gradient-to-br from-pink-50 to-rose-100 rounded-xl shadow-md border border-pink-200">
-              <div className="text-2xl mb-4">📱</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Real-time Monitoring</h3>
-              <p className="text-gray-600">Live tracking and status updates for all shipments</p>
-            </div>
+      <section id="services" className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Why Choose MarocTransit?
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              We provide exceptional transport services with modern technology and professional care
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <Card key={index} className="text-center hover:shadow-lg transition-shadow duration-300">
+                <CardHeader>
+                  <div className="flex justify-center mb-4">
+                    {feature.icon}
+                  </div>
+                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-gray-600">
+                    {feature.description}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Booking Section */}
+      <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to Travel?
+          </h2>
+          <p className="text-xl mb-8 opacity-90">
+            Book your journey today and experience the best transport service in Morocco
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" variant="secondary" className="text-lg px-8 py-3">
+              <Phone className="mr-2 h-5 w-5" />
+              Call Now: +212 5XX-XXXX
+            </Button>
+            <Button size="lg" variant="outline" className="text-lg px-8 py-3 border-white text-white hover:bg-white hover:text-blue-600">
+              <Mail className="mr-2 h-5 w-5" />
+              Email Us
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              What Our Customers Say
+            </h2>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="hover:shadow-lg transition-shadow duration-300">
+                <CardHeader>
+                  <div className="flex items-center space-x-1 mb-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star key={star} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <CardTitle className="text-lg">Excellent Service!</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-gray-600 mb-4">
+                    "MarocTransit provided exceptional service. The bus was comfortable, on time, and the staff was very professional."
+                  </CardDescription>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Users className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="font-semibold">Ahmed Hassan</div>
+                      <div className="text-sm text-gray-500">Business Traveler</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <Truck className="h-8 w-8 text-blue-400" />
+                <span className="text-2xl font-bold">MarocTransit</span>
+              </div>
+              <p className="text-gray-400">
+                Morocco's leading transport service connecting cities and delivering excellence.
+              </p>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Services</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="#" className="hover:text-white transition-colors">City Transport</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Airport Shuttle</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Cargo Services</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Charter Bus</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Company</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="#" className="hover:text-white transition-colors">About Us</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Careers</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">News</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Contact</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Contact</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li>📞 +212 5XX-XXXX</li>
+                <li>📧 info@maroctransit.ma</li>
+                <li>📍 Casablanca, Morocco</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2024 MarocTransit. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
-  );
+  )
 }

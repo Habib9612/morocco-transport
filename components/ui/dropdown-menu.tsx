@@ -29,7 +29,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
     className={cn(
       "flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none"use client"
 
-import * as React from "rccent",
+import * as React from "react"
       inset && "pl-8",
       className
     )}
