@@ -7,8 +7,15 @@ const nextConfig = {
     // ignoreBuildErrors: true, // Removed
   },
   images: {
-    unoptimized: true,
+    // Enable image optimization
+    domains: ['localhost', 'your-domain.com'], // Add your image domains
+    formats: ['image/webp', 'image/avif'],
   },
-}
+  experimental: {
+    appDir: true,
+  },
+  // Remove unused dependencies from server bundle
+  serverExternalPackages: ['@prisma/client'],
+};
 
 export default nextConfig

@@ -1,6 +1,6 @@
+export const runtime = "nodejs";
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
 import { z } from 'zod';
 
 const createMessageSchema = z.object({
@@ -8,7 +8,7 @@ const createMessageSchema = z.object({
 });
 
 // GET /api/support/tickets/[id]/messages - Get messages for a ticket
-export const GET = auth(async (req) => {
+export const GET = async (req) => {
   if (!req.auth?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -59,10 +59,10 @@ export const GET = auth(async (req) => {
       { status: 500 }
     );
   }
-});
+};
 
 // POST /api/support/tickets/[id]/messages - Add a message to a ticket
-export const POST = auth(async (req) => {
+export const POST = async (req) => {
   if (!req.auth?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -136,4 +136,4 @@ export const POST = auth(async (req) => {
       { status: 500 }
     );
   }
-});
+};

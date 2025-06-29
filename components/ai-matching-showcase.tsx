@@ -9,12 +9,15 @@ import TruckModel from "@/components/truck-model"
 
 export default function AIMatchingShowcase() {
   const [step, setStep] = useState(1)
+  const [isAnimating, setIsAnimating] = useState(false)
 
   useEffect(() => {
     const timer = setTimeout(() => {
       if (step < 4) {
+        setIsAnimating(true)
         setTimeout(() => {
           setStep((prev) => prev + 1)
+          setIsAnimating(false)
         }, 1500)
       }
     }, 3000)

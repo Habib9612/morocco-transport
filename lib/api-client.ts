@@ -145,3 +145,89 @@ export class ApiClient {
 }
 
 export const apiClient = new ApiClient();
+
+// API endpoints
+export const api = {
+  auth: {
+    login: (data: { email: string; password: string }) =>
+      apiClient.request('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    signup: (data: any) =>
+      apiClient.request('/auth/signup', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    logout: () =>
+      apiClient.request('/auth/logout', {
+        method: 'POST',
+      }),
+    getSession: () => apiClient.request('/auth/session'),
+  },
+  shipments: {
+    create: (data: any) =>
+      apiClient.request('/shipments', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getAll: () => apiClient.request('/shipments'),
+    getById: (id: string) => apiClient.request(`/shipments/${id}`),
+    update: (id: string, data: any) =>
+      apiClient.request(`/shipments/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+    delete: (id: string) =>
+      apiClient.request(`/shipments/${id}`, {
+        method: 'DELETE',
+      }),
+  },
+  vehicles: {
+    create: (data: any) =>
+      apiClient.request('/vehicles', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getAll: () => apiClient.request('/vehicles'),
+    getById: (id: string) => apiClient.request(`/vehicles/${id}`),
+    update: (id: string, data: any) =>
+      apiClient.request(`/vehicles/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+    delete: (id: string) =>
+      apiClient.request(`/vehicles/${id}`, {
+        method: 'DELETE',
+      }),
+  },
+  maintenance: {
+    create: (data: any) =>
+      apiClient.request('/maintenance', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getAll: () => apiClient.request('/maintenance'),
+    getById: (id: string) => apiClient.request(`/maintenance/${id}`),
+    update: (id: string, data: any) =>
+      apiClient.request(`/maintenance/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+    delete: (id: string) =>
+      apiClient.request(`/maintenance/${id}`, {
+        method: 'DELETE',
+      }),
+  },
+  notifications: {
+    getAll: () => apiClient.request('/notifications'),
+    markAsRead: (id: string) =>
+      apiClient.request(`/notifications/${id}/read`, {
+        method: 'POST',
+      }),
+    markAllAsRead: () =>
+      apiClient.request('/notifications/read-all', {
+        method: 'POST',
+      }),
+  },
+};

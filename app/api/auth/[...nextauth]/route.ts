@@ -1,4 +1,4 @@
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
+// This route is not implemented. If you use NextAuth, implement the handlers here.
 
-import { handlers } from "@/lib/auth"
 export const { GET, POST } = handlers 

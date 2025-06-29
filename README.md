@@ -1,21 +1,112 @@
 # 🚛 MarocTransit - Morocco's Premier Transport Platform
 
-A comprehensive logistics and transportation management platform built with Next.js, TypeScript, and Spring Boot.
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.0-green?style=flat-square&logo=spring)](https://spring.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
 
-## 🎯 Features
+<div align="center">
+  <h3>🚛 Built with ❤️ for Morocco's Transport Industry</h3>
+  <p>Connect Shippers with Carriers Instantly</p>
+</div>
 
-- **🔐 Real Authentication** - JWT-based authentication with user management
-- **📊 Live Dashboard** - Real-time analytics and shipment tracking
+## 🌟 Overview
+
+MarocTransit is a comprehensive logistics and transportation management platform designed specifically for Morocco's transport industry. Our platform leverages advanced AI algorithms to intelligently match carriers with shippers, optimizing transportation efficiency and reducing costs across the supply chain.
+
+### 🎯 Key Features
+
+- **🤖 AI-Powered Matching** - Intelligent carrier-shipper pairing based on multiple factors
+- **📊 Real-time Analytics** - Live dashboard with performance metrics and insights
 - **🚚 Fleet Management** - Complete truck and driver management system
 - **📦 Shipment Tracking** - End-to-end shipment lifecycle management
-- **🤖 AI Integration** - Route optimization and intelligent matching
-- **📱 Responsive Design** - Modern UI with mobile-first approach
-- **🌍 Multi-language** - Internationalization support
+- **🔐 Secure Authentication** - JWT-based authentication with role-based access
+- **📱 Responsive Design** - Modern UI optimized for all devices
+- **🌍 Multi-language** - Support for Arabic, French, and English
 - **🔔 Real-time Notifications** - Instant updates and alerts
+
+## 🚀 Quick Start (5 Minutes)
+
+### Prerequisites
+- Node.js 18+ (`node --version`)
+- npm (`npm --version`)
+- Java 17+ (`java --version`)
+- Maven (`mvn --version`)
+
+### Automated Deployment
+```bash
+# Clone the repository
+git clone https://github.com/Habib9612/morocco-transport.git
+cd morocco-transport
+git checkout production-ready
+
+# Run automated setup
+chmod +x scripts/deploy-local.sh
+./scripts/deploy-local.sh
+
+# Start the application
+npm run dev
+```
+
+### Manual Deployment
+```bash
+# Install dependencies
+npm install
+
+# Setup environment
+cp .env.local.example .env.local
+
+# Setup database
+npx prisma generate
+npx prisma db push
+
+# Start development server
+npm run dev
+```
+
+### Access Your Platform
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8080
+
+## 🔧 Troubleshooting
+
+### Quick Fix Script
+```bash
+# Run automated error fixing
+./scripts/fix-errors.sh
+
+# Or fix specific issues
+./scripts/fix-errors.sh --ports    # Fix port conflicts
+./scripts/fix-errors.sh --node     # Fix Node.js issues
+./scripts/fix-errors.sh --prisma   # Fix database issues
+```
+
+### Common Issues
+- **Port conflicts**: `lsof -ti:3000 | xargs kill -9`
+- **Database issues**: `npx prisma db push --force-reset`
+- **Build errors**: `npm run build`
+
+For detailed troubleshooting, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
 
 ## 🏗️ Architecture
 
-### Frontend (Next.js 14 + TypeScript)
+### Frontend Stack
+- **Framework**: Next.js 14 with App Router
+- **Language**: TypeScript (100% type coverage)
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **State Management**: React Context API
+- **Authentication**: JWT-based with custom context
+- **Real-time**: WebSocket integration for live updates
+
+### Backend Stack
+- **Framework**: Spring Boot (Java 17)
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT tokens with Spring Security
+- **API**: RESTful endpoints with proper error handling
+- **Documentation**: OpenAPI/Swagger integration
+
+## 📁 Project Structure
+
 ```
 morocco-transport-2/
 ├── app/                          # Next.js App Router
@@ -41,7 +132,11 @@ morocco-transport-2/
 │   └── layout.tsx                # Root layout with AuthProvider
 ├── components/                   # Reusable UI components
 │   ├── ui/                       # Base UI components (shadcn/ui)
+│   ├── landing/                  # Landing page components
 │   ├── dashboard/                # Dashboard-specific components
+│   ├── forms/                    # Form components
+│   ├── tables/                   # Data table components
+│   ├── charts/                   # Chart and visualization components
 │   └── admin/                    # Admin panel components
 ├── lib/                          # Core libraries and utilities
 │   ├── api-client.ts             # API client for backend communication
@@ -52,91 +147,20 @@ morocco-transport-2/
 ├── prisma/                       # Database schema and migrations
 │   ├── schema.prisma             # Database schema
 │   └── migrations/               # Database migrations
+├── backend/                      # Spring Boot backend
+│   ├── src/main/java/com/marocotransport/
+│   │   ├── controller/           # REST API controllers
+│   │   ├── service/              # Business logic layer
+│   │   ├── repository/           # Data access layer
+│   │   ├── entity/               # JPA entities
+│   │   ├── dto/                  # Data Transfer Objects
+│   │   ├── security/             # Security configuration
+│   │   └── config/               # Application configuration
+│   └── pom.xml                   # Maven dependencies
 └── scripts/                      # Database setup scripts
     ├── 01-create-tables.sql      # Schema creation
     └── 02-seed-data.sql          # Initial data seeding
 ```
-
-### Backend (Spring Boot + Java)
-```
-backend/
-├── src/main/java/com/marocotransport/
-│   ├── controller/               # REST API controllers
-│   │   ├── AuthController.java   # Authentication endpoints
-│   │   ├── UserController.java   # User management
-│   │   ├── ShipmentController.java # Shipment operations
-│   │   └── TruckController.java  # Fleet management
-│   ├── service/                  # Business logic layer
-│   │   ├── UserService.java      # User operations
-│   │   ├── ShipmentService.java  # Shipment logic
-│   │   └── TruckService.java     # Fleet operations
-│   ├── repository/               # Data access layer
-│   │   ├── UserRepository.java   # User data access
-│   │   ├── ShipmentRepository.java # Shipment data access
-│   │   └── TruckRepository.java  # Fleet data access
-│   ├── entity/                   # JPA entities
-│   │   ├── User.java             # User entity
-│   │   ├── Shipment.java         # Shipment entity
-│   │   └── Truck.java            # Truck entity
-│   ├── dto/                      # Data Transfer Objects
-│   │   ├── ApiResponse.java      # Standard API responses
-│   │   └── LoginRequest.java     # Authentication DTOs
-│   ├── security/                 # Security configuration
-│   │   ├── JwtTokenProvider.java # JWT token management
-│   │   └── SecurityConfig.java   # Security configuration
-│   └── config/                   # Application configuration
-└── pom.xml                       # Maven dependencies
-```
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+ and npm
-- Java 17+ and Maven
-- PostgreSQL (or SQLite for development)
-
-### 1. Clone and Setup
-```bash
-git clone https://github.com/Habib9612/morocco-transport.git
-cd morocco-transport
-```
-
-### 2. Frontend Setup
-```bash
-# Install dependencies
-npm install
-
-# Set up environment variables
-cp .env.local.example .env.local
-# Edit .env.local with your configuration
-
-# Set up database
-npx prisma generate
-npx prisma db push
-
-# Run database scripts
-psql -d your_database -f scripts/01-create-tables.sql
-psql -d your_database -f scripts/02-seed-data.sql
-
-# Start development server
-npm run dev
-```
-
-### 3. Backend Setup
-```bash
-cd backend
-
-# Install dependencies
-mvn clean install
-
-# Start Spring Boot server
-mvn spring-boot:run
-```
-
-### 4. Access the Application
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8080
-- Database: Configured in `.env.local`
 
 ## 🔧 Environment Configuration
 
@@ -239,6 +263,13 @@ docker run -p 8080:8080 marocotransport-backend
 - ✅ Error handling and loading states
 - ✅ Type-safe API communication
 - ✅ Database migrations and seeding
+
+## 📚 Documentation
+
+- **[Quick Start Guide](QUICK_START.md)** - Get started in 5 minutes
+- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Detailed deployment instructions
+- **[API Documentation](API_DOCUMENTATION.md)** - Complete API reference
+- **[Project Summary](PROJECT_SUMMARY.md)** - Technical overview
 
 ## 🤝 Contributing
 
