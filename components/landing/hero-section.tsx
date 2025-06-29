@@ -3,11 +3,11 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Truck, MapPin, CheckCircle, Brain, Clock, ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "../../components/ui/button"
+import { Input } from "../../components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
+import { Badge } from "../../components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 
 export default function HeroSection() {
   const [originCity, setOriginCity] = useState("")
