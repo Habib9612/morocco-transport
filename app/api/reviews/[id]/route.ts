@@ -1,6 +1,6 @@
+export const runtime = "nodejs";
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
 import { z } from 'zod';
 
 const updateReviewSchema = z.object({
@@ -9,7 +9,7 @@ const updateReviewSchema = z.object({
 });
 
 // GET /api/reviews/[id] - Get a specific review
-export const GET = auth(async (req) => {
+export const GET = async (req) => {
   const id = req.url.split('/').pop();
 
   try {
@@ -57,10 +57,10 @@ export const GET = auth(async (req) => {
       { status: 500 }
     );
   }
-});
+};
 
 // PUT /api/reviews/[id] - Update a review
-export const PUT = auth(async (req) => {
+export const PUT = async (req) => {
   if (!req.auth?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -137,10 +137,10 @@ export const PUT = auth(async (req) => {
       { status: 500 }
     );
   }
-});
+};
 
 // DELETE /api/reviews/[id] - Delete a review
-export const DELETE = auth(async (req) => {
+export const DELETE = async (req) => {
   if (!req.auth?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -180,4 +180,4 @@ export const DELETE = auth(async (req) => {
       { status: 500 }
     );
   }
-});
+};

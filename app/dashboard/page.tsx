@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import MarocTransitLanding from '@/components/MarocTransitLanding';
-=======
 "use client"
->>>>>>> 94ceef641d456dbf9d1363a1707df2939762d46d
 
 import { useAuth } from '@/lib/auth-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,9 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Truck, Package, Users, TrendingUp } from 'lucide-react'
 
 export default function DashboardPage() {
-  const { user, loading, isAuthenticated } = useAuth()
+  const { user, isLoading, isAuthenticated } = useAuth()
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div>Loading dashboard...</div>

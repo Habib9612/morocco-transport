@@ -1,7 +1,9 @@
+export const runtime = "nodejs";
+
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { auth } from '@/lib/auth';
+import { withAuth } from '@/lib/auth-middleware';
 
 const updateUserSchema = z.object({
   email: z.string().email('Invalid email address').optional(),
@@ -13,8 +15,8 @@ const updateUserSchema = z.object({
 });
 
 // GET /api/admin/users/[id] - Get a specific user
-export const GET = auth(async (req) => {
-  if (!req.auth?.user?.role || req.auth.user.role !== 'ADMIN') {
+export const GET = withAuth(['ADMIN'])(async (req) => {
+  if (!req.user?.role || req.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -58,8 +60,8 @@ export const GET = auth(async (req) => {
 });
 
 // PUT /api/admin/users/[id] - Update a specific user
-export const PUT = auth(async (req) => {
-  if (!req.auth?.user?.role || req.auth.user.role !== 'ADMIN') {
+export const PUT = withAuth(['ADMIN'])(async (req) => {
+  if (!req.user?.role || req.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -104,8 +106,8 @@ export const PUT = auth(async (req) => {
 });
 
 // DELETE /api/admin/users/[id] - Delete a specific user
-export const DELETE = auth(async (req) => {
-  if (!req.auth?.user?.role || req.auth.user.role !== 'ADMIN') {
+export const DELETE = withAuth(['ADMIN'])(async (req) => {
+  if (!req.user?.role || req.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

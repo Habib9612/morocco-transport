@@ -1,8 +1,9 @@
+export const runtime = "nodejs";
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
+import { withAuth } from '@/lib/auth-middleware';
 import { NextResponse } from 'next/server';
 
-export const GET = auth(async (req) => {
+export const GET = withAuth(async (req) => {
   if (!req.auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -58,7 +59,7 @@ export const GET = auth(async (req) => {
   });
 });
 
-export const POST = auth(async (req) => {
+export const POST = withAuth(async (req) => {
   if (!req.auth || req.auth.user?.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
