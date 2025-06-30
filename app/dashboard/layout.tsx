@@ -2,8 +2,8 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import DashboardSidebar from "@/components/dashboard-sidebar"
-import DashboardHeader from "@/components/dashboard-header"
+import DashboardSidebar from "@/components/features/dashboard/dashboard-sidebar"
+import DashboardHeader from "@/components/common/dashboard-header"
 import { Toaster } from "@/components/ui/sonner"
 import { useAuth } from "@/lib/auth-context"
 

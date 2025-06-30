@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
-import ActivityTimeline from "./activity-timeline"
+import { format } from "date-fns"
+import { MapPin, Package, Truck } from "lucide-react"
+import ActivityTimeline from "./features/dashboard/activity-timeline"
 
 interface OrderDetailsProps {
   orderId: string
