@@ -1,55 +1,79 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { executeQuery } from "@/lib/db"
-import { hashPassword, generateToken } from "@/lib/auth"
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { hashPassword, generateToken, User } from '@/lib/auth';
+import { z } from 'zod';
+import bcrypt from 'bcryptjs';
 
-export async function POST(request: NextRequest) {
+const signupSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  phone: z.string().optional(),
+  role: z.enum(['USER', 'DRIVER', 'ADMIN', 'COMPANY']).default('USER'),
+});
+
+export async function POST(request: Request) {
   try {
-    const {
-      name,
-      email,
-      password,
-      user_type = "individual",
-      phone_number,
-      city,
-      country = "Morocco",
-    } = await request.json()
+    const body = await request.json();
+    const result = signupSchema.safeParse(body);
 
-    // Validate input
-    if (!name || !email || !password) {
-      return NextResponse.json({ error: "Name, email, and password are required" }, { status: 400 })
+    if (!result.success) {
+      return NextResponse.json(
+        { error: 'Invalid input', details: result.error.errors },
+        { status: 400 }
+      );
     }
 
-    // Check if user already exists
-    const existingUsers = await executeQuery("SELECT id FROM users WHERE email = $1", [email])
+    const { email, password, firstName, lastName, phone, role } = result.data;
 
-    if (existingUsers.length > 0) {
-      return NextResponse.json({ error: "User with this email already exists" }, { status: 409 })
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'User with this email already exists' },
+        { status: 409 }
+      );
     }
 
-    // Hash password
-    const hashedPassword = await hashPassword(password)
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user
-    const result = await executeQuery(
-      `INSERT INTO users (name, email, password_hash, user_type, phone_number, city, country)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id, name, email, role, user_type, phone_number, city, country, is_verified, is_active`,
-      [name, email, hashedPassword, user_type, phone_number, city, country],
-    )
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        phone,
+        role,
+      },
+    });
 
-    const user = result[0]
-    const token = generateToken(user)
+    const userForToken = { id: newUser.id, role: newUser.role };
+    const token = generateToken(userForToken);
+
+    const userResponse: User = {
+      id: newUser.id,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+      email: newUser.email,
+      role: newUser.role,
+      phone: newUser.phone,
+      isActive: newUser.isActive,
+    };
 
     return NextResponse.json(
       {
-        user,
+        user: userResponse,
         token,
-        message: "User created successfully",
+        message: 'User created successfully',
       },
-      { status: 201 },
-    )
+      { status: 201 }
+    );
   } catch (error) {
-    console.error("Signup error:", error)
-    return NextResponse.json({ error: "Signup failed" }, { status: 500 })
+    console.error('Signup error:', error);
+    return NextResponse.json({ error: 'Signup failed' }, { status: 500 });
   }
 }

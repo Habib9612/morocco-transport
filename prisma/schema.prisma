@@ -51,7 +51,7 @@ model User {
   updatedAt DateTime @updatedAt
   
   // Password reset fields
-  resetToken       String?
+  resetToken       String?   @unique
   resetTokenExpiry DateTime?
 
   // Relations

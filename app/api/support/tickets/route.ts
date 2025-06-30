@@ -1,7 +1,8 @@
+export const runtime = "nodejs";
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { withAuth } from '@/lib/auth-middleware';
 import { z } from 'zod';
+import { withAuth, AuthenticatedRequest } from '@/lib/auth';
 
 const createTicketSchema = z.object({
   subject: z.string().min(1, 'Subject is required'),
@@ -9,15 +10,11 @@ const createTicketSchema = z.object({
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).default('MEDIUM'),
 });
 
-// GET /api/support/tickets - Get support tickets
-export async function GET(request: NextRequest) {
-  const authResult = await withAuth(['USER', 'COMPANY', 'ADMIN'])(request);
-  if (authResult instanceof NextResponse) return authResult;
-  
-  const { user } = authResult;
+async function getHandler(req: AuthenticatedRequest) {
+  const { user } = req;
 
   try {
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(req.nextUrl);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const status = searchParams.get('status');
@@ -77,15 +74,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/support/tickets - Create a new support ticket
-export async function POST(request: NextRequest) {
-  const authResult = await withAuth(['USER', 'COMPANY'])(request);
-  if (authResult instanceof NextResponse) return authResult;
-  
-  const { user } = authResult;
+async function postHandler(req: AuthenticatedRequest) {
+  const { user } = req;
 
   try {
-    const body = await request.json();
+    const body = await req.json();
     const result = createTicketSchema.safeParse(body);
     
     if (!result.success) {
@@ -128,3 +121,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const GET = withAuth(getHandler);
+export const POST = withAuth(postHandler);

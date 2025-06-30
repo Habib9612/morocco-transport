@@ -1,90 +1,27 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { executeQuery, buildPaginationQuery } from "@/lib/db"
-import { requireAuth } from "@/lib/auth"
+export const runtime = "nodejs";
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { withAuth, AuthenticatedRequest } from '@/lib/auth';
 
-// Get notifications for a user
-export async function GET(request: NextRequest) {
-  try {
-    const user = await requireAuth()(request)
-    const searchParams = request.nextUrl.searchParams
-    const page = Number.parseInt(searchParams.get("page") || "1")
-    const limit = Number.parseInt(searchParams.get("limit") || "20")
-    const isRead = searchParams.get("is_read")
-    const notificationType = searchParams.get("type")
-
-    let query = "SELECT * FROM notifications WHERE user_id = $1"
-    const params = [user.id]
-
-    if (isRead !== null) {
-      query += ` AND is_read = $${params.length + 1}`
-      params.push(isRead === "true")
-    }
-
-    if (notificationType) {
-      query += ` AND notification_type = $${params.length + 1}`
-      params.push(notificationType)
-    }
-
-    query += " ORDER BY created_at DESC"
-
-    // Get total count
-    const countQuery = query.replace("SELECT *", "SELECT COUNT(*) as total")
-    const countResult = await executeQuery(countQuery, params)
-    const total = Number.parseInt(countResult[0].total)
-
-    // Apply pagination
-    const paginatedQuery = buildPaginationQuery(query, page, limit)
-    const notifications = await executeQuery(paginatedQuery, params)
-
-    // Get unread count
-    const unreadResult = await executeQuery(
-      "SELECT COUNT(*) as unread_count FROM notifications WHERE user_id = $1 AND is_read = FALSE",
-      [user.id],
-    )
-
-    return NextResponse.json({
-      notifications,
-      unread_count: Number.parseInt(unreadResult[0].unread_count),
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    })
-  } catch (error) {
-    console.error("Error fetching notifications:", error)
-    return NextResponse.json({ error: error.message || "Failed to fetch notifications" }, { status: 500 })
-  }
-}
-
-// Create a new notification
-export async function POST(request: NextRequest) {
-  try {
-    await requireAuth(["admin"])(request)
-
-    const { user_id, title, message, notification_type, related_id, send_via = "app" } = await request.json()
-
-    if (!user_id || !title || !message || !notification_type) {
-      return NextResponse.json(
-        {
-          error: "User ID, title, message, and notification type are required",
+// This is a placeholder as there is no direct Notification model.
+// You could fetch a combined feed of events (e.g., new reviews, messages).
+async function getHandler(req: AuthenticatedRequest) {
+    const { user } = req;
+    
+    // Example: Fetch recent, unread reviews as notifications
+    /*
+    const reviews = await prisma.review.findMany({
+        where: {
+            driverId: user.id, // Or some other way to associate reviews
+            isRead: false
         },
-        { status: 400 },
-      )
-    }
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+    });
+    return NextResponse.json(reviews);
+    */
 
-    const result = await executeQuery(
-      `INSERT INTO notifications 
-       (user_id, title, message, notification_type, related_id, send_via)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
-      [user_id, title, message, notification_type, related_id, send_via],
-    )
-
-    return NextResponse.json(result[0], { status: 201 })
-  } catch (error) {
-    console.error("Error creating notification:", error)
-    return NextResponse.json({ error: error.message || "Failed to create notification" }, { status: 500 })
-  }
+    return NextResponse.json([]); // Return empty for now
 }
+
+export const GET = withAuth(getHandler);

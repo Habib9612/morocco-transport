@@ -1,17 +1,19 @@
 "use client"
 
 import { useAuth } from '@/lib/auth-context'
+import { useDashboardData } from '@/lib/hooks/use-dashboard-data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Truck, Package, Users, TrendingUp } from 'lucide-react'
 
 export default function DashboardPage() {
-  const { user, isLoading, isAuthenticated } = useAuth()
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth()
+  const { data: dashboardData, loading: dataLoading, error } = useDashboardData()
 
-  if (isLoading) {
+  if (authLoading || dataLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div>Loading dashboard...</div>
+        <div>Loading dashboard data...</div>
       </div>
     )
   }
@@ -20,6 +22,14 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-red-500">You are not authenticated. Please <a href="/login" className="underline text-blue-600">login</a>.</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-500">Error loading dashboard: {error}</div>
       </div>
     )
   }
@@ -38,8 +48,8 @@ export default function DashboardPage() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,234</div>
-            <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+            <div className="text-2xl font-bold">{dashboardData?.total_shipments ?? 'N/A'}</div>
+            <p className="text-xs text-muted-foreground">{dashboardData?.delivered_shipments} delivered</p>
           </CardContent>
         </Card>
         
@@ -49,30 +59,34 @@ export default function DashboardPage() {
             <Truck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">89</div>
-            <p className="text-xs text-muted-foreground">+5.2% from last month</p>
+            <div className="text-2xl font-bold">{dashboardData?.active_trucks ?? 'N/A'}</div>
+            <p className="text-xs text-muted-foreground">out of {dashboardData?.total_trucks} total</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Drivers</CardTitle>
+            <CardTitle className="text-sm font-medium">Available Drivers</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">156</div>
-            <p className="text-xs text-muted-foreground">+12.3% from last month</p>
+            <div className="text-2xl font-bold">{dashboardData?.available_drivers ?? 'N/A'}</div>
+            <p className="text-xs text-muted-foreground">out of {dashboardData?.total_drivers} total</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$45,231</div>
-            <p className="text-xs text-muted-foreground">+18.7% from last month</p>
+            <div className="text-2xl font-bold">
+              {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(dashboardData?.total_revenue ?? 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Avg. revenue/shipment: {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(dashboardData?.average_revenue ?? 0)}
+            </p>
           </CardContent>
         </Card>
       </div>

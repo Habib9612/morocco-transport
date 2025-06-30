@@ -1,5 +1,6 @@
-const fs = require('fs');
-const path = require('path');
+import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
 
 // Helper to parse .env files
 function parseEnvFile(filePath) {

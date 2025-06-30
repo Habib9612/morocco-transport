@@ -3,7 +3,7 @@ export const runtime = "nodejs";
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { withAuth } from '@/lib/auth-middleware';
+import { withAuth, AuthenticatedRequest } from '@/lib/auth';
 
 const updateUserSchema = z.object({
   email: z.string().email('Invalid email address').optional(),
@@ -14,17 +14,19 @@ const updateUserSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
+type ApiHandler = (
+  req: AuthenticatedRequest,
+  context: { params: { [key: string]: string | string[] | undefined } }
+) => Promise<Response> | Response;
+
 // GET /api/admin/users/[id] - Get a specific user
-export const GET = withAuth(['ADMIN'])(async (req) => {
-  if (!req.user?.role || req.user.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const id = req.url.split('/').pop();
-
+async function getHandler(
+  req: AuthenticatedRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const user = await prisma.user.findUnique({
-      where: { id },
+      where: { id: params.id },
       select: {
         id: true,
         email: true,
@@ -52,27 +54,21 @@ export const GET = withAuth(['ADMIN'])(async (req) => {
     return NextResponse.json({ user });
   } catch (error) {
     console.error('Get user error', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-});
+}
 
 // PUT /api/admin/users/[id] - Update a specific user
-export const PUT = withAuth(['ADMIN'])(async (req) => {
-  if (!req.user?.role || req.user.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const id = req.url.split('/').pop();
-
+async function putHandler(
+  req: AuthenticatedRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const body = await req.json();
     const validatedData = updateUserSchema.parse(body);
 
     const updatedUser = await prisma.user.update({
-      where: { id },
+      where: { id: params.id },
       data: validatedData,
       select: {
         id: true,
@@ -91,39 +87,30 @@ export const PUT = withAuth(['ADMIN'])(async (req) => {
     return NextResponse.json({ user: updatedUser });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 });
     }
-
     console.error('Update user error', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-});
+}
 
 // DELETE /api/admin/users/[id] - Delete a specific user
-export const DELETE = withAuth(['ADMIN'])(async (req) => {
-  if (!req.user?.role || req.user.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const id = req.url.split('/').pop();
-
+async function deleteHandler(
+  req: AuthenticatedRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     await prisma.user.delete({
-      where: { id },
+      where: { id: params.id },
     });
 
     return NextResponse.json({ message: 'User deleted successfully' });
   } catch (error) {
     console.error('Delete user error', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-});
+}
+
+export const GET = withAuth(getHandler, ['ADMIN']);
+export const PUT = withAuth(putHandler, ['ADMIN']);
+export const DELETE = withAuth(deleteHandler, ['ADMIN']);

@@ -1,5 +1,7 @@
 import bcrypt from "bcryptjs"
-import { prisma } from "./db"
+import jwt from "jsonwebtoken"
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from "./prisma"
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production"
 const JWT_EXPIRES_IN = "7d"
@@ -14,6 +16,10 @@ export interface User {
   isActive: boolean
 }
 
+export interface AuthenticatedRequest extends NextRequest {
+  user: User;
+}
+
 export interface AuthResult {
   success: boolean
   user?: User
@@ -21,53 +27,32 @@ export interface AuthResult {
   message?: string
 }
 
-// Simple JWT implementation without external dependencies
-export function generateToken(user: User): string {
-  const header = {
-    alg: "HS256",
-    typ: "JWT",
-  }
+type ApiHandler = (
+  req: AuthenticatedRequest,
+  context: unknown
+) => Promise<Response> | Response;
 
-  const payload = {
-    id: user.id,
-    email: user.email,
-    role: user.role,
-    exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days
-  }
-
-  const encodedHeader = btoa(JSON.stringify(header)).replace(/=/g, "")
-  const encodedPayload = btoa(JSON.stringify(payload)).replace(/=/g, "")
-
-  const signature = btoa(`${encodedHeader}.${encodedPayload}.${JWT_SECRET}`).replace(/=/g, "")
-
-  return `${encodedHeader}.${encodedPayload}.${signature}`
+// Generate a secure JWT
+export function generateToken(user: { id: string, role: string }): string {
+  return jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
+  })
 }
 
-// Simple JWT verification
-export function verifyToken(token: string): any {
+// Verify a JWT
+export async function verifyToken(token: string): Promise<{ userId: string, role: string } | null> {
   try {
-    const parts = token.split(".")
-    if (parts.length !== 3) {
-      throw new Error("Invalid token format")
-    }
-
-    const payload = JSON.parse(atob(parts[1]))
-
-    // Check expiration
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-      throw new Error("Token expired")
-    }
-
-    return payload
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return decoded as { userId: string, role: string };
   } catch (error) {
-    throw new Error("Invalid token")
+    console.error("Invalid token", error);
+    return null;
   }
 }
 
 // Hash password
 export async function hashPassword(password: string): Promise<string> {
-  const salt = await bcrypt.genSalt(12)
-  return bcrypt.hash(password, salt)
+  return bcrypt.hash(password, 12);
 }
 
 // Compare password
@@ -75,7 +60,7 @@ export async function comparePassword(password: string, hashedPassword: string):
   return bcrypt.compare(password, hashedPassword)
 }
 
-// Authenticate user
+// Authenticate user and return user, token
 export async function authenticateUser(email: string, password: string): Promise<AuthResult> {
   try {
     const user = await prisma.user.findUnique({
@@ -95,6 +80,9 @@ export async function authenticateUser(email: string, password: string): Promise
       return { success: false, message: "Invalid credentials" }
     }
 
+    const userForToken = { id: user.id, role: user.role };
+    const token = generateToken(userForToken);
+
     const userWithoutPassword: User = {
       id: user.id,
       firstName: user.firstName,
@@ -104,8 +92,6 @@ export async function authenticateUser(email: string, password: string): Promise
       phone: user.phone,
       isActive: user.isActive,
     }
-
-    const token = generateToken(userWithoutPassword)
 
     return {
       success: true,
@@ -119,68 +105,50 @@ export async function authenticateUser(email: string, password: string): Promise
   }
 }
 
-// Get user from token
-export async function getUserFromToken(token: string): Promise<User | null> {
-  try {
-    const decoded = verifyToken(token)
-
-    const user = await prisma.user.findUnique({
-      where: { 
-        id: decoded.id,
-        isActive: true
-      },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        role: true,
-        phone: true,
-        isActive: true,
-      }
-    })
-
-    if (!user) return null
-
-    return {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      role: user.role,
-      phone: user.phone,
-      isActive: user.isActive,
-    }
-  } catch (error) {
-    return null
-  }
-}
-
-// Check user permissions
-export function hasPermission(user: User, requiredRole: string[]): boolean {
-  return requiredRole.includes(user.role)
-}
-
 // Middleware for API routes
-export function requireAuth(requiredRoles: string[] = []) {
-  return async (request: Request) => {
-    const authHeader = request.headers.get("authorization")
+export function withAuth(handler: ApiHandler, allowedRoles: string[] = []) {
+  return async (
+    req: NextRequest,
+    context: unknown
+  ): Promise<Response> => {
+    try {
+      const authHeader = req.headers.get('authorization');
+      const token = authHeader?.split(' ')[1];
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      throw new Error("No token provided")
+      if (!token) {
+        return NextResponse.json({ error: 'Authentication required. No token provided.' }, { status: 401 });
+      }
+      
+      const decoded = await verifyToken(token);
+
+      if (!decoded || !decoded.userId) {
+        return NextResponse.json({ error: 'Invalid token format.' }, { status: 401 });
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: { id: true, firstName: true, lastName: true, email: true, role: true, isActive: true, phone: true },
+      });
+
+      if (!user || !user.isActive) {
+        return NextResponse.json({ error: 'User not found or inactive.' }, { status: 401 });
+      }
+      
+      if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+        return NextResponse.json({ error: 'Insufficient permissions.' }, { status: 403 });
+      }
+
+      const authenticatedReq = req as AuthenticatedRequest;
+      authenticatedReq.user = user;
+
+      return handler(authenticatedReq, context);
+
+    } catch (error: unknown) {
+      console.error('Authentication error:', error);
+      return NextResponse.json(
+        { error: 'Invalid authentication token.' },
+        { status: 401 }
+      );
     }
-
-    const token = authHeader.substring(7)
-    const user = await getUserFromToken(token)
-
-    if (!user) {
-      throw new Error("Invalid token")
-    }
-
-    if (requiredRoles.length > 0 && !hasPermission(user, requiredRoles)) {
-      throw new Error("Insufficient permissions")
-    }
-
-    return user
-  }
+  };
 }

@@ -14,6 +14,9 @@ const confirmResetSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
+type RequestResetData = z.infer<typeof requestResetSchema>;
+type ConfirmResetData = z.infer<typeof confirmResetSchema>;
+
 // Request password reset (POST)
 export async function POST(request: Request) {
   try {
@@ -35,7 +38,7 @@ export async function POST(request: Request) {
 }
 
 // Request password reset token
-async function requestPasswordReset(body: Record<string, unknown>) {
+async function requestPasswordReset(body: RequestResetData) {
   // Validate input
   const result = requestResetSchema.safeParse(body);
   if (!result.success) {
@@ -50,7 +53,7 @@ async function requestPasswordReset(body: Record<string, unknown>) {
   // Find user
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { id: true, email: true, name: true },
+    select: { id: true, email: true, firstName: true },
   });
 
   // Always return success for security (don't reveal if email exists)
@@ -85,7 +88,7 @@ async function requestPasswordReset(body: Record<string, unknown>) {
 }
 
 // Confirm password reset with token
-async function confirmPasswordReset(body: Record<string, unknown>) {
+async function confirmPasswordReset(body: ConfirmResetData) {
   // Validate input
   const result = confirmResetSchema.safeParse(body);
   if (!result.success) {
