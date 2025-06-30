@@ -1,9 +1,9 @@
+export const runtime = "nodejs";
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
 
 // GET /api/support/tickets/[id] - Get a specific ticket
-export const GET = auth(async (req) => {
+export const GET = async (req) => {
   if (!req.auth?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -60,10 +60,10 @@ export const GET = auth(async (req) => {
       { status: 500 }
     );
   }
-});
+};
 
 // PUT /api/support/tickets/[id] - Update a specific ticket
-export const PUT = auth(async (req) => {
+export const PUT = async (req) => {
   if (!req.auth?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -131,10 +131,10 @@ export const PUT = auth(async (req) => {
       { status: 500 }
     );
   }
-});
+};
 
 // DELETE /api/support/tickets/[id] - Delete a specific ticket
-export const DELETE = auth(async (req) => {
+export const DELETE = async (req) => {
   if (!req.auth?.user?.role || req.auth.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -154,4 +154,4 @@ export const DELETE = auth(async (req) => {
       { status: 500 }
     );
   }
-});
+};

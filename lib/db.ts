@@ -1,12 +1,17 @@
-import { neon } from "@neondatabase/serverless"
+import { PrismaClient } from '@prisma/client'
 
-// Create a SQL client with the pooled connection
-const sql = neon(process.env.DATABASE_URL!)
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
+}
+
+export const prisma = globalForPrisma.prisma ?? new PrismaClient()
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 // Helper function to execute raw SQL queries
 export async function executeQuery(query: string, params: any[] = []) {
   try {
-    const result = await sql(query, params)
+    const result = await prisma.$queryRawUnsafe(query, ...params)
     return result
   } catch (error) {
     console.error("Database query error:", error)
@@ -17,12 +22,14 @@ export async function executeQuery(query: string, params: any[] = []) {
 // Helper function to execute transactions
 export async function executeTransaction(queries: { query: string; params?: any[] }[]) {
   try {
-    const results = []
-    for (const { query, params = [] } of queries) {
-      const result = await sql(query, params)
-      results.push(result)
-    }
-    return results
+    return await prisma.$transaction(async (tx) => {
+      const results = []
+      for (const { query, params = [] } of queries) {
+        const result = await tx.$queryRawUnsafe(query, ...params)
+        results.push(result)
+      }
+      return results
+    })
   } catch (error) {
     console.error("Database transaction error:", error)
     throw error
@@ -45,7 +52,7 @@ export function buildSearchQuery(searchTerm: string, searchFields: string[]) {
 
 // Helper function for date range queries
 export function buildDateRangeQuery(field: string, startDate?: string, endDate?: string) {
-  const conditions = []
+  const conditions: string[] = []
 
   if (startDate) {
     conditions.push(`${field} >= '${startDate}'`)
@@ -70,7 +77,7 @@ export function buildSortQuery(sortBy?: string, sortOrder: "ASC" | "DESC" = "DES
 
 // Helper function for filtering
 export function buildFilterQuery(filters: Record<string, any>) {
-  const conditions = []
+  const conditions: string[] = []
   const params: any[] = []
 
   Object.entries(filters).forEach(([key, value]) => {
@@ -88,5 +95,5 @@ export function buildFilterQuery(filters: Record<string, any>) {
 
 // Helper function to get the database connection
 export async function getConnection() {
-  return sql
+  return prisma
 }

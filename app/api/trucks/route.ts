@@ -1,130 +1,66 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { executeQuery, buildPaginationQuery, buildFilterQuery, buildSortQuery } from "@/lib/db"
-import { requireAuth } from "@/lib/auth"
+export const runtime = "nodejs";
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { withAuth, AuthenticatedRequest } from '@/lib/auth';
 
-// Get all trucks
-export async function GET(request: NextRequest) {
-  try {
-    const user = await requireAuth()(request)
-    const searchParams = request.nextUrl.searchParams
-    const page = Number.parseInt(searchParams.get("page") || "1")
-    const limit = Number.parseInt(searchParams.get("limit") || "10")
-    const sortBy = searchParams.get("sort_by")
-    const sortOrder = (searchParams.get("sort_order") || "DESC") as "ASC" | "DESC"
+// GET /api/trucks - Get all trucks
+async function getHandler(req: AuthenticatedRequest) {
+    try {
+        const { user } = req;
+        const where: any = {};
+        
+        if (user.role === 'COMPANY') {
+            const companies = await prisma.company.findMany({
+                where: { ownerId: user.id },
+                select: { id: true }
+            });
+            const companyIds = companies.map(c => c.id);
+            where.companyId = { in: companyIds };
+        } else if (user.role === 'DRIVER') {
+            where.driverId = user.id;
+        }
 
-    // Build filters
-    const filters: any = {
-      status: searchParams.get("status"),
-      truck_type: searchParams.get("truck_type"),
-      fuel_type: searchParams.get("fuel_type"),
+        const trucks = await prisma.truck.findMany({
+            where,
+            include: {
+                driver: true,
+                company: true,
+            },
+        });
+        return NextResponse.json(trucks);
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
-    // Add owner filter based on user type
-    if (user.user_type === "carrier" || user.user_type === "company") {
-      filters.owner_id = user.id
-    }
-
-    let query = `
-      SELECT t.*, 
-             u.name as owner_name, u.email as owner_email,
-             l.name as current_location_name, l.city as current_location_city
-      FROM trucks t
-      LEFT JOIN users u ON t.owner_id = u.id
-      LEFT JOIN locations l ON t.current_location_id = l.id
-    `
-
-    const { whereClause, params } = buildFilterQuery(filters)
-    query += whereClause
-
-    // Add sorting
-    query += ` ${buildSortQuery(sortBy, sortOrder)}`
-
-    // Get total count
-    const countQuery = query.replace(/SELECT.*FROM/, "SELECT COUNT(*) as total FROM").split("ORDER BY")[0]
-    const countResult = await executeQuery(countQuery, params)
-    const total = Number.parseInt(countResult[0].total)
-
-    // Apply pagination
-    const paginatedQuery = buildPaginationQuery(query, page, limit)
-    const trucks = await executeQuery(paginatedQuery, params)
-
-    return NextResponse.json({
-      trucks,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    })
-  } catch (error) {
-    console.error("Error fetching trucks:", error)
-    return NextResponse.json({ error: error.message || "Failed to fetch trucks" }, { status: 500 })
-  }
 }
 
-// Create a new truck
-export async function POST(request: NextRequest) {
-  try {
-    const user = await requireAuth(["carrier", "company", "admin"])(request)
+// POST /api/trucks - Create a new truck
+async function postHandler(req: AuthenticatedRequest) {
+    try {
+        const { user } = req;
+        const body = await req.json();
 
-    const {
-      license_plate,
-      model,
-      make,
-      year,
-      capacity,
-      volume_capacity,
-      truck_type,
-      fuel_type = "diesel",
-      fuel_efficiency,
-      current_location_id,
-      insurance_expiry,
-      registration_expiry,
-    } = await request.json()
-
-    // Validate required fields
-    if (!license_plate || !model || !capacity || !truck_type) {
-      return NextResponse.json(
-        { error: "License plate, model, capacity, and truck type are required" },
-        { status: 400 },
-      )
+        // When a company user creates a truck, we need to find their company first.
+        if (user.role === 'COMPANY') {
+            const company = await prisma.company.findFirst({
+                where: { ownerId: user.id }
+            });
+            if (company) {
+                body.companyId = company.id;
+            } else {
+                return NextResponse.json({ error: "User is not associated with a company." }, { status: 400 });
+            }
+        }
+        
+        const newTruck = await prisma.truck.create({
+            data: body,
+        });
+        
+        return NextResponse.json(newTruck, { status: 201 });
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
-    // Check if license plate already exists
-    const existingTruck = await executeQuery("SELECT id FROM trucks WHERE license_plate = $1", [license_plate])
-
-    if (existingTruck.length > 0) {
-      return NextResponse.json({ error: "Truck with this license plate already exists" }, { status: 409 })
-    }
-
-    // Create truck
-    const result = await executeQuery(
-      `INSERT INTO trucks 
-       (owner_id, license_plate, model, make, year, capacity, volume_capacity, truck_type, 
-        fuel_type, fuel_efficiency, current_location_id, insurance_expiry, registration_expiry)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-       RETURNING *`,
-      [
-        user.id,
-        license_plate,
-        model,
-        make,
-        year,
-        capacity,
-        volume_capacity,
-        truck_type,
-        fuel_type,
-        fuel_efficiency,
-        current_location_id,
-        insurance_expiry,
-        registration_expiry,
-      ],
-    )
-
-    return NextResponse.json(result[0], { status: 201 })
-  } catch (error) {
-    console.error("Error creating truck:", error)
-    return NextResponse.json({ error: error.message || "Failed to create truck" }, { status: 500 })
-  }
 }
+
+
+export const GET = withAuth(getHandler, ['ADMIN', 'COMPANY', 'DRIVER']);
+export const POST = withAuth(postHandler, ['ADMIN', 'COMPANY']);

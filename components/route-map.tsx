@@ -5,7 +5,6 @@ import { motion } from "framer-motion"
 import { Truck, Search, Plus, Minus, MapPin, Layers, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
 
 export default function RouteMap() {
   const mapRef = useRef<HTMLDivElement>(null)
@@ -34,11 +33,10 @@ export default function RouteMap() {
         <>
           {/* Map background */}
           <div className="absolute inset-0">
-            <Image
+            <img
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-03-24%20at%2000.18.30.png-AT4SrXE55z1ErNnQqlXclnEkcKXT5A.jpeg"
               alt="Map background"
-              layout="fill"
-              objectFit="cover"
+              className="w-full h-full object-cover"
             />
           </div>
 

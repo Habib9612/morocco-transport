@@ -1,8 +1,14 @@
+export const runtime = "nodejs";
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
-import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import { withAuth, AuthenticatedRequest } from '@/lib/auth';
 
-export const GET = auth(async (req) => {
+const createTruckSchema = z.object({
+  // ... (schema remains the same)
+});
+
+async function getHandler(req: NextRequest) {
   if (!req.auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -56,9 +62,9 @@ export const GET = auth(async (req) => {
       pages: Math.ceil(total / limit),
     },
   });
-});
+}
 
-export const POST = auth(async (req) => {
+async function postHandler(req: AuthenticatedRequest) {
   if (!req.auth || req.auth.user?.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
@@ -105,4 +111,7 @@ export const POST = auth(async (req) => {
     message: 'Truck created successfully',
     truck,
   }, { status: 201 });
-});
+}
+
+export const GET = getHandler; // Public route
+export const POST = withAuth(postHandler, ['ADMIN', 'COMPANY']);

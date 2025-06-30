@@ -5,25 +5,21 @@ import { motion } from "framer-motion"
 import { Truck, MapPin, Search, Plus, Minus, Layers, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
-
-type Marker = {
-  id: string
-  position: { lat: number; lng: number }
-  title: string
-}
 
 interface ShipmentMapProps {
-  className?: string
-  markers?: Marker[]
+  markers?: {
+    id: string
+    position: { lat: number; lng: number }
+    title: string
+    isSelected?: boolean
+    isCurrent?: boolean
+  }[]
   onMarkerClick?: (id: string) => void
+  isFleetView?: boolean
+  className?: string
 }
 
-export function ShipmentMap({
-  className = "",
-  markers = [],
-  onMarkerClick = () => {},
-}: ShipmentMapProps) {
+export function ShipmentMap({ markers, onMarkerClick, isFleetView = false, className = "" }: ShipmentMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -51,11 +47,10 @@ export function ShipmentMap({
         <>
           {/* Map background */}
           <div className="absolute inset-0">
-            <Image
+            <img
               src="/placeholder.svg?height=600&width=800"
               alt="Map background"
-              layout="fill"
-              objectFit="cover"
+              className="w-full h-full object-cover"
             />
           </div>
 
@@ -96,29 +91,6 @@ export function ShipmentMap({
               <Minus className="h-4 w-4" />
             </Button>
           </div>
-
-          {/* Markers */}
-          {markers.map((marker) => (
-            <div
-              key={marker.id}
-              className="absolute"
-              style={{
-                left: `${marker.position.lng}%`,
-                top: `${marker.position.lat}%`,
-                transform: "translate(-50%, -50%)",
-              }}
-              onClick={() => onMarkerClick(marker.id)}
-            >
-              <div className="relative cursor-pointer">
-                <div className="bg-blue-600 text-white p-1 rounded-full">
-                  <MapPin className="h-6 w-6" />
-                </div>
-                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded">
-                  {marker.title}
-                </div>
-              </div>
-            </div>
-          ))}
 
           {/* Order marker */}
           <div className="absolute left-1/2 bottom-1/3 transform -translate-x-1/2">

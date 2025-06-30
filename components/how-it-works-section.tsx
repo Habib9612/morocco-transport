@@ -6,7 +6,7 @@ import { motion } from "framer-motion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CheckCircle } from "lucide-react"
 
-export default function HowItWorksSection({ steps }: { steps: { title: string; description: string; image: string }[] }) {
+export default function HowItWorksSection() {
   const [activeTab, setActiveTab] = useState("shippers")
 
   const shipperSteps = [
@@ -28,7 +28,7 @@ export default function HowItWorksSection({ steps }: { steps: { title: string; d
       number: "3",
       title: "Track Your Shipment in Real-Time",
       description:
-        "Monitor your cargo&apos;s journey from pickup to delivery with GPS precision. Receive automated updates at every milestone.",
+        "Monitor your cargo's journey from pickup to delivery with GPS precision. Receive automated updates at every milestone.",
       image: "/images/shipment-tracking.png",
     },
     {

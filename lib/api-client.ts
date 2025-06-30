@@ -1,5 +1,6 @@
 import { toast } from 'sonner';
 
+// A generic API response structure
 interface ApiResponse<T> {
   data: T;
   message?: string;
@@ -18,7 +19,8 @@ export class ApiClient {
     this.token = token;
   }
 
-  public async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+  // Define a generic request method
+  public async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -26,18 +28,24 @@ export class ApiClient {
     };
     
     if (this.token) {
-      (headers as Record<string, string>)['Authorization'] = `Bearer ${this.token}`;
+      (headers as any)['Authorization'] = `Bearer ${this.token}`;
     }
 
     try {
-      const response = await fetch(url, { ...options, headers });
+      const response = await fetch(url, {
+        ...options,
+        headers,
+      });
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'An API error occurred');
       }
-      return await response.json();
-    } catch (error) {
-      toast.error('API request failed');
+      
+      return response.json();
+    } catch (error: any) {
+      console.error(`API request to ${endpoint} failed:`, error.message);
+      toast.error(error.message);
       throw error;
     }
   }
@@ -145,3 +153,45 @@ export class ApiClient {
 }
 
 export const apiClient = new ApiClient();
+
+// Define interfaces for API data structures
+interface LoginData {
+  email: string;
+  password: string;
+}
+
+interface SignupData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  role?: string;
+}
+
+interface ShipmentData {
+  // Define shipment properties here based on your model
+  origin_id: string;
+  destination_id: string;
+  // ... other fields
+}
+
+// ... other data interfaces
+
+// Strongly type the API endpoints
+export const api = {
+  auth: {
+    login: (data: LoginData) => apiClient.request<any>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
+    signup: (data: SignupData) => apiClient.request<any>('/auth/signup', { method: 'POST', body: JSON.stringify(data) }),
+    logout: () => apiClient.request<any>('/auth/logout', { method: 'POST' }),
+    getSession: () => apiClient.request<any>('/auth/session'),
+  },
+  shipments: {
+    create: (data: ShipmentData) => apiClient.request<any>('/shipments', { method: 'POST', body: JSON.stringify(data) }),
+    getAll: () => apiClient.request<any>('/shipments'),
+    getById: (id: string) => apiClient.request<any>(`/shipments/${id}`),
+    update: (id: string, data: Partial<ShipmentData>) => apiClient.request<any>(`/shipments/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    delete: (id: string) => apiClient.request<any>(`/shipments/${id}`, { method: 'DELETE' }),
+  },
+  // ... other API modules with typed data
+};

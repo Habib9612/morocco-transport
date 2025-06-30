@@ -1,107 +1,56 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { executeQuery, buildPaginationQuery } from "@/lib/db"
-import { requireAuth } from "@/lib/auth"
+export const runtime = "nodejs";
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { withAuth, AuthenticatedRequest } from '@/lib/auth';
 
-// Get messages for a user
-export async function GET(request: NextRequest) {
-  try {
-    const user = await requireAuth()(request)
-    const searchParams = request.nextUrl.searchParams
-    const page = Number.parseInt(searchParams.get("page") || "1")
-    const limit = Number.parseInt(searchParams.get("limit") || "20")
-    const conversationWith = searchParams.get("conversation_with")
-    const shipmentId = searchParams.get("shipment_id")
+// GET /api/messages - Get messages for a support ticket or chat
+async function getHandler(req: AuthenticatedRequest) {
+    try {
+        const { user } = req;
+        const ticketId = req.nextUrl.searchParams.get('ticketId');
+        
+        if (!ticketId) {
+            return NextResponse.json({ error: 'Ticket ID is required' }, { status: 400 });
+        }
 
-    let query = `
-      SELECT m.*, 
-             s.name as sender_name, s.email as sender_email,
-             r.name as receiver_name, r.email as receiver_email,
-             sh.tracking_number
-      FROM messages m
-      LEFT JOIN users s ON m.sender_id = s.id
-      LEFT JOIN users r ON m.receiver_id = r.id
-      LEFT JOIN shipments sh ON m.shipment_id = sh.id
-      WHERE (m.sender_id = $1 OR m.receiver_id = $1)
-    `
-    const params = [user.id]
+        // Optional: Add logic to ensure user is part of this ticket conversation
+        
+        const messages = await prisma.chatMessage.findMany({
+            where: { supportTicketId: ticketId },
+            orderBy: { createdAt: 'asc' },
+            include: { user: { select: { id: true, firstName: true, lastName: true, role: true } } },
+        });
 
-    if (conversationWith) {
-      query += ` AND (m.sender_id = $${params.length + 1} OR m.receiver_id = $${params.length + 1})`
-      params.push(conversationWith)
+        return NextResponse.json(messages);
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
-    if (shipmentId) {
-      query += ` AND m.shipment_id = $${params.length + 1}`
-      params.push(shipmentId)
-    }
-
-    query += " ORDER BY m.created_at DESC"
-
-    // Get total count
-    const countQuery = query.replace(/SELECT.*FROM/, "SELECT COUNT(*) as total FROM")
-    const countResult = await executeQuery(countQuery, params)
-    const total = Number.parseInt(countResult[0].total)
-
-    // Apply pagination
-    const paginatedQuery = buildPaginationQuery(query, page, limit)
-    const messages = await executeQuery(paginatedQuery, params)
-
-    return NextResponse.json({
-      messages,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    })
-  } catch (error) {
-    console.error("Error fetching messages:", error)
-    return NextResponse.json({ error: error.message || "Failed to fetch messages" }, { status: 500 })
-  }
 }
 
-// Send a new message
-export async function POST(request: NextRequest) {
-  try {
-    const user = await requireAuth()(request)
+// POST /api/messages - Create a new message
+async function postHandler(req: AuthenticatedRequest) {
+    try {
+        const { user } = req;
+        const body = await req.json();
+        const { supportTicketId, content } = body;
+        
+        if (!supportTicketId || !content) {
+            return NextResponse.json({ error: 'Ticket ID and content are required' }, { status: 400 });
+        }
 
-    const { receiver_id, shipment_id, subject, message, message_type = "text" } = await request.json()
-
-    if (!receiver_id || !message) {
-      return NextResponse.json({ error: "Receiver ID and message are required" }, { status: 400 })
+        const newMessage = await prisma.chatMessage.create({
+            data: {
+                supportTicketId,
+                content,
+                userId: user.id,
+            },
+        });
+        
+        return NextResponse.json(newMessage, { status: 201 });
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
-    // Verify receiver exists
-    const receiver = await executeQuery("SELECT * FROM users WHERE id = $1", [receiver_id])
-    if (receiver.length === 0) {
-      return NextResponse.json({ error: "Receiver not found" }, { status: 404 })
-    }
-
-    // If shipment_id is provided, verify user has access to it
-    if (shipment_id) {
-      const shipment = await executeQuery("SELECT * FROM shipments WHERE id = $1", [shipment_id])
-      if (shipment.length === 0) {
-        return NextResponse.json({ error: "Shipment not found" }, { status: 404 })
-      }
-
-      const ship = shipment[0]
-      if (user.role !== "admin" && user.id !== ship.customer_id && user.id !== ship.carrier_id) {
-        return NextResponse.json({ error: "Unauthorized to send message for this shipment" }, { status: 403 })
-      }
-    }
-
-    const result = await executeQuery(
-      `INSERT INTO messages 
-       (sender_id, receiver_id, shipment_id, subject, message, message_type)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
-      [user.id, receiver_id, shipment_id, subject, message, message_type],
-    )
-
-    return NextResponse.json(result[0], { status: 201 })
-  } catch (error) {
-    console.error("Error sending message:", error)
-    return NextResponse.json({ error: error.message || "Failed to send message" }, { status: 500 })
-  }
 }
+
+export const GET = withAuth(getHandler);
+export const POST = withAuth(postHandler);

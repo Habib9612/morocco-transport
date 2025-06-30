@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { withAuth } from '@/lib/auth-middleware';
+import { withAuth, AuthenticatedRequest } from '@/lib/auth';
 import { z } from 'zod';
 
 const createTransactionSchema = z.object({
@@ -12,15 +12,11 @@ const createTransactionSchema = z.object({
   description: z.string().optional(),
 });
 
-// GET /api/transactions - Get transactions with pagination and filters
-export async function GET(request: NextRequest) {
-  const authResult = await withAuth(['USER', 'COMPANY', 'ADMIN'])(request);
-  if (authResult instanceof NextResponse) return authResult;
-  
-  const { user } = authResult;
+async function getHandler(req: AuthenticatedRequest) {
+  const { user } = req;
 
   try {
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(req.nextUrl);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const type = searchParams.get('type');
@@ -90,15 +86,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/transactions - Create a new transaction
-export async function POST(request: NextRequest) {
-  const authResult = await withAuth(['USER', 'COMPANY', 'ADMIN'])(request);
-  if (authResult instanceof NextResponse) return authResult;
-  
-  const { user } = authResult;
+async function postHandler(req: AuthenticatedRequest) {
+  const { user } = req;
 
   try {
-    const body = await request.json();
+    const body = await req.json();
     const result = createTransactionSchema.safeParse(body);
     
     if (!result.success) {
@@ -211,3 +203,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const GET = withAuth(getHandler, ['USER', 'COMPANY', 'ADMIN']);
+export const POST = withAuth(postHandler, ['USER', 'COMPANY', 'ADMIN']);

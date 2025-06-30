@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../api-client'
+import { getShipmentStats, getRevenueStats, getFleetStats, getDriverStats } from '@/app/actions/analytics'
 
 export function useShipments() {
   const [shipments, setShipments] = useState<any[]>([])
@@ -117,4 +118,59 @@ export function useMessages() {
   }
 
   return { messages, loading, refetch: fetchMessages }
+}
+
+interface StatsData {
+  total_shipments?: number;
+  delivered_shipments?: number;
+  total_revenue?: number;
+  average_revenue?: number;
+  total_trucks?: number;
+  active_trucks?: number;
+  total_drivers?: number;
+  available_drivers?: number;
+}
+
+export function useDashboardData(range: string = '30') {
+  const [data, setData] = useState<StatsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
+      try {
+        const [shipmentRes, revenueRes, fleetRes, driverRes] = await Promise.all([
+          getShipmentStats(range),
+          getRevenueStats(range),
+          getFleetStats(range),
+          getDriverStats(range),
+        ]);
+
+        if (!shipmentRes.success || !revenueRes.success || !fleetRes.success || !driverRes.success) {
+          throw new Error('Failed to fetch one or more dashboard stats.');
+        }
+
+        setData({
+          total_shipments: shipmentRes.data?.[0]?.total_shipments || 0,
+          delivered_shipments: shipmentRes.data?.[0]?.delivered_shipments || 0,
+          total_revenue: revenueRes.data?.[0]?.total_revenue || 0,
+          average_revenue: revenueRes.data?.[0]?.average_revenue || 0,
+          total_trucks: fleetRes.data?.[0]?.total_trucks || 0,
+          active_trucks: fleetRes.data?.[0]?.active_trucks || 0,
+          total_drivers: driverRes.data?.[0]?.total_drivers || 0,
+          available_drivers: driverRes.data?.[0]?.available_drivers || 0,
+        });
+      } catch (err: any) {
+        setError(err.message || 'An unknown error occurred.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [range]);
+
+  return { data, loading, error };
 } 

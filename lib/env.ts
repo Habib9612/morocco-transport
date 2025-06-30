@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 // Environment variable validation and defaults
 
 function getEnvVar(name: string, defaultValue?: string): string {
